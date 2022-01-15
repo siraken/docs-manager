@@ -1,0 +1,33 @@
+.iv-table {
+  vertical-align: middle;
+  
+  .status {
+    display: block;
+    min-width: 70px;
+    font-size: 80%;
+    text-align: center;
+    user-select: none;
+    padding: 3px 7px;
+    margin: 2px;
+    border: solid 1px #ddd;
+
+    &:hover {
+      transform: scale(.95);
+      cursor: pointer;
+    }
+
+    &.set {
+      background: #00acc1;
+      color: #fff;
+    }
+
+    &.miss {
+      background: #3a3a3a;
+      color: #fff;
+    }
+  }
+
+  .number {
+
+  }
+}
