@@ -27,21 +27,17 @@ $items = [];
             <div class="col-12">
                 <label class="form-label">取引先<span class="ms-1 badge bg-primary">必須</span></label>
             </div>
-            <div class="col-md-6">
-                <select name="destination" class="form-select" id="customer">
-                    <option selected disabled>選択してください</option>
-                    <option value="0">自社</option>
-                    @foreach ($clients as $client)
-                        <option value={{ $client['id'] }}>{{ $client['name'] }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-6">
-                <div class="row">
-                    <div class="input-group">
-                        <input type="text" name="responsible" placeholder="担当者" class="form-control">
-                        <input type="text" name="honor_title" placeholder="御中" class="form-control" value="御中">
-                    </div>
+            <div class="col-12">
+                <div class="input-group">
+                    <select name="destination" class="form-select" id="customer">
+                        <option selected disabled>選択してください</option>
+                        <option value="0">自社</option>
+                        @foreach ($clients as $client)
+                            <option value={{ $client['id'] }}>{{ $client['name'] }}</option>
+                        @endforeach
+                    </select>
+                    <input type="text" name="responsible" placeholder="担当者" class="form-control">
+                    <input type="text" name="honor_title" placeholder="御中" class="form-control" value="御中">
                 </div>
             </div>
         </div>
@@ -88,7 +84,7 @@ $items = [];
                         <tr class="sortable-tr">
                             <td class="action-cell"><span class="delete-row-button">×</span></td>
                             <td class="item-cell">
-                                <input type="text" name="item_name[]" class="form-control ti-name">
+                                <input type="text" name="item_name[]" class="form-control">
                                 <div class="items_box">
                                     <ul class="items">
                                     <?php foreach ($items as $item): ?>
@@ -98,23 +94,24 @@ $items = [];
                                 </div>
                             </td>
                             <td>
-                                <input type="text" name="qty[]" id={{"qty_".$i}} class="form-control ti-qty text-end">
+                                <input type="text" name="qty[]" id={{"qty_".$i}} class="form-control text-end calc">
                             </td>
                             <td>
-                                <input type="text" name="unit[]" class="form-control ti-unit text-center" placeholder="単位" value="">
+                                <input type="text" name="unit[]" class="form-control text-center" placeholder="単位" value="">
                             </td>
                             <td>
-                                <input type="text" name="cost[]" id={{"cost_".$i}} class="form-control ti-cost text-end" value="">
+                                <input type="text" name="cost[]" id={{"cost_".$i}} class="form-control text-end calc" value="">
                             </td>
                             <td>
-                                <select name="tax[]" class="form-select ti-tax">
+                                <select name="tax[]" id={{"tax_".$i}} class="form-select calc">
                                     @foreach ($Common->getTaxes() as $tax)
                                         <option value={{ $tax['id'] }}>{{ $tax['name'] }}</option>
                                     @endforeach
                                 </select>
                             </td>
                             <td>
-                                <input type="text" class="form-control ti-sum text-end readonly" tabindex="-1" readonly>
+                                <input type="text" id={{"price_".$i}} class="form-control text-end readonly" tabindex="-1" readonly>
+                                <input type="hidden" id={{"tax_price_".$i}} readonly>
                             </td>
                         </tr>
                         @endfor
@@ -155,5 +152,9 @@ $items = [];
         <input type="hidden" name="reg_datetime" value="<?= date('Y-m-d H:i:s');?>">
     </form>
 </div><!--app-->
+
+<script>
+
+</script>
 
 @endsection
