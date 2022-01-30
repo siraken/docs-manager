@@ -43,47 +43,47 @@
                 <div class="position-sticky pt-md-5">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('home*') ? 'active' : '' }}" aria-current="page" href="/">
+                          <a class="nav-link {{ request()->route()->named('home*') ? 'active fw-bold' : '' }}" aria-current="page" href="/">
                             <span class="ml-2">Dashboard</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('trip*') ? 'active' : '' }}" href="/trip">
+                          <a class="nav-link {{ request()->route()->named('trip*') ? 'active fw-bold' : '' }}" href="/trip">
                             <span class="ml-2">Business Trip</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('expense*') ? 'active' : '' }}" href="/expense">
+                          <a class="nav-link {{ request()->route()->named('expense*') ? 'active fw-bold' : '' }}" href="/expense">
                             <span class="ml-2">Travel Expense</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('pricing*') ? 'active' : '' }}" href="/pricing">
+                          <a class="nav-link {{ request()->route()->named('pricing*') ? 'active fw-bold' : '' }}" href="/pricing">
                             <span class="ml-2">Pricing</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('estimate*') ? 'active' : '' }}" href="/estimate">
+                          <a class="nav-link {{ request()->route()->named('estimate*') ? 'active fw-bold' : '' }}" href="/estimate">
                             <span class="ml-2">Estimate</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('invoice*') ? 'active' : '' }}" href="/invoice">
+                          <a class="nav-link {{ request()->route()->named('invoice*') ? 'active fw-bold' : '' }}" href="/invoice">
                             <span class="ml-2">Invoice</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('order*') ? 'active' : '' }}" href="/order">
+                          <a class="nav-link {{ request()->route()->named('order*') ? 'active fw-bold' : '' }}" href="/order">
                             <span class="ml-2">Order</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('item*') ? 'active' : '' }}" href="/item">
+                          <a class="nav-link {{ request()->route()->named('item*') ? 'active fw-bold' : '' }}" href="/item">
                             <span class="ml-2">Item</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('inquiry*') ? 'active' : '' }}" href="/inquiry">
+                          <a class="nav-link {{ request()->route()->named('inquiry*') ? 'active fw-bold' : '' }}" href="/inquiry">
                             <span class="ml-2">Inquiry</span>
                           </a>
                         </li>

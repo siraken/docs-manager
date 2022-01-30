@@ -41,7 +41,7 @@ class TravelController extends Controller
     public function pdf($id = null)
     {
         $data = Travel::find($id);
-        $template_path = public_path('pdf/template/apply_plan.pdf');
+        $template_path = resource_path('pdf/apply_plan.pdf');
         mb_internal_encoding('UTF-8');
 
         $pdf = new Fpdi();

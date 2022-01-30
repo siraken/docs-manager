@@ -24,7 +24,7 @@ class TravelExpenseController extends Controller
     public function pdf($id = null)
     {
         $data = TravelExpense::find($id);
-        $template_path = public_path('pdf/template/travel_expense.pdf');
+        $template_path = resource_path('pdf/travel_expense.pdf');
         mb_internal_encoding('UTF-8');
 
         $pdf = new Fpdi();

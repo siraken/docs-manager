@@ -7,7 +7,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\TravelController;
 use App\Http\Controllers\TravelExpenseController;
-use App\Http\Controllers\ReceiveOrderController;
+use App\Http\Controllers\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,9 +59,9 @@ Route::get('/invoice/trash', function () {
 /**
  * Order
  */
-Route::get('/order', [ReceiveOrderController::class, 'index'])->name('order');
-Route::get('/order/create', [ReceiveOrderController::class, 'create'])->name('order');
-Route::get('/order/edit', [ReceiveOrderController::class, 'edit'])->name('order');
+Route::get('/order', [OrderController::class, 'index'])->name('order');
+Route::get('/order/create', [OrderController::class, 'create'])->name('order');
+Route::get('/order/edit', [OrderController::class, 'edit'])->name('order');
 Route::get('/order/detail', function () {
     return view('order/detail');
 })->name('order');
