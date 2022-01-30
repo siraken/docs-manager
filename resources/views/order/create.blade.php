@@ -104,9 +104,11 @@ $items = [];
                             </td>
                             <td>
                                 <select name="tax[]" id={{"tax_".$i}} class="form-select calc">
-                                    @foreach ($Common->getTaxes() as $tax)
-                                        <option value={{ $tax['id'] }}>{{ $tax['name'] }}</option>
-                                    @endforeach
+                                    <option value="1">10%</option>
+                                    <option value="2">軽減8%</option>
+                                    <option value="3">8%</option>
+                                    <option value="4">5%</option>
+                                    <option value="5">対象外</option>
                                 </select>
                             </td>
                             <td>
