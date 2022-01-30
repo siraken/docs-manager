@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\OrderHeader;
+use App\Models\OrderDetail;
 
 class OrderController extends Controller
 {
@@ -41,6 +43,7 @@ class OrderController extends Controller
         {
             $slip_header = [];
             $slip_body = [];
+
             $req = $request->all();
             // var_dump($req);
 
@@ -57,23 +60,31 @@ class OrderController extends Controller
             // 明細データ作成
             $row = [];
             for ($i = 0; $i < count($slip_body["item_name"]); $i++) {
-                $row[] = [
-                    "item_name" => $slip_body['item_name'][$i],
-                    "qty" => $slip_body['qty'][$i],
-                    "unit" => $slip_body['unit'][$i],
-                    "cost" => $slip_body['cost'][$i],
-                    "tax" => $slip_body['tax'][$i],
-                    "price" => $slip_body['price'][$i],
-                ];
+                if ($slip_body['item_name'][$i] !== NULL) {
+                    $row[] = [
+                        "item_name" => $slip_body['item_name'][$i],
+                        "quantity" => $slip_body['qty'][$i],
+                        "unit" => $slip_body['unit'][$i],
+                        "cost" => $slip_body['cost'][$i],
+                        "tax_id" => $slip_body['tax'][$i],
+                        "price" => $slip_body['price'][$i],
+                    ];
+                }
             }
-            var_dump($row);
-
+            // var_dump($row);
+            $OrderDetail = new OrderDetail();
+            foreach ($row as $body) {
+                var_dump($body);
+                $OrderDetail->create($body);
+            }
             exit;
-            // $something = new something();
-            // if ($something->fill($request->all())->save())
+
+            // $OrderHeader = new OrderHeader();
+            // if ($OrderHeader->fill($request->all())->save())
             // {
             //     return redirect('/something')->with('flash_message', 'Successful');
             // }
+
         }
         return view('order/create', compact('clients'));
     }
