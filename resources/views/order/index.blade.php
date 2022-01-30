@@ -31,7 +31,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			<?php foreach ($estimates as $row): ?>
+			<?php foreach ($orders as $row): ?>
 			<tr>
 				<!-- ステータス -->
 				<td>

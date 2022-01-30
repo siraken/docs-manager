@@ -11,7 +11,7 @@ class OrderController extends Controller
     //
     public function index()
     {
-        $estimates = [];
+        $orders = OrderHeader::all();
         $clients = [
             [
                 "name" => "Novalumo合同会社",
@@ -22,7 +22,7 @@ class OrderController extends Controller
                 "ceo" => "鈴木"
             ]
         ];
-        return view('order/index', compact('estimates', 'clients'));
+        return view('order/index', compact('orders', 'clients'));
     }
 
     public function create(Request $request)
@@ -39,15 +39,33 @@ class OrderController extends Controller
                 "ceo" => "鈴木"
             ]
         ];
+
         if ($request->isMethod('POST'))
         {
             $slip_header = [];
             $slip_body = [];
-
             $req = $request->all();
-            // var_dump($req);
 
-            // 明細部分だけ取り出し
+            // ヘッダー部分
+            $slip_header = [
+                "destination" => $req['destination'],
+                "responsible" => $req['responsible'],
+                "honor_title" => $req['honor_title'],
+                "issued_date" => $req['issued_date'],
+                "exp_date" => $req['exp_date'],
+                "order_no" => $req['order_no'],
+                "title" => $req['title'],
+                "price" => $req['totalPrice'],
+                "remarks" => $req['remarks'],
+                "reg_uid" => $req['reg_uid'],
+                // "" => $req[''],
+            ];
+
+            $OrderHeader = new OrderHeader();
+            $isSuccess = $OrderHeader->fill($slip_header)->save();
+            $slip_id = $OrderHeader->id;
+
+            // 明細部分
             $slip_body = [
                 "item_name" => $req['item_name'],
                 "qty" => $req['qty'],
@@ -62,6 +80,7 @@ class OrderController extends Controller
             for ($i = 0; $i < count($slip_body["item_name"]); $i++) {
                 if ($slip_body['item_name'][$i] !== NULL) {
                     $row[] = [
+                        "slip_id" => $slip_id,
                         "item_name" => $slip_body['item_name'][$i],
                         "quantity" => $slip_body['qty'][$i],
                         "unit" => $slip_body['unit'][$i],
@@ -71,19 +90,16 @@ class OrderController extends Controller
                     ];
                 }
             }
-            // var_dump($row);
+
             $OrderDetail = new OrderDetail();
             foreach ($row as $body) {
-                var_dump($body);
                 $OrderDetail->create($body);
             }
-            exit;
 
-            // $OrderHeader = new OrderHeader();
-            // if ($OrderHeader->fill($request->all())->save())
-            // {
-            //     return redirect('/something')->with('flash_message', 'Successful');
-            // }
+            if ($isSuccess)
+            {
+                return redirect('/order')->with('flash_message', 'Successful');
+            }
 
         }
         return view('order/create', compact('clients'));

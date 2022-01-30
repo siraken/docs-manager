@@ -56,7 +56,7 @@ $items = [];
         <div class="row mb-3">
             <div class="col-md-3">
                 <label class="form-label">発注書番号<span class="ms-1 badge bg-primary">必須</span></label>
-                <input type="text" name="estimate_no" class="form-control" value="<?= date('Ymd') ?>-xxx">
+                <input type="text" name="order_no" class="form-control" value="<?= date('Ymd') ?>-xxx">
             </div>
             <div class="col-md-9">
                 <label class="form-label">件名</label>

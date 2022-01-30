@@ -10,6 +10,7 @@ class OrderDetail extends Model
     use HasFactory;
 
     protected $fillable = [
+        'slip_id',
         'item_name',
         'quantity',
         'unit',

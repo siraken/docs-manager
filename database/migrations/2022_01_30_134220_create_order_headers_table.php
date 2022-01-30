@@ -16,18 +16,18 @@ class CreateOrderHeadersTable extends Migration
         Schema::create('order_headers', function (Blueprint $table) {
             $table->id();
             $table->string('destination');
-            $table->string('honor_title');
-            $table->string('responsible');
+            $table->string('responsible')->nullable();
+            $table->string('honor_title')->nullable();
             $table->date('issued_date');
-            $table->date('exp_date');
+            $table->date('exp_date')->nullable();
             $table->string('order_no');
-            $table->string('title');
+            $table->string('title')->nullable();
             $table->integer('price');
-            $table->string('remarks');
-            $table->integer('is_issued');
-            $table->integer('is_deleted');
-            $table->integer('is_converted');
-            $table->string('note');
+            $table->string('remarks')->nullable();
+            $table->integer('is_issued')->nullable();
+            $table->integer('is_deleted')->nullable();
+            $table->integer('is_converted')->nullable();
+            $table->string('note')->nullable();
             $table->timestamps();
         });
     }
