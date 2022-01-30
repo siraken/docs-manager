@@ -1,2 +1,2 @@
-require("./bootstrap");
+require("./starter");
 require("@fortawesome/fontawesome-free/js/all");

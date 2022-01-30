@@ -150,6 +150,15 @@ details img { cursor: default; }
     <div class="col-12">
         <div class="form-row">
             <div class="form-group">
+                <label>自社<span class="badge rounded-pill bg-warning text-dark">必須</span></label>
+                <select name="destination" class="input" id="customer">
+                  <option selected disabled>選択してください</option>
+                  <?php //echo $this->Common->makeSelectOptions($clients);?>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
                 <label>取引先 <span class="badge rounded-pill bg-warning text-dark">必須</span></label>
                 <select name="destination" class="input" id="customer">
                   <option selected disabled>選択してください</option>
@@ -194,7 +203,7 @@ details img { cursor: default; }
         <thead>
           <tr class="thead">
             <th style="width: 3%; visibility: hidden; border: none;"></th>
-            <th style="width: 30%;">品番・品名</th>
+            <th style="width: 30%;">詳細</th>
             <th style="width: 10%;">数量</th>
             <th style="width: 10%;">単位</th>
             <th style="width: 12%;">単価</th>

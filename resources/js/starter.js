@@ -1,4 +1,5 @@
 import Vue from "vue/dist/vue.esm";
+import "bootstrap";
 
 window.Vue = Vue;
 

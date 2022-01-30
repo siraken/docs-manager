@@ -12,4 +12,9 @@ class ReceiveOrderController extends Controller
         $estimates = [];
         return view('order/index', compact('estimates'));
     }
+
+    public function create()
+    {
+        return view('order/create');
+    }
 }

@@ -49,12 +49,12 @@
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('trip*') ? 'active' : '' }}" href="/trip">
-                            <span class="ml-2">Business Trips</span>
+                            <span class="ml-2">Business Trip</span>
                           </a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('expense*') ? 'active' : '' }}" href="/expense">
-                            <span class="ml-2">Travel Expenses</span>
+                            <span class="ml-2">Travel Expense</span>
                           </a>
                         </li>
                         <li class="nav-item">
@@ -64,27 +64,27 @@
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('estimate*') ? 'active' : '' }}" href="/estimate">
-                            <span class="ml-2">Estimates</span>
+                            <span class="ml-2">Estimate</span>
                           </a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('invoice*') ? 'active' : '' }}" href="/invoice">
-                            <span class="ml-2">Invoices</span>
+                            <span class="ml-2">Invoice</span>
                           </a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('order*') ? 'active' : '' }}" href="/order">
-                            <span class="ml-2">Orders</span>
+                            <span class="ml-2">Order</span>
                           </a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('item*') ? 'active' : '' }}" href="/item">
-                            <span class="ml-2">Items</span>
+                            <span class="ml-2">Item</span>
                           </a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('inquiry*') ? 'active' : '' }}" href="/inquiry">
-                            <span class="ml-2">Inquiries</span>
+                            <span class="ml-2">Inquiry</span>
                           </a>
                         </li>
                     </ul>

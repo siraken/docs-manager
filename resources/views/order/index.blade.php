@@ -14,9 +14,8 @@
 
 <div class="row mb-3">
 	<div class="col-12">
-		<a href="/estimate/create" class="btn btn-primary">受注書を新しく作る</a>
-		<a href="/estimate/create" class="btn btn-primary">発注書を新しく作る</a>
-		<a href="/estimate/trash" class="btn btn-primary">ごみ箱</a>
+		<a href="/order/create" class="btn btn-primary">発注書を新しく作る</a>
+		<a href="/order/trash" class="btn btn-primary">ごみ箱</a>
 	</div>
 </div>
 

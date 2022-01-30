@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EstimateController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\TravelController;
@@ -30,7 +31,7 @@ Route::get('/pricing', function () {
 Route::get('/pdf', [EstimateController::class, 'pdf']);
 
 /**
- * Estimates
+ * Estimate
  */
 Route::get('/estimate', [EstimateController::class, 'index'])->name('estimate');
 Route::get('/estimate/create', [EstimateController::class, 'create'])->name('estimate');
@@ -43,7 +44,20 @@ Route::get('/estimate/trash', function () {
 })->name('estimate');
 
 /**
- * Orders
+ * Invoice
+ */
+Route::get('/invoice', [InvoiceController::class, 'index'])->name('invoice');
+Route::get('/invoice/create', [InvoiceController::class, 'create'])->name('invoice');
+Route::get('/invoice/edit', [InvoiceController::class, 'edit'])->name('invoice');
+Route::get('/invoice/detail', function () {
+    return view('invoice/detail');
+})->name('invoice');
+Route::get('/invoice/trash', function () {
+    return view('invoice/trash');
+})->name('invoice');
+
+/**
+ * Order
  */
 Route::get('/order', [ReceiveOrderController::class, 'index'])->name('order');
 Route::get('/order/create', [ReceiveOrderController::class, 'create'])->name('order');
@@ -56,7 +70,7 @@ Route::get('/order/trash', function () {
 })->name('order');
 
 /**
- * Items
+ * Item
  */
 Route::get('/item', [ItemController::class, 'index'])->name('item');
 Route::get('/item/create', [ItemController::class, 'create'])->name('item');
@@ -73,7 +87,7 @@ Route::get('/inquiry/view/{id}', [InquiryController::class, 'view'])->name('inqu
 Route::get('/inquiry/truncate', [InquiryController::class, 'truncate'])->name('inquiry');
 
 /**
- * Trips
+ * Trip
  */
 Route::get('/trip', [TravelController::class, 'index'])->name('trip');
 Route::get('/trip/create', [TravelController::class, 'create'])->name('trip');
@@ -81,7 +95,7 @@ Route::post('/trip/create', [TravelController::class, 'create']);
 Route::get('/trip/pdf/{id}', [TravelController::class, 'pdf'])->name('trip');
 
 /**
- * Expenses
+ * Expense
  */
 Route::get('/expense', [TravelExpenseController::class, 'index'])->name('expense');
 Route::get('/expense/create', [TravelExpenseController::class, 'create'])->name('expense');
