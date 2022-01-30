@@ -9758,11 +9758,7 @@ $(function () {
   function addCustomRow(num) {
     rowNumber++;
     $(".main_tbody").append("\n        <tr class=\"sortable-tr\">\n            <td class=\"action-cell\"><span class=\"delete-row-button\">\xD7</span></td>\n            <td class=\"item-cell\">\n                <input type=\"text\" name=\"item_name[]\" class=\"form-control\">\n                <div class=\"items_box\">\n                    <ul class=\"items\">\n                    <?php foreach ($items as $item): ?>\n                        <li class=\"items_name\" data-name=\"<?= $item['Item']['item_name']; ?>\" data-unit=\"<?= $item['Item']['unit']; ?>\" data-cost=\"<?= $item['Item']['cost']; ?>\" data-tax=\"<?= $item['Item']['tax']; ?>\"><?= $item['Item']['item_name']; ?> @<?= number_format($item['Item']['cost']); ?>\u5186</li>\n                    <?php endforeach; ?>\n                    </ul>\n                </div>\n            </td>\n            <td>\n                <input type=\"text\" name=\"qty[]\" id=\"qty_".concat(num, "\" class=\"form-control text-end calc\">\n            </td>\n            <td>\n                <input type=\"text\" name=\"unit[]\" class=\"form-control text-center\" placeholder=\"\u5358\u4F4D\" value=\"\">\n            </td>\n            <td>\n                <input type=\"text\" name=\"cost[]\" id=\"cost_").concat(num, "\" class=\"form-control text-end calc\" value=\"\">\n            </td>\n            <td>\n                <select name=\"tax[]\" id=\"tax_").concat(num, "\" class=\"form-select calc\">\n                    <option value=\"1\">10%</option>\n                    <option value=\"2\">\u8EFD\u6E1B8%</option>\n                    <option value=\"3\">8%</option>\n                    <option value=\"4\">5%</option>\n                    <option value=\"5\">\u5BFE\u8C61\u5916</option>\n                </select>\n            </td>\n            <td>\n                <input type=\"text\" id=\"price_").concat(num, "\" class=\"form-control text-end readonly\" tabindex=\"-1\" readonly>\n                <input type=\"hidden\" id=\"tax_price_").concat(num, "\" readonly>\n            </td>\n        </tr>\n        "));
-  }
-
-  window.addRow = function () {
-    addCustomRow(rowNumber);
-  }; // 明細部分計算
+  } // 明細部分計算
 
 
   function calcAll() {
@@ -9817,7 +9813,18 @@ $(function () {
     isNaN(total.sub) ? $("#subtotal").val(0) : $("#subtotal").val(total.sub);
     isNaN(total.tax) ? $("#taxTotal").val(0) : $("#taxTotal").val(total.tax);
     isNaN(total.all) ? $("#totalPrice").val(0) : $("#totalPrice").val(total.all);
-  } // 計算処理
+  } // セルの横幅を固定したままSortable
+
+
+  function fixPlaceHolderWidth(event, ui) {
+    var _this = this;
+
+    ui.find(".action-cell").css("border", "none");
+    ui.children().each(function () {
+      $(_this).width($(_this).width());
+    });
+    return ui;
+  } // 入力時計算処理
 
 
   $(".document-table").on("input", ".calc", function () {
@@ -9829,17 +9836,7 @@ $(function () {
       $(event.target.closest("tr")).remove();
       calcAll();
     }
-  }); // セルの横幅を固定したままSortable
-
-  function fixPlaceHolderWidth(event, ui) {
-    var _this = this;
-
-    ui.find(".action-cell").css("border", "none");
-    ui.children().each(function () {
-      $(_this).width($(_this).width());
-    });
-    return ui;
-  }
+  }); // 行並べ替え
 
   $("#sortable").sortable({
     items: "tr.sortable-tr",
@@ -9847,10 +9844,13 @@ $(function () {
       ui.placeholder.height(ui.helper.outerHeight());
     },
     helper: fixPlaceHolderWidth,
-    update: function update(event, ui) {
-      console.log($("#sortable").sortable("toArray"));
+    update: function update(event, ui) {// console.log($("#sortable").sortable("toArray"));
     }
-  });
+  }); // windowオブジェクトに行追加処理を追加
+
+  window.addRow = function () {
+    addCustomRow(rowNumber);
+  };
 });
 
 /***/ }),

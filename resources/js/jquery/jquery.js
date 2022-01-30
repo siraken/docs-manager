@@ -47,10 +47,6 @@ $(() => {
         `);
     }
 
-    window.addRow = () => {
-        addCustomRow(rowNumber);
-    };
-
     // 明細部分計算
     function calcAll() {
         let total = {
@@ -112,7 +108,18 @@ $(() => {
             ? $("#totalPrice").val(0)
             : $("#totalPrice").val(total.all);
     }
-    // 計算処理
+
+    // セルの横幅を固定したままSortable
+    function fixPlaceHolderWidth(event, ui) {
+        ui.find(".action-cell").css("border", "none");
+
+        ui.children().each(() => {
+            $(this).width($(this).width());
+        });
+        return ui;
+    }
+
+    // 入力時計算処理
     $(".document-table").on("input", ".calc", () => {
         calcAll();
     });
@@ -125,16 +132,7 @@ $(() => {
         }
     });
 
-    // セルの横幅を固定したままSortable
-    function fixPlaceHolderWidth(event, ui) {
-        ui.find(".action-cell").css("border", "none");
-
-        ui.children().each(() => {
-            $(this).width($(this).width());
-        });
-        return ui;
-    }
-
+    // 行並べ替え
     $("#sortable").sortable({
         items: "tr.sortable-tr",
         start: (event, ui) => {
@@ -142,7 +140,12 @@ $(() => {
         },
         helper: fixPlaceHolderWidth,
         update: (event, ui) => {
-            console.log($("#sortable").sortable("toArray"));
+            // console.log($("#sortable").sortable("toArray"));
         },
     });
+
+    // windowオブジェクトに行追加処理を追加
+    window.addRow = () => {
+        addCustomRow(rowNumber);
+    };
 });
