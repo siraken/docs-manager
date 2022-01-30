@@ -40,7 +40,7 @@ $(() => {
                 </select>
             </td>
             <td>
-                <input type="text" id="price_${num}" class="form-control text-end readonly" tabindex="-1" readonly>
+                <input type="text" name="price[]" id="price_${num}" class="form-control text-end readonly" tabindex="-1" readonly>
                 <input type="hidden" id="tax_price_${num}" readonly>
             </td>
         </tr>

@@ -19,7 +19,7 @@ $items = [];
         <div class="row mb-3">
             <div class="col-12">
                 <a href="./" class="btn btn-primary"><i class="bi bi-arrow-left-circle-fill"></i> 戻る</a>
-                <a class="btn btn-primary"><i class="fa fa-floppy-o"></i> 保存する</a>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-floppy-o"></i> 保存する</button>
             </div>
         </div>
         {{-- 取引先 --}}
@@ -112,7 +112,7 @@ $items = [];
                                 </select>
                             </td>
                             <td>
-                                <input type="text" id={{"price_".$i}} class="form-control text-end readonly" tabindex="-1" readonly>
+                                <input type="text" name="price[]" id={{"price_".$i}} class="form-control text-end readonly" tabindex="-1" readonly>
                                 <input type="hidden" id={{"tax_price_".$i}} readonly>
                             </td>
                         </tr>
@@ -135,7 +135,7 @@ $items = [];
                     </tr>
                     <tr class="sum-tr">
                         <td colspan="2" style="text-align: center;">合計</td>
-                        <td><input type="text" name="price" id="totalPrice" class="form-control text-end readonly" value="0" readonly tabindex="-1"></td>
+                        <td><input type="text" name="totalPrice" id="totalPrice" class="form-control text-end readonly" value="0" readonly tabindex="-1"></td>
                     </tr>
                     </tbody>
                 </table>
@@ -152,6 +152,7 @@ $items = [];
         {{-- 登録情報 --}}
         <input type="hidden" name="reg_uid" value="<?= ''?>">
         <input type="hidden" name="reg_datetime" value="<?= date('Y-m-d H:i:s');?>">
+        @csrf
     </form>
 </div><!--app-->
 
