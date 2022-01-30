@@ -17520,10 +17520,10 @@ textarea.form-control-lg {
   border: none;
   background-color: transparent;
 }
-.document-table .action-cell:hover .delrow-btn {
+.document-table .action-cell:hover .delete-row-button {
   opacity: 1;
 }
-.document-table .delrow-btn {
+.document-table .delete-row-button {
   color: #777;
   background-color: transparent;
   text-decoration: none;
@@ -17531,7 +17531,7 @@ textarea.form-control-lg {
   transition: 0.1s;
   opacity: 0;
 }
-.document-table .delrow-btn:hover {
+.document-table .delete-row-button:hover {
   color: #aaa;
 }
 .document-table .item-cell {

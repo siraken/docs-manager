@@ -353,14 +353,14 @@
         <div class="form-group">
             <div class="row">
                 <div class="col">
-                    <p class="h5 text-right">
+                    <p class="h5 text-end">
                         消費税：<span
                             class="font-weight-bold"
                             >¥ @{{ systemTotalNoTaxPrice
                             }}</span
                         >
                     </p>
-                    <p class="h3 text-right">
+                    <p class="h3 text-end">
                         合計金額：<span
                             class="font-weight-bold"
                             >¥ @{{ systemTotalPrice }}</span

@@ -86,7 +86,7 @@ $items = [];
                     <tbody class="main_tbody" id="sortable">
                         @for ($i = 0; $i < 5; $i++)
                         <tr class="sortable-tr">
-                            <td class="action-cell"><span class="delrow-btn">×</span></td>
+                            <td class="action-cell"><span class="delete-row-button">×</span></td>
                             <td class="item-cell">
                                 <input type="text" name="item_name[]" class="form-control ti-name">
                                 <div class="items_box">
@@ -98,13 +98,13 @@ $items = [];
                                 </div>
                             </td>
                             <td>
-                                <input type="text" name="qty[]" id={{"qty_".$i}} class="form-control ti-qty text-right">
+                                <input type="text" name="qty[]" id={{"qty_".$i}} class="form-control ti-qty text-end">
                             </td>
                             <td>
                                 <input type="text" name="unit[]" class="form-control ti-unit text-center" placeholder="単位" value="">
                             </td>
                             <td>
-                                <input type="text" name="cost[]" id={{"cost_".$i}} class="form-control ti-cost text-right" value="">
+                                <input type="text" name="cost[]" id={{"cost_".$i}} class="form-control ti-cost text-end" value="">
                             </td>
                             <td>
                                 <select name="tax[]" class="form-select ti-tax">
@@ -114,7 +114,7 @@ $items = [];
                                 </select>
                             </td>
                             <td>
-                                <input type="text" class="form-control ti-sum text-right readonly" tabindex="-1" readonly>
+                                <input type="text" class="form-control ti-sum text-end readonly" tabindex="-1" readonly>
                             </td>
                         </tr>
                         @endfor
@@ -128,15 +128,15 @@ $items = [];
                         <span href="#" onclick="addRow()" class="link" id="rowAddBtn"><i class="fa fa-plus"></i> 行の追加<span id="rowRemain"></span></span>
                         </td>
                         <td colspan="2" style="text-align: center;">小計</td>
-                        <td><input type="text" id="subtotal" class="form-control text-right readonly" value="0" readonly tabindex="-1" value=""></td>
+                        <td><input type="text" id="subtotal" class="form-control text-end readonly" value="0" readonly tabindex="-1" value=""></td>
                     </tr>
                     <tr class="sum-tr">
                         <td colspan="2" style="text-align: center;">消費税</td>
-                        <td><input type="text" id="taxTotal" class="form-control text-right readonly" value="0" readonly tabindex="-1" value=""></td>
+                        <td><input type="text" id="taxTotal" class="form-control text-end readonly" value="0" readonly tabindex="-1" value=""></td>
                     </tr>
                     <tr class="sum-tr">
                         <td colspan="2" style="text-align: center;">合計</td>
-                        <td><input type="text" name="price" id="totalPrice" class="form-control text-right readonly" value="0" readonly tabindex="-1"></td>
+                        <td><input type="text" name="price" id="totalPrice" class="form-control text-end readonly" value="0" readonly tabindex="-1"></td>
                     </tr>
                     </tbody>
                 </table>

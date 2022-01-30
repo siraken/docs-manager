@@ -244,9 +244,9 @@ details img { cursor: default; }
                 </ul>
               </div>
             </td>
-            <td><input type="text" name="qty[]" id="qty1" class="table-input ti-qty text-right" value="<?= $detail['InvoiceDetail']['qty'];?>"></td>
+            <td><input type="text" name="qty[]" id="qty1" class="table-input ti-qty text-end" value="<?= $detail['InvoiceDetail']['qty'];?>"></td>
             <td><input type="text" name="unit[]" class="table-input ti-unit text-center" placeholder="単位"  value="<?= $detail['InvoiceDetail']['unit'];?>"></td>
-            <td><input type="text" name="cost[]" id="cost1" class="table-input ti-cost text-right" value="<?= $detail['InvoiceDetail']['cost'];?>"></td>
+            <td><input type="text" name="cost[]" id="cost1" class="table-input ti-cost text-end" value="<?= $detail['InvoiceDetail']['cost'];?>"></td>
             <td>
             <?php
                 switch($detail['InvoiceDetail']['tax_id']) {
@@ -265,7 +265,7 @@ details img { cursor: default; }
                 <option value="5" <?= $selected5;?>>5%</option>
               </select>
             </td>
-            <td><input type="text" class="table-input ti-sum text-right readonly" tabindex="-1" readonly></td>
+            <td><input type="text" class="table-input ti-sum text-end readonly" tabindex="-1" readonly></td>
             <input type="hidden" name="id[]" value="<?= $detail['InvoiceDetail']['id'];?>">
           </tr>
           <?php endforeach; ?>
@@ -279,15 +279,15 @@ details img { cursor: default; }
               <span href="#" onclick="addRow()" class="link" id="rowAddBtn"><i class="fa fa-plus"></i> 行の追加<span id="rowRemain"></span></span>
             </td>
             <td colspan="2" style="text-align: center;">小計</td>
-            <td><input type="text" id="subtotal" class="table-input text-right readonly" value="0" readonly tabindex="-1" value=""></td>
+            <td><input type="text" id="subtotal" class="table-input text-end readonly" value="0" readonly tabindex="-1" value=""></td>
           </tr>
           <tr class="sum-tr">
             <td colspan="2" style="text-align: center;">消費税</td>
-            <td><input type="text" id="taxTotal" class="table-input text-right readonly" value="0" readonly tabindex="-1" value=""></td>
+            <td><input type="text" id="taxTotal" class="table-input text-end readonly" value="0" readonly tabindex="-1" value=""></td>
           </tr>
           <tr class="sum-tr">
             <td colspan="2" style="text-align: center;">合計</td>
-            <td><input type="text" name="price" id="totalPrice" class="table-input text-right readonly" value="0" readonly tabindex="-1"></td>
+            <td><input type="text" name="price" id="totalPrice" class="table-input text-end readonly" value="0" readonly tabindex="-1"></td>
           </tr>
         </tbody>
       </table>
@@ -333,9 +333,9 @@ function addRow() {
         rowData += '</ul>';
         rowData += '</div>';
         rowData += '</td>';
-        rowData += '<td><input type="text" name="qty[]" class="table-input ti-qty text-right"></td>'
+        rowData += '<td><input type="text" name="qty[]" class="table-input ti-qty text-end"></td>'
         rowData += '<td><input type="text" name="unit[]" class="table-input ti-unit text-center" placeholder="単位"></td>';
-        rowData += '<td><input type="text" name="cost[]" class="table-input ti-cost text-right"></td>';
+        rowData += '<td><input type="text" name="cost[]" class="table-input ti-cost text-end"></td>';
         rowData += '<td>';
         rowData += '  <select name="tax[]" class="table-input ti-tax">';
         rowData += '    <option value="1" selected>10%</option>';
@@ -345,7 +345,7 @@ function addRow() {
         rowData += '    <option value="5">5%</option>';
         rowData += '  </select>';
         rowData += '</td>';
-        rowData += '<td><input type="text" class="table-input ti-sum text-right readonly" tabindex="-1" readonly value=""></td>';
+        rowData += '<td><input type="text" class="table-input ti-sum text-end readonly" tabindex="-1" readonly value=""></td>';
         rowData += '</tr>';
 
     $(function() {

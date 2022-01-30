@@ -34,11 +34,11 @@
         text-align: center;
         border: none;
         background-color: transparent;
-        &:hover .delrow-btn {
+        &:hover .delete-row-button {
             opacity: 1;
         }
     }
-    .delrow-btn {
+    .delete-row-button {
         color: #777;
         background-color: transparent;
         text-decoration: none;
