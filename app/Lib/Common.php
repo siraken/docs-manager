@@ -19,23 +19,28 @@ class Common {
         $taxes = [
             [
                 "id" => 1,
-                "name" => "10%"
+                "name" => "10%",
+                "per" => 0.1
             ],
             [
                 "id" => 2,
-                "name" => "軽減8%"
+                "name" => "軽減8%",
+                "per" => 0.08
             ],
             [
                 "id" => 3,
-                "name" => "8%"
+                "name" => "8%",
+                "per" => 0.08
             ],
             [
                 "id" => 4,
-                "name" => "5%"
+                "name" => "5%",
+                "per" => 0.05
             ],
             [
                 "id" => 5,
-                "name" => "対象外"
+                "name" => "対象外",
+                "per" => 0
             ],
         ];
         return $taxes;

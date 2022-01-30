@@ -2,15 +2,21 @@ const $ = require("jquery");
 require("jquery-ui/ui/widgets/sortable");
 
 $(() => {
-    // 計算処理
-    $(".document-table").on("input", ".calc", () => {
+    // 初期状態の行数
+    let rowNumber = $(".main_tbody").children().length;
+
+    // 明細部分計算
+    function calcAll() {
         let total = {
             sub: 0,
             tax: 0,
             all: 0,
         };
-        for (let i = 0; i < $(".main_tbody").children().length; i++) {
-            if ($(`#qty_${i}`).val() !== "" || $(`#cost_${i}`).val() !== "") {
+        for (let i = 0; i < rowNumber; i++) {
+            if (
+                ($(`#qty_${i}`).val() !== "" || $(`#cost_${i}`).val() !== "") &&
+                $(`#price_${i}`).length
+            ) {
                 // 税率
                 let taxPer = 0;
                 switch ($(`#tax_${i}`).val()) {
@@ -50,22 +56,31 @@ $(() => {
                 total.all += taxInPrice;
             }
         }
-        $("#subtotal").val(total.sub);
-        $("#taxTotal").val(total.tax);
-        $("#totalPrice").val(total.all);
+        isNaN(total.sub)
+            ? $("#subtotal").val(0)
+            : $("#subtotal").val(total.sub);
+        isNaN(total.tax)
+            ? $("#taxTotal").val(0)
+            : $("#taxTotal").val(total.tax);
+        isNaN(total.all)
+            ? $("#totalPrice").val(0)
+            : $("#totalPrice").val(total.all);
+    }
+    // 計算処理
+    $(".document-table").on("input", ".calc", () => {
+        calcAll();
     });
 
     // 行を削除
     $(".document-table").on("click", ".delete-row-button", (event) => {
         $(event.target.closest("tr")).remove();
-        lines = $(".main_tbody").children().length;
-        lines -= 1;
-        rowRemain.innerHTML = "(残り" + (29 - lines) + "行)";
-        // $(".table-input").change(); // 計算処理onchange発火用
+        calcAll();
     });
 
     // セルの横幅を固定したままSortable
     function fixPlaceHolderWidth(event, ui) {
+        ui.find(".action-cell").css("border", "none");
+
         ui.children().each(() => {
             $(this).width($(this).width());
         });

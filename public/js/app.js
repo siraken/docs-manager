@@ -9752,16 +9752,18 @@ var $ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js"
 __webpack_require__(/*! jquery-ui/ui/widgets/sortable */ "./node_modules/jquery-ui/ui/widgets/sortable.js");
 
 $(function () {
-  // 計算処理
-  $(".document-table").on("input", ".calc", function () {
+  // 初期状態の行数
+  var rowNumber = $(".main_tbody").children().length; // 明細部分計算
+
+  function calcAll() {
     var total = {
       sub: 0,
       tax: 0,
       all: 0
     };
 
-    for (var i = 0; i < $(".main_tbody").children().length; i++) {
-      if ($("#qty_".concat(i)).val() !== "" || $("#cost_".concat(i)).val() !== "") {
+    for (var i = 0; i < rowNumber; i++) {
+      if (($("#qty_".concat(i)).val() !== "" || $("#cost_".concat(i)).val() !== "") && $("#price_".concat(i)).length) {
         // 税率
         var taxPer = 0;
 
@@ -9802,21 +9804,25 @@ $(function () {
       }
     }
 
-    $("#subtotal").val(total.sub);
-    $("#taxTotal").val(total.tax);
-    $("#totalPrice").val(total.all);
+    isNaN(total.sub) ? $("#subtotal").val(0) : $("#subtotal").val(total.sub);
+    isNaN(total.tax) ? $("#taxTotal").val(0) : $("#taxTotal").val(total.tax);
+    isNaN(total.all) ? $("#totalPrice").val(0) : $("#totalPrice").val(total.all);
+  } // 計算処理
+
+
+  $(".document-table").on("input", ".calc", function () {
+    calcAll();
   }); // 行を削除
 
   $(".document-table").on("click", ".delete-row-button", function (event) {
     $(event.target.closest("tr")).remove();
-    lines = $(".main_tbody").children().length;
-    lines -= 1;
-    rowRemain.innerHTML = "(残り" + (29 - lines) + "行)"; // $(".table-input").change(); // 計算処理onchange発火用
+    calcAll();
   }); // セルの横幅を固定したままSortable
 
   function fixPlaceHolderWidth(event, ui) {
     var _this = this;
 
+    ui.find(".action-cell").css("border", "none");
     ui.children().each(function () {
       $(_this).width($(_this).width());
     });

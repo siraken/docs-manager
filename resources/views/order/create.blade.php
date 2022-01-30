@@ -71,11 +71,11 @@ $items = [];
                     <thead>
                         <tr class="thead">
                             <th style="width: 3%; visibility: hidden; border: none;"></th>
-                            <th style="width: 30%;">詳細</th>
-                            <th style="width: 10%;">数量</th>
+                            <th style="width: 32%;">詳細</th>
+                            <th style="width: 12.5%;">数量</th>
                             <th style="width: 10%;">単位</th>
-                            <th style="width: 12%;">単価</th>
-                            <th style="width: 15%;">税区分</th>
+                            <th style="width: 12.5%;">単価</th>
+                            <th style="width: 10%;">税区分</th>
                             <th style="width: 20%;">金額</th>
                         </tr>
                     </thead>
