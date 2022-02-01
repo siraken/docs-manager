@@ -9852,7 +9852,10 @@ $(function () {
 
   window.addRow = function () {
     addCustomRow(rowNumber);
-  };
+  }; // onload時計算実行
+
+
+  calcAll();
 });
 
 /***/ }),

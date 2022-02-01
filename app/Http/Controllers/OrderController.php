@@ -32,10 +32,6 @@ class OrderController extends Controller
         ->from('order_headers as o')
         ->join('clients as c', 'o.destination', '=', 'c.id')
         ->get();
-        print(OrderHeader::select($select)
-        ->from('order_headers as o')
-        ->join('clients as c', 'o.destination', '=', 'c.id')
-        ->toSql());
         return view('order/index', compact('orders'));
     }
 

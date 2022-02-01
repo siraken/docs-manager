@@ -18,7 +18,7 @@ $items = [];
         {{-- control --}}
         <div class="row mb-3">
             <div class="col-12">
-                <a href="./" class="btn btn-light border">戻る</a>
+                <a href="/order/" class="btn btn-light border">戻る</a>
                 <button type="submit" class="btn btn-light border">保存する</button>
             </div>
         </div>
@@ -134,7 +134,7 @@ $items = [];
                     </tr>
                     <tr class="sum-tr">
                         <td colspan="2" style="text-align: center;">合計</td>
-                        <td><input type="text" name="totalPrice" id="totalPrice" class="form-control text-end readonly" value="0" readonly tabindex="-1"></td>
+                        <td><input type="text" name="totalPrice" id="totalPrice" class="form-control text-end readonly" value={{ $header['price'] }} readonly tabindex="-1"></td>
                     </tr>
                     </tbody>
                 </table>

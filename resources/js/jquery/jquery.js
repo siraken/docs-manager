@@ -148,4 +148,7 @@ $(() => {
     window.addRow = () => {
         addCustomRow(rowNumber);
     };
+
+    // onload時計算実行
+    calcAll();
 });
