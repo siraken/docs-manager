@@ -5,6 +5,7 @@ use App\Http\Controllers\EstimateController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\InquiryController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\TravelController;
 use App\Http\Controllers\TravelExpenseController;
 use App\Http\Controllers\OrderController;
@@ -69,6 +70,7 @@ Route::get('/order/detail', function () {
 Route::get('/order/trash', function () {
     return view('order/trash');
 })->name('order');
+Route::post('/order/set-status', [OrderController::class, 'setStatus'])->name('order');
 
 /**
  * Item
@@ -86,6 +88,15 @@ Route::get('/inquiry/create', [InquiryController::class, 'create'])->name('inqui
 Route::post('/inquiry/create', [InquiryController::class, 'create']);
 Route::get('/inquiry/view/{id}', [InquiryController::class, 'view'])->name('inquiry');
 Route::get('/inquiry/truncate', [InquiryController::class, 'truncate'])->name('inquiry');
+
+/**
+ * Client
+ */
+Route::get('/client', [ClientController::class, 'index'])->name('client');
+Route::get('/client/create', [ClientController::class, 'create'])->name('client');
+Route::post('/client/create', [ClientController::class, 'create']);
+Route::get('/client/view/{id}', [ClientController::class, 'view'])->name('client');
+Route::get('/client/truncate', [ClientController::class, 'truncate'])->name('client');
 
 /**
  * Trip

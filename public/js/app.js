@@ -9735,6 +9735,8 @@ module.exports = {
 
 __webpack_require__(/*! ./starter */ "./resources/js/starter.js");
 
+__webpack_require__(/*! ./status */ "./resources/js/status.js");
+
 __webpack_require__(/*! ./jquery/jquery */ "./resources/js/jquery/jquery.js");
 
 __webpack_require__(/*! @fortawesome/fontawesome-free/js/all */ "./node_modules/@fortawesome/fontawesome-free/js/all.js");
@@ -9890,6 +9892,47 @@ window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 //     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
 //     forceTLS: true
 // });
+
+/***/ }),
+
+/***/ "./resources/js/status.js":
+/*!********************************!*\
+  !*** ./resources/js/status.js ***!
+  \********************************/
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+var axiosBase = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+
+var axios = axiosBase.create({
+  baseURL: "http://127.0.0.1:8000",
+  headers: {
+    "Content-Type": "application/json",
+    "X-Requested-With": "XMLHttpRequest"
+  },
+  responseType: "json"
+});
+var slipSetter = {
+  /**
+   *
+   */
+  status: function status(el, type, id, currentStatus) {
+    var csrf = document.getElementsByName("_token")[0].value;
+    var url = "/order/set-status";
+    axios.post(url, {
+      type: type,
+      id: id,
+      currentStatus: currentStatus,
+      _csrfToken: csrf
+    }).then(function (res) {
+      if (res.data.status === 200) {
+        location.reload();
+      } else {
+        console.log("Failed");
+      }
+    });
+  }
+};
+window.slipSetter = slipSetter;
 
 /***/ }),
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Client;
 use App\Models\OrderHeader;
 use App\Models\OrderDetail;
 
@@ -11,34 +12,36 @@ class OrderController extends Controller
     //
     public function index()
     {
-        $orders = OrderHeader::all();
-        $clients = [
-            [
-                "name" => "Novalumo合同会社",
-                "ceo" => "白澤賢斗"
-            ],
-            [
-                "name" => "ルーモ株式会社",
-                "ceo" => "鈴木"
-            ]
+        $select = [
+            'o.id',
+            'o.responsible',
+            'o.honor_title',
+            'o.issued_date',
+            'o.exp_date',
+            'o.order_no',
+            'o.price',
+            'o.remarks',
+            'o.is_issued',
+            'o.is_deleted',
+            'o.is_converted',
+            'o.note',
+            'c.name as destination'
         ];
-        return view('order/index', compact('orders', 'clients'));
+        // $orders = OrderHeader::all();
+        $orders = OrderHeader::select($select)
+        ->from('order_headers as o')
+        ->join('clients as c', 'o.destination', '=', 'c.id')
+        ->get();
+        print(OrderHeader::select($select)
+        ->from('order_headers as o')
+        ->join('clients as c', 'o.destination', '=', 'c.id')
+        ->toSql());
+        return view('order/index', compact('orders'));
     }
 
     public function create(Request $request)
     {
-        $clients = [
-            [
-                "id" => 1,
-                "name" => "Novalumo合同会社",
-                "ceo" => "白澤賢斗"
-            ],
-            [
-                "id" => 2,
-                "name" => "ルーモ株式会社",
-                "ceo" => "鈴木"
-            ]
-        ];
+        $clients = Client::all();
 
         if ($request->isMethod('POST'))
         {
@@ -103,5 +106,55 @@ class OrderController extends Controller
 
         }
         return view('order/create', compact('clients'));
+    }
+
+    /**
+     * set status
+     */
+    public function setStatus()
+    {
+        $this->autoRender = false;
+        $this->request->allowMethod(['post']);
+        $json = file_get_contents("php://input");
+        $data = json_decode($json);
+
+        // $estimatesTable = TableRegistry::getTableLocator()->get('EstimateHeaders');
+        // $estimate = $estimatesTable->get($data->id);
+
+        // switch($data->type) {
+        //     case 'issued':
+        //         $estimate->issued_flg = $data->currentStatus == 0 ? 1 : 0;
+        //         break;
+        //     case 'paid':
+        //         switch($data->currentStatus) {
+        //             case 0:
+        //                 $paid_flg = 1;
+        //                 break;
+        //             case 1:
+        //                 $paid_flg = 2;
+        //                 break;
+        //             case 2:
+        //                 $paid_flg = 0;
+        //                 break;
+        //             default:
+        //                 $paid_flg = 0;
+        //                 break;
+        //         }
+        //         $estimate->paid_flg = $paid_flg;
+        //         break;
+        //     default: return false;
+        // }
+
+        // if ($estimatesTable->save($estimate)) {
+        //     $ret = [
+        //         'status' => 200
+        //     ];
+        // } else {
+        //     $ret = [
+        //         'status' => 500
+        //     ];
+        // }
+
+        // echo json_encode($ret);
     }
 }

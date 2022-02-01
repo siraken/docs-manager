@@ -87,6 +87,11 @@
                             <span class="ml-2">Inquiry</span>
                           </a>
                         </li>
+                        <li class="nav-item">
+                          <a class="nav-link {{ request()->route()->named('client*') ? 'active fw-bold' : '' }}" href="/client">
+                            <span class="ml-2">Client</span>
+                          </a>
+                        </li>
                     </ul>
                 </div>
             </nav>

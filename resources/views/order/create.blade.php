@@ -18,20 +18,19 @@ $items = [];
         {{-- control --}}
         <div class="row mb-3">
             <div class="col-12">
-                <a href="./" class="btn btn-primary"><i class="bi bi-arrow-left-circle-fill"></i> 戻る</a>
-                <button type="submit" class="btn btn-primary"><i class="fa fa-floppy-o"></i> 保存する</button>
+                <a href="./" class="btn btn-light border">戻る</a>
+                <button type="submit" class="btn btn-light border">保存する</button>
             </div>
         </div>
         {{-- 取引先 --}}
         <div class="row mb-3">
             <div class="col-12">
-                <label class="form-label">取引先<span class="ms-1 badge bg-primary">必須</span></label>
+                <label class="form-label">取引先<span class="ms-1 badge bg-danger">必須</span></label>
             </div>
             <div class="col-12">
                 <div class="input-group">
                     <select name="destination" class="form-select" id="customer">
                         <option selected disabled>選択してください</option>
-                        <option value="0">自社</option>
                         @foreach ($clients as $client)
                             <option value={{ $client['id'] }}>{{ $client['name'] }}</option>
                         @endforeach
@@ -44,7 +43,7 @@ $items = [];
         {{-- 日付 --}}
         <div class="row mb-3">
             <div class="col-md-6">
-                <label class="form-label">発行日<span class="ms-1 badge bg-primary">必須</span></label>
+                <label class="form-label">発行日<span class="ms-1 badge bg-danger">必須</span></label>
                 <input type="date" id="issued_date" name="issued_date" class="form-control" value="<?= date('Y-m-d');?>">
             </div>
             <div class="col-md-6">
@@ -55,7 +54,7 @@ $items = [];
         {{-- 番号・件名 --}}
         <div class="row mb-3">
             <div class="col-md-3">
-                <label class="form-label">発注書番号<span class="ms-1 badge bg-primary">必須</span></label>
+                <label class="form-label">発注書番号<span class="ms-1 badge bg-danger">必須</span></label>
                 <input type="text" name="order_no" class="form-control" value="<?= date('Ymd') ?>-xxx">
             </div>
             <div class="col-md-9">
@@ -65,7 +64,7 @@ $items = [];
             </div>
         </div>
 
-        <div class="row mb-3">
+        <div class="row">
             <div class="col-12">
                 <table class="document-table">
                     <thead>
@@ -124,7 +123,7 @@ $items = [];
                     <tr class="sum-tr">
                         <td rowspan="3" style="border: none !important; vertical-align: top;"></td>
                         <td colspan="3" rowspan="3" style="border: none !important; vertical-align: top;">
-                        <span href="#" onclick="addRow()" class="link" id="rowAddBtn"><i class="fa fa-plus"></i> 行の追加<span id="rowRemain"></span></span>
+                        <span href="#" onclick="addRow()" class="btn btn-secondary" id="rowAddBtn"><i class="fa fa-plus"></i> 行の追加<span id="rowRemain"></span></span>
                         </td>
                         <td colspan="2" style="text-align: center;">小計</td>
                         <td><input type="text" id="subtotal" class="form-control text-end readonly" value="0" readonly tabindex="-1" value=""></td>
