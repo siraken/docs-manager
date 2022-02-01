@@ -84,7 +84,7 @@
                     </td>
                     <!-- 文書 -->
                     <td>
-                        <a href="<?= '/orders/edit/' . $row['order_no'];?>">
+                        <a href="<?= '/order/edit/' . $row['id'];?>">
                             <?= $row['destination'] ?>
                         </a><br>
                         <small style="color: #777;">#<?= $row['order_no'];?></small>

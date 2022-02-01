@@ -108,6 +108,78 @@ class OrderController extends Controller
         return view('order/create', compact('clients'));
     }
 
+    public function edit(Request $request, $id)
+    {
+        $clients = Client::all();
+
+        if ($request->isMethod('POST'))
+        {
+            $slip_header = [];
+            $slip_body = [];
+            $req = $request->all();
+
+            // ヘッダー部分
+            $slip_header = [
+                "destination" => $req['destination'],
+                "responsible" => $req['responsible'],
+                "honor_title" => $req['honor_title'],
+                "issued_date" => $req['issued_date'],
+                "exp_date" => $req['exp_date'],
+                "order_no" => $req['order_no'],
+                "title" => $req['title'],
+                "price" => $req['totalPrice'],
+                "remarks" => $req['remarks'],
+                "reg_uid" => $req['reg_uid'],
+                // "" => $req[''],
+            ];
+
+            $OrderHeader = new OrderHeader();
+            $isSuccess = $OrderHeader->fill($slip_header)->save();
+            $slip_id = $OrderHeader->id;
+
+            // 明細部分
+            $slip_body = [
+                "item_name" => $req['item_name'],
+                "qty" => $req['qty'],
+                "unit" => $req['unit'],
+                "cost" => $req['cost'],
+                "tax" => $req['tax'],
+                "price" => $req['price'],
+            ];
+
+            // 明細データ作成
+            $row = [];
+            for ($i = 0; $i < count($slip_body["item_name"]); $i++) {
+                if ($slip_body['item_name'][$i] !== NULL) {
+                    $row[] = [
+                        "slip_id" => $slip_id,
+                        "item_name" => $slip_body['item_name'][$i],
+                        "quantity" => $slip_body['qty'][$i],
+                        "unit" => $slip_body['unit'][$i],
+                        "cost" => $slip_body['cost'][$i],
+                        "tax_id" => $slip_body['tax'][$i],
+                        "price" => $slip_body['price'][$i],
+                    ];
+                }
+            }
+
+            $OrderDetail = new OrderDetail();
+            foreach ($row as $body) {
+                $OrderDetail->create($body);
+            }
+
+            if ($isSuccess)
+            {
+                return redirect('/order')->with('flash_message', 'Successful');
+            }
+
+        }
+
+        $header = OrderHeader::find($id);
+        $details = OrderDetail::where('slip_id', $id)->get();
+        return view('order/edit', compact('clients', 'header', 'details'));
+    }
+
     /**
      * set status
      */
