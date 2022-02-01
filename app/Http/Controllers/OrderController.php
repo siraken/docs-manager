@@ -6,10 +6,15 @@ use Illuminate\Http\Request;
 use App\Models\Client;
 use App\Models\OrderHeader;
 use App\Models\OrderDetail;
+use setasign\Fpdi\Tcpdf\Fpdi;
 
 class OrderController extends Controller
 {
-    //
+    public function __construct()
+    {
+        mb_internal_encoding('UTF-8');
+    }
+
     public function index()
     {
         $select = [
@@ -178,6 +183,121 @@ class OrderController extends Controller
         $header = OrderHeader::find($id);
         $details = OrderDetail::where('slip_id', $id)->get();
         return view('order/edit', compact('clients', 'header', 'details'));
+    }
+
+    /**
+     * PDF
+     */
+    public function pdf($id = null)
+    {
+        // データ取得
+        $header = OrderHeader::find($id);
+        $details = OrderDetail::where('slip_id', $id)->get();
+
+        // FPDI
+        $pdf = new Fpdi();
+
+        // 設定
+        $pdf->setSourceFile(resource_path('pdf/example.pdf'));
+        $pdf->SetMargins(0, 0, 0);
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+
+        // ページ追加
+        $pdf->AddPage('A4', 'P');
+        $page = $pdf->importPage(1);
+        $pdf->useTemplate($page);
+
+        // デフォルトフォント
+        $defaultFont = 'kozminproregular';
+        // $defaultFont = 'kozgopromedium';
+        // $defaultFont = '';
+
+        /* ヘッダー */
+        // タイトル
+        $pdf->SetFont($defaultFont, '', 20);
+        // $pdf->Text(18.5, 16.5, '発注書');
+
+        // 宛先
+        $pdf->SetFont($defaultFont, '', 11);
+        // $pdf->Text(18.5, 31, '〇〇御中');
+        $pdf->SetFont($defaultFont, '', 9.5);
+        // $pdf->Text(18.5, 45, '下記の通り発注致します。');
+
+        // 合計金額
+        $pdf->SetFont($defaultFont, '', 11);
+        // $pdf->Text(43.5, 55, '合計金額');
+        // $pdf->Text(85, 55, '円');
+        // $pdf->Line(29.75, 61.5, 109, 61.5);
+        $pdf->SetFont($defaultFont, '', 16);
+        // $pdf->SetXY(59.5, 53);
+        // $pdf->Cell(20, 0, number_format($header['price']), 0, 0, 'R');
+
+        // 日付
+        $pdf->SetFont($defaultFont, '', 9.5);
+        // $pdf->Text(121, 31, '注文日:');
+        // $pdf->Text(170, 31, date('Y年m月d日', strtotime($header['issued_date'])));
+
+        // 発注書番号
+        $pdf->SetFont($defaultFont, '', 9.5);
+        // $pdf->Text(121, 39, '注文番号');
+        // $pdf->Text(170, 39, $header['order_no']);
+
+        // ロゴと印鑑
+        // TODO: destinationが自社宛の場合は印字しない
+        $pdf->Image(resource_path('img/Logo.png'), 126, 78, 45);
+        $pdf->Image(resource_path('img/CompanyStamp.png'), 135, 48, 23);
+
+        // 自社情報
+        // TODO: destinationが自社宛の場合は印字しない
+        $pdf->SetFont($defaultFont, '', 9.5);
+        $pdf->Text(121, 47, 'Novalumo合同会社');
+        $pdf->Text(121, 52, '〒000-000');
+        $pdf->Text(121, 57, '〇〇県〇〇市１行目');
+        $pdf->Text(121, 62, '２行目001号室');
+        $pdf->Text(121, 67, '電話: 000-0000-0000');
+
+        // apply date
+        // $pdf->Text(130, 60, date('Y', strtotime($applyDate)));
+        // $pdf->Text(150, 60, date('m', strtotime($applyDate)));
+        // $pdf->Text(170, 60, date('d', strtotime($applyDate)));
+
+        // 合計
+        // $pdf->Text(130, 180, '小計');
+        // $pdf->Text(130, 190, '消費税');
+        // $pdf->Text(130, 200, '合計金額');
+        // $pdf->Text(165, 180, $header['price']);
+        // $pdf->Text(165, 190, $header['price']);
+        // $pdf->Text(165, 200, $header['price']);
+
+        // 備考欄
+        $pdf->Text(10, 250, '備考欄');
+        $pdf->Text(10, 260, $header['remarks']);
+
+        /* 明細 */
+        // 明細開始位置
+        $detail_y = 150;
+        // 明細行ループ
+        /*
+        foreach ($details as $i => $d) {
+            // 詳細
+            $pdf->Text(10, $detail_y, $d['item_name']);
+            // 数量
+            $pdf->Text(50, $detail_y, $d['quantity']);
+            // 単位
+            $pdf->Text(70, $detail_y, $d['unit']);
+            // 単価
+            $pdf->Text(90, $detail_y, $d['cost']);
+            // 金額
+            $pdf->Text(110, $detail_y, $d['price']);
+            $detail_y += 10;
+        }
+        */
+
+        // 出力
+        // TODO: 発注書番号にする
+        $pdf->Output(date('Ymd-001') . '.pdf');
+
     }
 
     /**

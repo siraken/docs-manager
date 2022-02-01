@@ -20,6 +20,7 @@ $items = [];
             <div class="col-12">
                 <a href="/order/" class="btn btn-light border">戻る</a>
                 <button type="submit" class="btn btn-light border">保存する</button>
+                <a href="/order/pdf/{{ $header['id'] }}" class="btn btn-light border">PDFで出力する</a>
             </div>
         </div>
         {{-- 取引先 --}}
