@@ -318,7 +318,16 @@ class OrderController extends Controller
         $pdf->SetFontSize(9);
 
         // 明細行ループ
-        foreach ($details as $i => $d) {
+        $loopCount = count($details) < 8 ? 8 : count($details); // 最低8回回す
+        for ($i = 0; $i < $loopCount; $i++) {
+
+            $d = isset($details[$i]) ? $details[$i] : [
+                'item_name' => NULL,
+                'quantity' => NULL,
+                'unit' => NULL,
+                'cost' => NULL,
+                'price' => NULL,
+            ];
 
             // 背景色設定
             $i % 2 === 0 ? $pdf->SetFillColor(255, 255, 255) : $pdf->SetFillColor(230, 230, 230);
@@ -326,12 +335,13 @@ class OrderController extends Controller
             // 詳細
             $pdf->MultiCell($Common->calcPer($maxWidth, 52), $pdf->getLastH(), $d['item_name'], 0, 'L', true, 1, 21, $detail_y, false, 0, false, true, 0, 'M', false);
             // 数量・単位
-            $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), number_format($d['quantity']).$d['unit'], 0, 'R', true, 1, (21+$Common->calcPer($maxWidth, 52)), $detail_y, false, 0, false, true, 0, 'M', false);
+            $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), $d['quantity'] !== NULL ? number_format($d['quantity']).$d['unit'] : '', 0, 'R', true, 1, (21+$Common->calcPer($maxWidth, 52)), $detail_y, false, 0, false, true, 0, 'M', false);
             // 単価
-            $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), number_format($d['cost']), 0, 'R', true, 1, (21+$Common->calcPer($maxWidth, 52)+$Common->calcPer($maxWidth, 16)), $detail_y, false, 0, false, true, 0, 'M', false);
+            $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), $d['cost'] !== NULL ? number_format($d['cost']) : '', 0, 'R', true, 1, (21+$Common->calcPer($maxWidth, 52)+$Common->calcPer($maxWidth, 16)), $detail_y, false, 0, false, true, 0, 'M', false);
             // 金額
-            $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), number_format($d['price']), 0, 'R', true, 0, (21+$Common->calcPer($maxWidth, 52)+$Common->calcPer($maxWidth, 16)+$Common->calcPer($maxWidth, 16)), $detail_y, false, 0, false, true, 0, 'M', false);
+            $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), $d['price'] !== NULL ? number_format($d['price']) : '', 0, 'R', true, 0, (21+$Common->calcPer($maxWidth, 52)+$Common->calcPer($maxWidth, 16)+$Common->calcPer($maxWidth, 16)), $detail_y, false, 0, false, true, 0, 'M', false);
 
+            // 改行
             $detail_y += $CellHeight;
         }
 
