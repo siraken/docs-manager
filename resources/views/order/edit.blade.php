@@ -144,12 +144,14 @@ $items = [];
         <div class="row mb-3">
             <div class="col-12">
                 <label class="form-label">備考</label>
-                <textarea class="form-control textarea" name="remarks" id="remarks" v-model.trim="remarksCount" style="height: 74px;">{{ $header['remarks'] }}</textarea>
+                <textarea class="form-control textarea h-50" name="remarks" id="remarks">{{ $header['remarks'] }}</textarea>
                 <small>1000</small>
             </div>
         </div>
 
         {{-- 登録情報 --}}
+        <input type="hidden" name="is_issued" value="{{ $header['is_issued'] }}">
+        <input type="hidden" name="is_ordered" value="{{ $header['is_ordered'] }}">
         <input type="hidden" name="reg_uid" value="{{ '' }}">
         @csrf
     </form>

@@ -143,7 +143,7 @@ $items = [];
         <div class="row mb-3">
             <div class="col-12">
                 <label class="form-label">備考</label>
-                <textarea class="form-control textarea" name="remarks" id="remarks" v-model.trim="remarksCount" style="height: 74px;"></textarea>
+                <textarea class="form-control textarea h-50" name="remarks" id="remarks"></textarea>
                 <small>1000</small>
             </div>
         </div>

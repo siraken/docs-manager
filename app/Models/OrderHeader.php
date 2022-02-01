@@ -21,6 +21,8 @@ class OrderHeader extends Model
         'tax_price',
         'total_price',
         'remarks',
+        'is_issued',
+        'is_ordered',
         // 'reg_uid',
     ];
 }

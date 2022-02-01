@@ -28,6 +28,7 @@ class OrderController extends Controller
             'o.total_price',
             'o.remarks',
             'o.is_issued',
+            'o.is_ordered',
             'o.is_deleted',
             'o.is_converted',
             'o.note',
@@ -64,6 +65,8 @@ class OrderController extends Controller
                 "tax_price" => $req['taxTotal'],
                 "total_price" => $req['totalPrice'],
                 "remarks" => $req['remarks'],
+                "is_issued" => $req['is_issued'],
+                "is_ordered" => $req['is_ordered'],
                 "reg_uid" => $req['reg_uid'],
             ];
 
@@ -137,6 +140,8 @@ class OrderController extends Controller
                 "tax_price" => $req['taxTotal'],
                 "total_price" => $req['totalPrice'],
                 "remarks" => $req['remarks'],
+                "is_issued" => $req['is_issued'],
+                "is_ordered" => $req['is_ordered'],
                 "reg_uid" => $req['reg_uid'],
                 // "" => $req[''],
             ];
@@ -345,48 +350,44 @@ class OrderController extends Controller
      */
     public function setStatus()
     {
-        $this->autoRender = false;
-        $this->request->allowMethod(['post']);
         $json = file_get_contents("php://input");
         $data = json_decode($json);
+        $Order = OrderHeader::find($data->id);
 
-        // $estimatesTable = TableRegistry::getTableLocator()->get('EstimateHeaders');
-        // $estimate = $estimatesTable->get($data->id);
+        switch($data->type) {
+            case 'issued':
+                $Order->is_issued = $data->currentStatus === 0 ? 1 : 0;
+                break;
+            case 'ordered':
+                switch ($data->currentStatus) {
+                    case 0:
+                        $is_ordered = 1;
+                        break;
+                    case 1:
+                        $is_ordered = 2;
+                        break;
+                    case 2:
+                        $is_ordered = 0;
+                        break;
+                    default:
+                        $is_ordered = 0;
+                        break;
+                }
+                $Order->is_ordered = $is_ordered;
+                break;
+            default: return false;
+        }
 
-        // switch($data->type) {
-        //     case 'issued':
-        //         $estimate->issued_flg = $data->currentStatus == 0 ? 1 : 0;
-        //         break;
-        //     case 'paid':
-        //         switch($data->currentStatus) {
-        //             case 0:
-        //                 $paid_flg = 1;
-        //                 break;
-        //             case 1:
-        //                 $paid_flg = 2;
-        //                 break;
-        //             case 2:
-        //                 $paid_flg = 0;
-        //                 break;
-        //             default:
-        //                 $paid_flg = 0;
-        //                 break;
-        //         }
-        //         $estimate->paid_flg = $paid_flg;
-        //         break;
-        //     default: return false;
-        // }
+        if ($Order->save()) {
+            $ret = [
+                'status' => 200
+            ];
+        } else {
+            $ret = [
+                'status' => 500
+            ];
+        }
 
-        // if ($estimatesTable->save($estimate)) {
-        //     $ret = [
-        //         'status' => 200
-        //     ];
-        // } else {
-        //     $ret = [
-        //         'status' => 500
-        //     ];
-        // }
-
-        // echo json_encode($ret);
+        echo json_encode($ret);
     }
 }

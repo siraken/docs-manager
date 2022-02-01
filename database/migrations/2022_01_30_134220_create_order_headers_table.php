@@ -27,6 +27,7 @@ class CreateOrderHeadersTable extends Migration
             $table->integer('total_price');
             $table->string('remarks')->nullable();
             $table->integer('is_issued')->nullable();
+            $table->integer('is_ordered')->nullable();
             $table->integer('is_deleted')->nullable();
             $table->integer('is_converted')->nullable();
             $table->string('note')->nullable();

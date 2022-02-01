@@ -14,8 +14,8 @@
 
 <div class="row mb-3">
 	<div class="col-12">
-		<a href="/order/create" class="btn btn-primary">発注書を新しく作る</a>
-		<a href="/order/trash" class="btn btn-primary">ごみ箱</a>
+		<a href="/order/create" class="btn btn-light border">発注書を新しく作る</a>
+		<a href="/order/trash" class="btn btn-light border">ごみ箱</a>
 	</div>
 </div>
 
@@ -55,32 +55,32 @@
                                 break;
                         }
                         ?>
-                        <span class="status<?= $issued_status_class ?>" onclick="slipSetter.status(this, 'issued', <?= $row['id'] ?>, <?= empty($row['issued_flg']) ? '0' : $row['issued_flg'] ?>)"><i class="fa fa-check"></i><?= $issued_status ?></span>
+                        <span class="status{{ $issued_status_class }}" onclick="slipSetter.status(this, 'issued', {{ $row['id'] }}, {{ empty($row['is_issued']) ? '0' : $row['is_issued'] }})">{!! $row['is_issued'] === 1 ? '<i class="fa fa-fw fa-check"></i>' : '' !!}{{ $issued_status }}</span>
 
                         <!-- 受注状況 -->
                         <?php
-                        $paid_status = '';
-                        $paid_status_class = ' ';
-                        switch ($row['is_paid']) {
+                        $ordered_status = '';
+                        $ordered_status_class = ' ';
+                        switch ($row['is_ordered']) {
                             case 0:
-                                $paid_status = '未受注';
-                                $paid_status_class .= '';
+                                $ordered_status = '未受注';
+                                $ordered_status_class .= '';
                                 break;
                             case 1:
-                                $paid_status = '受注済み';
-                                $paid_status_class .= 'set';
+                                $ordered_status = '受注済み';
+                                $ordered_status_class .= 'set';
                                 break;
                             case 2:
-                                $paid_status = '失注';
-                                $paid_status_class .= 'miss';
+                                $ordered_status = '失注';
+                                $ordered_status_class .= 'miss';
                                 break;
                             default:
-                                $paid_status = '不明';
-                                $paid_status_class .= '';
+                                $ordered_status = '不明';
+                                $ordered_status_class .= '';
                                 break;
                         }
                         ?>
-                        <span class="status<?= $paid_status_class ?>"  onclick="slipSetter.status(this, 'paid', <?= $row['id'] ?>, <?= empty($row['paid_flg']) ? '0' : $row['paid_flg'] ?>)"><?= $paid_status ?></span>
+                        <span class="status{{ $ordered_status_class }}"  onclick="slipSetter.status(this, 'ordered', {{ $row['id'] }}, {{ empty($row['is_ordered']) ? '0' : $row['is_ordered'] }})">{!! $row['is_ordered'] === 1 ? '<i class="fa fa-fw fa-check"></i>' : '' !!}{{ $ordered_status }}</span>
                     </td>
                     <!-- 文書 -->
                     <td>
@@ -111,7 +111,7 @@
 
         @if (empty($orders)):
             <p style="text-align: center;"><?= 'データがありません';?></p>
-        @endif
+        <?php endif; ?>
     </div>
 </div>
 
