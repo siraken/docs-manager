@@ -6,16 +6,22 @@ use Illuminate\Http\Request;
 use App\Models\Client;
 use App\Models\OrderHeader;
 use App\Models\OrderDetail;
-use setasign\Fpdi\Tcpdf\Fpdi;
 use App\Lib\Common;
+use setasign\Fpdi\Tcpdf\Fpdi;
 
 class OrderController extends Controller
 {
+    /**
+     * constructor
+     */
     public function __construct()
     {
         mb_internal_encoding('UTF-8');
     }
 
+    /**
+     * 一覧
+     */
     public function index()
     {
         $select = [
@@ -34,7 +40,6 @@ class OrderController extends Controller
             'o.note',
             'c.name as destination'
         ];
-        // $orders = OrderHeader::all();
         $orders = OrderHeader::select($select)
         ->from('order_headers as o')
         ->join('clients as c', 'o.destination', '=', 'c.id')
@@ -42,6 +47,9 @@ class OrderController extends Controller
         return view('order/index', compact('orders'));
     }
 
+    /**
+     * 新規作成
+     */
     public function create(Request $request)
     {
         $clients = Client::all();
@@ -114,6 +122,9 @@ class OrderController extends Controller
         return view('order/create', compact('clients'));
     }
 
+    /**
+     * 編集
+     */
     public function edit(Request $request, $id)
     {
 
@@ -195,11 +206,10 @@ class OrderController extends Controller
     }
 
     /**
-     * PDF
+     * PDF生成
      */
     public function pdf($id = null)
     {
-
         // データ取得
         $header = OrderHeader::find($id);
         $details = OrderDetail::where('slip_id', $id)->get();
@@ -261,6 +271,7 @@ class OrderController extends Controller
 
         // 自社情報
         // TODO: destinationが自社宛の場合は印字しない
+        // TODO: 自社設定をマスタから取ってくる
         $pdf->SetFontSize(9.5);
         $pdf->Text(121, 47, 'Novalumo合同会社');
         $pdf->Text(121, 52, '〒000-000');
@@ -342,11 +353,10 @@ class OrderController extends Controller
 
         // 出力
         $pdf->Output($header['order_no'] . '.pdf');
-
     }
 
     /**
-     * set status
+     * ステータス変更
      */
     public function setStatus()
     {
