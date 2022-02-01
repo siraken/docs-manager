@@ -123,7 +123,7 @@ $items = [];
                     <tr class="sum-tr">
                         <td rowspan="3" style="border: none !important; vertical-align: top;"></td>
                         <td colspan="3" rowspan="3" style="border: none !important; vertical-align: top;">
-                        <span href="#" onclick="addRow()" class="btn btn-secondary" id="rowAddBtn"><i class="fa fa-plus"></i> 行の追加<span id="rowRemain"></span></span>
+                        <span href="#" onclick="addRow()" class="btn btn-light border" id="rowAddBtn"><i class="fa fa-fw fa-plus me-1"></i>行の追加<span id="rowRemain"></span></span>
                         </td>
                         <td colspan="2" style="text-align: center;">小計</td>
                         <td><input type="text" name="subtotal" id="subtotal" class="form-control text-end readonly" value="0" readonly tabindex="-1" value=""></td>
