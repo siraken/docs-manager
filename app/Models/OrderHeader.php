@@ -17,7 +17,9 @@ class OrderHeader extends Model
         'exp_date',
         'order_no',
         'title',
-        'price',
+        'subtotal_price',
+        'tax_price',
+        'total_price',
         'remarks',
         // 'reg_uid',
     ];

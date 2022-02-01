@@ -25,7 +25,7 @@
         <div class="col-12 col-md-5 col-lg-8 d-flex align-items-center justify-content-md-end mt-3 mt-md-0">
             <div class="dropdown">
                 <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false">
-                    Hello, Kento Shirasawa
+                    Novalumo合同会社
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                     <li><a class="dropdown-item" href="#">Settings</a></li>
@@ -44,52 +44,52 @@
                     <ul class="nav flex-column">
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('home*') ? 'active fw-bold' : '' }}" aria-current="page" href="/">
-                            <span class="ml-2">Dashboard</span>
+                            <span class="ml-2">ダッシュボード</span>
                           </a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('trip*') ? 'active fw-bold' : '' }}" href="/trip">
-                            <span class="ml-2">Business Trip</span>
+                            <span class="ml-2">出張申請</span>
                           </a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('expense*') ? 'active fw-bold' : '' }}" href="/expense">
-                            <span class="ml-2">Travel Expense</span>
+                            <span class="ml-2">出張旅費精算</span>
                           </a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('pricing*') ? 'active fw-bold' : '' }}" href="/pricing">
-                            <span class="ml-2">Pricing</span>
+                            <span class="ml-2">料金計算</span>
                           </a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('estimate*') ? 'active fw-bold' : '' }}" href="/estimate">
-                            <span class="ml-2">Estimate</span>
+                            <span class="ml-2">見積書</span>
                           </a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('invoice*') ? 'active fw-bold' : '' }}" href="/invoice">
-                            <span class="ml-2">Invoice</span>
+                            <span class="ml-2">請求書</span>
                           </a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('order*') ? 'active fw-bold' : '' }}" href="/order">
-                            <span class="ml-2">Order</span>
+                            <span class="ml-2">発注書</span>
                           </a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('item*') ? 'active fw-bold' : '' }}" href="/item">
-                            <span class="ml-2">Item</span>
+                            <span class="ml-2">商品</span>
                           </a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('inquiry*') ? 'active fw-bold' : '' }}" href="/inquiry">
-                            <span class="ml-2">Inquiry</span>
+                            <span class="ml-2">問い合わせ</span>
                           </a>
                         </li>
                         <li class="nav-item">
                           <a class="nav-link {{ request()->route()->named('client*') ? 'active fw-bold' : '' }}" href="/client">
-                            <span class="ml-2">Client</span>
+                            <span class="ml-2">取引先</span>
                           </a>
                         </li>
                     </ul>

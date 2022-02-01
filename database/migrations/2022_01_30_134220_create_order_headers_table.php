@@ -22,7 +22,9 @@ class CreateOrderHeadersTable extends Migration
             $table->date('exp_date')->nullable();
             $table->string('order_no');
             $table->string('title')->nullable();
-            $table->integer('price');
+            $table->integer('subtotal_price');
+            $table->integer('tax_price');
+            $table->integer('total_price');
             $table->string('remarks')->nullable();
             $table->integer('is_issued')->nullable();
             $table->integer('is_deleted')->nullable();

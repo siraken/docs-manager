@@ -102,16 +102,16 @@
                     </td>
                     <!-- 金額 -->
                     <td>
-                        <b><?= empty($row['price']) ? 0 : number_format($row['price']) ;?>円</b>
+                        <b><?= empty($row['total_price']) ? 0 : number_format($row['total_price']) ;?>円</b>
                     </td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
 
-        <?php if (empty($orders)): ?>
+        @if (empty($orders)):
             <p style="text-align: center;"><?= 'データがありません';?></p>
-        <?php endif; ?>
+        @endif
     </div>
 </div>
 

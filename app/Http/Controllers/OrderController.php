@@ -25,7 +25,7 @@ class OrderController extends Controller
             'o.issued_date',
             'o.exp_date',
             'o.order_no',
-            'o.price',
+            'o.total_price',
             'o.remarks',
             'o.is_issued',
             'o.is_deleted',
@@ -60,10 +60,11 @@ class OrderController extends Controller
                 "exp_date" => $req['exp_date'],
                 "order_no" => $req['order_no'],
                 "title" => $req['title'],
-                "price" => $req['totalPrice'],
+                "subtotal_price" => $req['subtotal'],
+                "tax_price" => $req['taxTotal'],
+                "total_price" => $req['totalPrice'],
                 "remarks" => $req['remarks'],
                 "reg_uid" => $req['reg_uid'],
-                // "" => $req[''],
             ];
 
             $OrderHeader = new OrderHeader();
@@ -132,7 +133,9 @@ class OrderController extends Controller
                 "exp_date" => $req['exp_date'],
                 "order_no" => $req['order_no'],
                 "title" => $req['title'],
-                "price" => $req['totalPrice'],
+                "subtotal_price" => $req['subtotal'],
+                "tax_price" => $req['taxTotal'],
+                "total_price" => $req['totalPrice'],
                 "remarks" => $req['remarks'],
                 "reg_uid" => $req['reg_uid'],
                 // "" => $req[''],
@@ -241,7 +244,7 @@ class OrderController extends Controller
         $pdf->Line(29.75, 61.5, 109, 61.5);
         $pdf->SetFontSize(16);
         $pdf->SetXY(59.5, 53);
-        $pdf->Cell(20, 0, number_format($header['price']), 0, 0, 'R');
+        $pdf->Cell(20, 0, number_format($header['total_price']), 0, 0, 'R');
 
         // 日付
         $pdf->SetFontSize(9.5);
@@ -271,22 +274,22 @@ class OrderController extends Controller
         // 小計
         $pdf->SetFontSize(9.5);
         $pdf->Text(131, 161.75, '小計');
-        // $pdf->Text(170, 161.75, $header['price']);
+        // $pdf->Text(170, 161.75, $header['subtotal_price']);
         $pdf->SetXY(170, 161.75);
-        $pdf->Cell(20, 0, number_format($header['price']), 0, 0, 'R');
+        $pdf->Cell(20, 0, number_format($header['subtotal_price']), 0, 0, 'R');
         $pdf->Line(120, 168.25, 192, 168.25);
         // 消費税
         $pdf->Text(130, 170.5, '消費税');
-        // $pdf->Text(170, 170.5, $header['price']);
+        // $pdf->Text(170, 170.5, $header['tax_price']);
         $pdf->SetXY(170, 170.5);
-        $pdf->Cell(20, 0, number_format($header['price']), 0, 0, 'R');
+        $pdf->Cell(20, 0, number_format($header['tax_price']), 0, 0, 'R');
         $pdf->Line(120, 177.25, 192, 177.25);
         // 合計金額
         $pdf->SetFontSize(12);
         $pdf->Text(126.5, 180, '合計金額');
-        // $pdf->Text(168, 180, $header['price']);
+        // $pdf->Text(168, 180, $header['total_price']);
         $pdf->SetXY(170, 180);
-        $pdf->Cell(20, 0, number_format($header['price']), 0, 0, 'R');
+        $pdf->Cell(20, 0, number_format($header['total_price']), 0, 0, 'R');
         $pdf->Line(120, 187.25, 192, 187.25);
 
         // 備考欄

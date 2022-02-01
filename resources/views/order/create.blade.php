@@ -32,11 +32,11 @@ $items = [];
                     <select name="destination" class="form-select" id="customer">
                         <option selected disabled>選択してください</option>
                         @foreach ($clients as $client)
-                            <option value={{ $client['id'] }}>{{ $client['name'] }}</option>
+                            <option value="{{ $client['id'] }}">{{ $client['name'] }}</option>
                         @endforeach
                     </select>
-                    <input type="text" name="responsible" placeholder="担当者" class="form-control">
-                    <input type="text" name="honor_title" placeholder="御中" class="form-control" value="御中">
+                    <input type="text" name="responsible" placeholder="担当者名" class="form-control">
+                    <input type="text" name="honor_title" placeholder="御中 / 様" class="form-control" value="御中">
                 </div>
             </div>
         </div>
@@ -93,16 +93,16 @@ $items = [];
                                 </div>
                             </td>
                             <td>
-                                <input type="text" name="qty[]" id={{"qty_".$i}} class="form-control text-end calc">
+                                <input type="text" name="qty[]" id="{{"qty_".$i}}" class="form-control text-end calc">
                             </td>
                             <td>
                                 <input type="text" name="unit[]" class="form-control text-center" placeholder="単位" value="">
                             </td>
                             <td>
-                                <input type="text" name="cost[]" id={{"cost_".$i}} class="form-control text-end calc" value="">
+                                <input type="text" name="cost[]" id="{{"cost_".$i}}" class="form-control text-end calc" value="">
                             </td>
                             <td>
-                                <select name="tax[]" id={{"tax_".$i}} class="form-select calc">
+                                <select name="tax[]" id="{{"tax_".$i}}" class="form-select calc">
                                     <option value="1">10%</option>
                                     <option value="2">軽減8%</option>
                                     <option value="3">8%</option>
@@ -111,8 +111,8 @@ $items = [];
                                 </select>
                             </td>
                             <td>
-                                <input type="text" name="price[]" id={{"price_".$i}} class="form-control text-end readonly" tabindex="-1" readonly>
-                                <input type="hidden" id={{"tax_price_".$i}} readonly>
+                                <input type="text" name="price[]" id="{{"price_".$i}}" class="form-control text-end readonly" tabindex="-1" readonly>
+                                <input type="hidden" id="{{"tax_price_".$i}}" readonly>
                             </td>
                         </tr>
                         @endfor
@@ -126,11 +126,11 @@ $items = [];
                         <span href="#" onclick="addRow()" class="btn btn-secondary" id="rowAddBtn"><i class="fa fa-plus"></i> 行の追加<span id="rowRemain"></span></span>
                         </td>
                         <td colspan="2" style="text-align: center;">小計</td>
-                        <td><input type="text" id="subtotal" class="form-control text-end readonly" value="0" readonly tabindex="-1" value=""></td>
+                        <td><input type="text" name="subtotal" id="subtotal" class="form-control text-end readonly" value="0" readonly tabindex="-1" value=""></td>
                     </tr>
                     <tr class="sum-tr">
                         <td colspan="2" style="text-align: center;">消費税</td>
-                        <td><input type="text" id="taxTotal" class="form-control text-end readonly" value="0" readonly tabindex="-1" value=""></td>
+                        <td><input type="text" name="taxTotal" id="taxTotal" class="form-control text-end readonly" value="0" readonly tabindex="-1" value=""></td>
                     </tr>
                     <tr class="sum-tr">
                         <td colspan="2" style="text-align: center;">合計</td>
@@ -149,7 +149,7 @@ $items = [];
         </div>
 
         {{-- 登録情報 --}}
-        <input type="hidden" name="reg_uid" value={{ '' }}>
+        <input type="hidden" name="reg_uid" value="{{ '' }}">
         @csrf
     </form>
 </div><!--app-->
