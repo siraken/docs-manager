@@ -239,12 +239,12 @@ class OrderController extends Controller
 
         // 合計金額
         $pdf->SetFontSize(11);
-        $pdf->Text(43.5, 55, '合計金額');
+        $pdf->Text(37, 55, '合計金額');
         $pdf->Text(85, 55, '円');
         $pdf->Line(29.75, 61.5, 109, 61.5);
         $pdf->SetFontSize(16);
-        $pdf->SetXY(59.5, 53);
-        $pdf->Cell(20, 0, number_format($header['total_price']), 0, 0, 'R');
+        $pdf->SetXY(85, 53.5);
+        $pdf->Cell(1, 0, number_format($header['total_price']), 0, 0, 'R');
 
         // 日付
         $pdf->SetFontSize(9.5);
