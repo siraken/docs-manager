@@ -190,6 +190,8 @@ class OrderController extends Controller
      */
     public function pdf($id = null)
     {
+        $template = false;
+
         // データ取得
         $header = OrderHeader::find($id);
         $details = OrderDetail::where('slip_id', $id)->get();
@@ -198,15 +200,19 @@ class OrderController extends Controller
         $pdf = new Fpdi();
 
         // 設定
-        $pdf->setSourceFile(resource_path('pdf/example.pdf'));
+        if ($template) {
+            $pdf->setSourceFile(resource_path('pdf/example.pdf'));
+        }
         $pdf->SetMargins(0, 0, 0);
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
 
         // ページ追加
         $pdf->AddPage('A4', 'P');
-        $page = $pdf->importPage(1);
-        $pdf->useTemplate($page);
+        if ($template) {
+            $page = $pdf->importPage(1);
+            $pdf->useTemplate($page);
+        }
 
         // デフォルトフォント
         $defaultFont = 'kozminproregular';
@@ -216,32 +222,32 @@ class OrderController extends Controller
         /* ヘッダー */
         // タイトル
         $pdf->SetFont($defaultFont, '', 20);
-        // $pdf->Text(18.5, 16.5, '発注書');
+        $pdf->Text(18.5, 16.5, '発注書');
 
         // 宛先
         $pdf->SetFont($defaultFont, '', 11);
-        // $pdf->Text(18.5, 31, '〇〇御中');
+        $pdf->Text(18.5, 31, $header['destination'].$header['honor_title']);
         $pdf->SetFont($defaultFont, '', 9.5);
-        // $pdf->Text(18.5, 45, '下記の通り発注致します。');
+        $pdf->Text(18.5, 45, '下記の通り発注致します。');
 
         // 合計金額
         $pdf->SetFont($defaultFont, '', 11);
-        // $pdf->Text(43.5, 55, '合計金額');
-        // $pdf->Text(85, 55, '円');
-        // $pdf->Line(29.75, 61.5, 109, 61.5);
+        $pdf->Text(43.5, 55, '合計金額');
+        $pdf->Text(85, 55, '円');
+        $pdf->Line(29.75, 61.5, 109, 61.5);
         $pdf->SetFont($defaultFont, '', 16);
-        // $pdf->SetXY(59.5, 53);
-        // $pdf->Cell(20, 0, number_format($header['price']), 0, 0, 'R');
+        $pdf->SetXY(59.5, 53);
+        $pdf->Cell(20, 0, number_format($header['price']), 0, 0, 'R');
 
         // 日付
         $pdf->SetFont($defaultFont, '', 9.5);
-        // $pdf->Text(121, 31, '注文日:');
-        // $pdf->Text(170, 31, date('Y年m月d日', strtotime($header['issued_date'])));
+        $pdf->Text(121, 31, '注文日:');
+        $pdf->Text(170, 31, date('Y年m月d日', strtotime($header['issued_date'])));
 
         // 発注書番号
         $pdf->SetFont($defaultFont, '', 9.5);
-        // $pdf->Text(121, 39, '注文番号');
-        // $pdf->Text(170, 39, $header['order_no']);
+        $pdf->Text(121, 39, '注文番号');
+        $pdf->Text(170, 39, $header['order_no']);
 
         // ロゴと印鑑
         // TODO: destinationが自社宛の場合は印字しない
@@ -263,36 +269,45 @@ class OrderController extends Controller
         // $pdf->Text(170, 60, date('d', strtotime($applyDate)));
 
         // 合計
-        // $pdf->Text(130, 180, '小計');
-        // $pdf->Text(130, 190, '消費税');
-        // $pdf->Text(130, 200, '合計金額');
-        // $pdf->Text(165, 180, $header['price']);
-        // $pdf->Text(165, 190, $header['price']);
-        // $pdf->Text(165, 200, $header['price']);
+        // TODO: セルにする
+        $pdf->SetFont($defaultFont, '', 9.5);
+        $pdf->Text(131, 161.75, '小計');
+        // $pdf->Text(170, 161.75, $header['price']);
+        $pdf->SetXY(170, 161.75);
+        $pdf->Cell(20, 0, number_format($header['price']), 0, 0, 'R');
+        $pdf->Text(130, 170.5, '消費税');
+        // $pdf->Text(170, 170.5, $header['price']);
+        $pdf->SetXY(170, 170.5);
+        $pdf->Cell(20, 0, number_format($header['price']), 0, 0, 'R');
+
+        $pdf->SetFont($defaultFont, '', 12);
+        $pdf->Text(126.5, 180, '合計金額');
+        // $pdf->Text(168, 180, $header['price']);
+        $pdf->SetXY(168, 180);
+        $pdf->Cell(20, 0, number_format($header['price']), 0, 0, 'R');
 
         // 備考欄
-        $pdf->Text(10, 250, '備考欄');
-        $pdf->Text(10, 260, $header['remarks']);
+        $pdf->Line(20, 195, 192, 195);
+        $pdf->SetFont($defaultFont, '', 9);
+        $pdf->Text(19, 196.5, '備考欄');
+        $pdf->Text(19, 201.5, $header['remarks']);
 
         /* 明細 */
         // 明細開始位置
-        $detail_y = 150;
+        $pdf->SetFont($defaultFont, '', 9);
+        $detail_y = 104;
         // 明細行ループ
-        /*
         foreach ($details as $i => $d) {
             // 詳細
-            $pdf->Text(10, $detail_y, $d['item_name']);
-            // 数量
-            $pdf->Text(50, $detail_y, $d['quantity']);
-            // 単位
-            $pdf->Text(70, $detail_y, $d['unit']);
+            $pdf->Text(21, $detail_y, $d['item_name']);
+            // 数量・単位
+            $pdf->Text(130, $detail_y, $d['quantity'].$d['unit']);
             // 単価
-            $pdf->Text(90, $detail_y, $d['cost']);
+            $pdf->Text(153, $detail_y, $d['cost']);
             // 金額
-            $pdf->Text(110, $detail_y, $d['price']);
-            $detail_y += 10;
+            $pdf->Text(178, $detail_y, $d['price']);
+            $detail_y += 7;
         }
-        */
 
         // 出力
         // TODO: 発注書番号にする
