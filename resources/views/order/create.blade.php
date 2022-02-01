@@ -29,8 +29,8 @@ $items = [];
             </div>
             <div class="col-12">
                 <div class="input-group">
-                    <select name="destination" class="form-select" id="customer">
-                        <option selected disabled>選択してください</option>
+                    <select name="destination" class="form-select" id="customer" required>
+                        <option value="" selected disabled>選択してください</option>
                         @foreach ($clients as $client)
                             <option value="{{ $client['id'] }}">{{ $client['name'] }}</option>
                         @endforeach
@@ -44,7 +44,7 @@ $items = [];
         <div class="row mb-3">
             <div class="col-md-6">
                 <label class="form-label">発行日<span class="ms-1 badge bg-danger">必須</span></label>
-                <input type="date" id="issued_date" name="issued_date" class="form-control" value="<?= date('Y-m-d');?>">
+                <input type="date" id="issued_date" name="issued_date" class="form-control" value="<?= date('Y-m-d');?>" required>
             </div>
             <div class="col-md-6">
                 <label class="form-label">有効期限</label>
@@ -55,7 +55,7 @@ $items = [];
         <div class="row mb-3">
             <div class="col-md-3">
                 <label class="form-label">発注書番号<span class="ms-1 badge bg-danger">必須</span></label>
-                <input type="text" name="order_no" class="form-control" value="<?= date('Ymd') ?>-xxx">
+                <input type="text" name="order_no" class="form-control" value="<?= date('Ymd') ?>-xxx" required>
             </div>
             <div class="col-md-9">
                 <label class="form-label">件名</label>

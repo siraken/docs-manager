@@ -194,41 +194,32 @@ class OrderController extends Controller
      */
     public function pdf($id = null)
     {
-        $template = true;
-        $template = false;
 
         // データ取得
         $header = OrderHeader::find($id);
         $details = OrderDetail::where('slip_id', $id)->get();
         $client = Client::where('id', $header['destination'])->first();
 
-        // FPDI
+        // 呼び出し
         $pdf = new Fpdi();
+        $Common = new Common();
 
         // 設定
-        if ($template) {
-            $pdf->setSourceFile(resource_path('pdf/example.pdf'));
-        }
         $pdf->SetMargins(0, 0, 0);
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
 
         // ページ追加
         $pdf->AddPage('A4', 'P');
-        if ($template) {
-            $page = $pdf->importPage(1);
-            $pdf->useTemplate($page);
-        }
 
         // デフォルトフォント
         $defaultFont = 'kozminproregular';
         // $defaultFont = 'kozgopromedium';
-        // $defaultFont = '';
+        $pdf->SetFont($defaultFont, '', 11);
 
-        /* ヘッダー */
         // タイトル
-        $pdf->SetFont($defaultFont, '', 20);
         // TODO: 自社宛の場合などに備えてタイトル変更可能にする
+        $pdf->SetFontSize(20);
         $pdf->Text(18.5, 16.5, '発注書');
 
         // 宛先
@@ -249,16 +240,18 @@ class OrderController extends Controller
         // 日付
         $pdf->SetFontSize(9.5);
         $pdf->Text(121, 31, '注文日:');
-        $pdf->Text(170, 31, date('Y年m月d日', strtotime($header['issued_date'])));
+        $pdf->SetXY(195, 31);
+        $pdf->Cell(1, 0, date('Y年m月d日', strtotime($header['issued_date'])), 0, 0, 'R');
 
         // 発注書番号
         $pdf->SetFontSize(9.5);
         $pdf->Text(121, 39, '注文番号:');
-        $pdf->Text(170, 39, $header['order_no']);
+        $pdf->SetXY(195, 39);
+        $pdf->Cell(1, 0, $header['order_no'], 0, 0, 'R');
 
         // ロゴと印鑑
         // TODO: destinationが自社宛の場合は印字しない
-        $pdf->Image(resource_path('img/Logo.png'), 126, 78, 45);
+        $pdf->Image(resource_path('img/Logo.png'), 126, 80, 45);
         $pdf->Image(resource_path('img/CompanyStamp.png'), 135, 48, 23);
 
         // 自社情報
@@ -270,24 +263,20 @@ class OrderController extends Controller
         $pdf->Text(121, 62, '２行目001号室');
         $pdf->Text(121, 67, '電話: 000-0000-0000');
 
-        // TODO: セルにする
         // 小計
         $pdf->SetFontSize(9.5);
         $pdf->Text(131, 161.75, '小計');
-        // $pdf->Text(170, 161.75, $header['subtotal_price']);
         $pdf->SetXY(170, 161.75);
         $pdf->Cell(20, 0, number_format($header['subtotal_price']), 0, 0, 'R');
         $pdf->Line(120, 168.25, 192, 168.25);
         // 消費税
         $pdf->Text(130, 170.5, '消費税');
-        // $pdf->Text(170, 170.5, $header['tax_price']);
         $pdf->SetXY(170, 170.5);
         $pdf->Cell(20, 0, number_format($header['tax_price']), 0, 0, 'R');
         $pdf->Line(120, 177.25, 192, 177.25);
         // 合計金額
         $pdf->SetFontSize(12);
         $pdf->Text(126.5, 180, '合計金額');
-        // $pdf->Text(168, 180, $header['total_price']);
         $pdf->SetXY(170, 180);
         $pdf->Cell(20, 0, number_format($header['total_price']), 0, 0, 'R');
         $pdf->Line(120, 187.25, 192, 187.25);
@@ -302,14 +291,12 @@ class OrderController extends Controller
         $CellHeight = 6.5;
         $pdf->MultiCell(0, $CellHeight, '');
 
-        /* 明細 */
         // 明細ヘッダーY位置
         $detail_header_y = 96.25;
         // 明細開始初期位置
         $detail_y = $detail_header_y + $CellHeight;
         // 横幅
         $maxWidth = 192 - 20;
-        $Common = new Common();
         // 明細ヘッダー
         $pdf->SetFillColor(0, 0, 0);
         $pdf->SetTextColor(255, 255, 255);
@@ -349,8 +336,7 @@ class OrderController extends Controller
         }
 
         // 出力
-        // TODO: 発注書番号にする
-        $pdf->Output(date('Ymd-001') . '.pdf');
+        $pdf->Output($header['order_no'] . '.pdf');
 
     }
 
