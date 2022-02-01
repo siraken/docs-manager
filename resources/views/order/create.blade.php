@@ -149,8 +149,7 @@ $items = [];
         </div>
 
         {{-- 登録情報 --}}
-        <input type="hidden" name="reg_uid" value="<?= ''?>">
-        <input type="hidden" name="reg_datetime" value="<?= date('Y-m-d H:i:s');?>">
+        <input type="hidden" name="reg_uid" value={{ '' }}>
         @csrf
     </form>
 </div><!--app-->

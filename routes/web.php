@@ -64,6 +64,7 @@ Route::get('/order', [OrderController::class, 'index'])->name('order');
 Route::get('/order/create', [OrderController::class, 'create'])->name('order');
 Route::post('/order/create', [OrderController::class, 'create'])->name('order');
 Route::get('/order/edit/{id}', [OrderController::class, 'edit'])->name('order');
+Route::post('/order/edit/{id}', [OrderController::class, 'edit'])->name('order');
 Route::get('/order/detail', function () {
     return view('order/detail');
 })->name('order');

@@ -110,13 +110,16 @@ class OrderController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $clients = Client::all();
 
         if ($request->isMethod('POST'))
         {
             $slip_header = [];
             $slip_body = [];
             $req = $request->all();
+
+            // 最初に既存データ削除
+            OrderHeader::where('id', $id)->delete();
+            OrderDetail::where('slip_id', $id)->delete();
 
             // ヘッダー部分
             $slip_header = [
@@ -175,6 +178,7 @@ class OrderController extends Controller
 
         }
 
+        $clients = Client::all();
         $header = OrderHeader::find($id);
         $details = OrderDetail::where('slip_id', $id)->get();
         return view('order/edit', compact('clients', 'header', 'details'));

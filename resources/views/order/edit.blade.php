@@ -35,8 +35,8 @@ $items = [];
                             <option value={{ $client['id'] }} {{ $header['destination'] === $client['id'] ? 'selected' : '' }}>{{ $client['name'] }}</option>
                         @endforeach
                     </select>
-                    <input type="text" name="responsible" placeholder="担当者" class="form-control" value="<?= $header['responsible'];?>">
-                    <input type="text" name="honor_title" placeholder="御中" class="form-control" value="御中" value="<?= $header['honor_title'];?>">
+                    <input type="text" name="responsible" placeholder="担当者" class="form-control" value={{ $header['responsible'] }}>
+                    <input type="text" name="honor_title" placeholder="御中" class="form-control" value={{ $header['honor_title'] }}>
                 </div>
             </div>
         </div>
@@ -44,22 +44,22 @@ $items = [];
         <div class="row mb-3">
             <div class="col-md-6">
                 <label class="form-label">発行日<span class="ms-1 badge bg-danger">必須</span></label>
-                <input type="date" id="issued_date" name="issued_date" class="form-control" value="<?= $header['issued_date'];?>">
+                <input type="date" id="issued_date" name="issued_date" class="form-control" value={{ $header['issued_date'] }}>
             </div>
             <div class="col-md-6">
                 <label class="form-label">有効期限</label>
-                <input type="date" id="exp_date" name="exp_date" class="form-control" value="<?= $header['exp_date'];?>">
+                <input type="date" id="exp_date" name="exp_date" class="form-control" value={{ $header['exp_date'] }}>
             </div>
         </div>
         {{-- 番号・件名 --}}
         <div class="row mb-3">
             <div class="col-md-3">
                 <label class="form-label">発注書番号<span class="ms-1 badge bg-danger">必須</span></label>
-                <input type="text" name="order_no" class="form-control" value="<?= $header['order_no'];?>">
+                <input type="text" name="order_no" class="form-control" value={{ $header['order_no'] }}>
             </div>
             <div class="col-md-9">
                 <label class="form-label">件名</label>
-                <input type="text" name="title" class="form-control" v-model.trim="titleCount" value="<?= $header['title'];?>">
+                <input type="text" name="title" class="form-control" v-model.trim="titleCount" value={{ $header['title'] }}>
                 <small>70</small>
             </div>
         </div>
@@ -149,8 +149,7 @@ $items = [];
         </div>
 
         {{-- 登録情報 --}}
-        <input type="hidden" name="reg_uid" value="<?= ''?>">
-        <input type="hidden" name="reg_datetime" value="<?= date('Y-m-d H:i:s');?>">
+        <input type="hidden" name="reg_uid" value={{ '' }}>
         @csrf
     </form>
 </div><!--app-->
