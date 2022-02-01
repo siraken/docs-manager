@@ -3,6 +3,11 @@ namespace App\Lib;
 
 class Common {
 
+    public function calcPer($n, $per)
+    {
+        return $n * $per * 0.01;
+    }
+
     public function getMonths()
     {
         $months = array();

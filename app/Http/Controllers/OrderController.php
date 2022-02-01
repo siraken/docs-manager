@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\OrderHeader;
 use App\Models\OrderDetail;
 use setasign\Fpdi\Tcpdf\Fpdi;
+use App\Lib\Common;
 
 class OrderController extends Controller
 {
@@ -190,11 +191,13 @@ class OrderController extends Controller
      */
     public function pdf($id = null)
     {
+        $template = true;
         $template = false;
 
         // データ取得
         $header = OrderHeader::find($id);
         $details = OrderDetail::where('slip_id', $id)->get();
+        $client = Client::where('id', $header['destination'])->first();
 
         // FPDI
         $pdf = new Fpdi();
@@ -222,31 +225,32 @@ class OrderController extends Controller
         /* ヘッダー */
         // タイトル
         $pdf->SetFont($defaultFont, '', 20);
+        // TODO: 自社宛の場合などに備えてタイトル変更可能にする
         $pdf->Text(18.5, 16.5, '発注書');
 
         // 宛先
-        $pdf->SetFont($defaultFont, '', 11);
-        $pdf->Text(18.5, 31, $header['destination'].$header['honor_title']);
-        $pdf->SetFont($defaultFont, '', 9.5);
+        $pdf->SetFontSize(11);
+        $pdf->Text(18.5, 31, $client['name'].' '.$header['responsible'].' '.$header['honor_title']);
+        $pdf->SetFontSize(9.5);
         $pdf->Text(18.5, 45, '下記の通り発注致します。');
 
         // 合計金額
-        $pdf->SetFont($defaultFont, '', 11);
+        $pdf->SetFontSize(11);
         $pdf->Text(43.5, 55, '合計金額');
         $pdf->Text(85, 55, '円');
         $pdf->Line(29.75, 61.5, 109, 61.5);
-        $pdf->SetFont($defaultFont, '', 16);
+        $pdf->SetFontSize(16);
         $pdf->SetXY(59.5, 53);
         $pdf->Cell(20, 0, number_format($header['price']), 0, 0, 'R');
 
         // 日付
-        $pdf->SetFont($defaultFont, '', 9.5);
+        $pdf->SetFontSize(9.5);
         $pdf->Text(121, 31, '注文日:');
         $pdf->Text(170, 31, date('Y年m月d日', strtotime($header['issued_date'])));
 
         // 発注書番号
-        $pdf->SetFont($defaultFont, '', 9.5);
-        $pdf->Text(121, 39, '注文番号');
+        $pdf->SetFontSize(9.5);
+        $pdf->Text(121, 39, '注文番号:');
         $pdf->Text(170, 39, $header['order_no']);
 
         // ロゴと印鑑
@@ -256,57 +260,79 @@ class OrderController extends Controller
 
         // 自社情報
         // TODO: destinationが自社宛の場合は印字しない
-        $pdf->SetFont($defaultFont, '', 9.5);
+        $pdf->SetFontSize(9.5);
         $pdf->Text(121, 47, 'Novalumo合同会社');
         $pdf->Text(121, 52, '〒000-000');
         $pdf->Text(121, 57, '〇〇県〇〇市１行目');
         $pdf->Text(121, 62, '２行目001号室');
         $pdf->Text(121, 67, '電話: 000-0000-0000');
 
-        // apply date
-        // $pdf->Text(130, 60, date('Y', strtotime($applyDate)));
-        // $pdf->Text(150, 60, date('m', strtotime($applyDate)));
-        // $pdf->Text(170, 60, date('d', strtotime($applyDate)));
-
-        // 合計
         // TODO: セルにする
-        $pdf->SetFont($defaultFont, '', 9.5);
+        // 小計
+        $pdf->SetFontSize(9.5);
         $pdf->Text(131, 161.75, '小計');
         // $pdf->Text(170, 161.75, $header['price']);
         $pdf->SetXY(170, 161.75);
         $pdf->Cell(20, 0, number_format($header['price']), 0, 0, 'R');
+        $pdf->Line(120, 168.25, 192, 168.25);
+        // 消費税
         $pdf->Text(130, 170.5, '消費税');
         // $pdf->Text(170, 170.5, $header['price']);
         $pdf->SetXY(170, 170.5);
         $pdf->Cell(20, 0, number_format($header['price']), 0, 0, 'R');
-
-        $pdf->SetFont($defaultFont, '', 12);
+        $pdf->Line(120, 177.25, 192, 177.25);
+        // 合計金額
+        $pdf->SetFontSize(12);
         $pdf->Text(126.5, 180, '合計金額');
         // $pdf->Text(168, 180, $header['price']);
-        $pdf->SetXY(168, 180);
+        $pdf->SetXY(170, 180);
         $pdf->Cell(20, 0, number_format($header['price']), 0, 0, 'R');
+        $pdf->Line(120, 187.25, 192, 187.25);
 
         // 備考欄
         $pdf->Line(20, 195, 192, 195);
-        $pdf->SetFont($defaultFont, '', 9);
+        $pdf->SetFontSize(9);
         $pdf->Text(19, 196.5, '備考欄');
         $pdf->Text(19, 201.5, $header['remarks']);
 
+        // セル高さ合わせ
+        $CellHeight = 6.5;
+        $pdf->MultiCell(0, $CellHeight, '');
+
         /* 明細 */
-        // 明細開始位置
-        $pdf->SetFont($defaultFont, '', 9);
-        $detail_y = 104;
+        // 明細ヘッダーY位置
+        $detail_header_y = 96.25;
+        // 明細開始初期位置
+        $detail_y = $detail_header_y + $CellHeight;
+        // 横幅
+        $maxWidth = 192 - 20;
+        $Common = new Common();
+        // 明細ヘッダー
+        $pdf->SetFillColor(0, 0, 0);
+        $pdf->SetTextColor(255, 255, 255);
+        $pdf->MultiCell($Common->calcPer($maxWidth, 52), $pdf->getLastH(), '詳細', 0, 'L', true, 1, 21, $detail_header_y, false, 0, false, true, 0, 'M', false);
+        $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), '数量', 0, 'R', true, 1, (21+$Common->calcPer($maxWidth, 52)), $detail_header_y, false, 0, false, true, 0, 'M', false);
+        $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), '単価', 0, 'R', true, 1, (21+$Common->calcPer($maxWidth, 52)+$Common->calcPer($maxWidth, 16)), $detail_header_y, false, 0, false, true, 0, 'M', false);
+        $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), '金額', 0, 'R', true, 0, (21+$Common->calcPer($maxWidth, 52)+$Common->calcPer($maxWidth, 16)+$Common->calcPer($maxWidth, 16)), $detail_header_y, false, 0, false, true, 0, 'M', false);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->SetFontSize(9);
+
         // 明細行ループ
         foreach ($details as $i => $d) {
+
+            // 背景色設定
+            $i % 2 === 0 ? $pdf->SetFillColor(255, 255, 255) : $pdf->SetFillColor(230, 230, 230);
+
             // 詳細
-            $pdf->Text(21, $detail_y, $d['item_name']);
+            $pdf->MultiCell($Common->calcPer($maxWidth, 52), $pdf->getLastH(), $d['item_name'], 0, 'L', true, 1, 21, $detail_y, false, 0, false, true, 0, 'M', false);
             // 数量・単位
-            $pdf->Text(130, $detail_y, $d['quantity'].$d['unit']);
+            $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), number_format($d['quantity']).$d['unit'], 0, 'R', true, 1, (21+$Common->calcPer($maxWidth, 52)), $detail_y, false, 0, false, true, 0, 'M', false);
             // 単価
-            $pdf->Text(153, $detail_y, $d['cost']);
+            $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), number_format($d['cost']), 0, 'R', true, 1, (21+$Common->calcPer($maxWidth, 52)+$Common->calcPer($maxWidth, 16)), $detail_y, false, 0, false, true, 0, 'M', false);
             // 金額
-            $pdf->Text(178, $detail_y, $d['price']);
-            $detail_y += 7;
+            $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), number_format($d['price']), 0, 'R', true, 0, (21+$Common->calcPer($maxWidth, 52)+$Common->calcPer($maxWidth, 16)+$Common->calcPer($maxWidth, 16)), $detail_y, false, 0, false, true, 0, 'M', false);
+
+            $detail_y += $CellHeight;
         }
 
         // 出力
