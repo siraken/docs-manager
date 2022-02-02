@@ -5,16 +5,16 @@
     @csrf
     <div class="row mb-3">
         <div class="col-12">
-            <a href="/clients" class="btn btn-light border">Back</a>
-            <button type="submit" class="btn btn-light border">Save</button>
+            <a href="/clients" class="btn btn-light border">戻る</a>
+            <button type="submit" class="btn btn-light border">保存する</button>
         </div>
     </div>
 
     <div class="row mb-3">
         <div class="col-12">
             <div class="mb-3">
-                <label for="formTitleInput" class="form-label">Name</label>
-                <input type="text" class="form-control" id="formTitleInput" name="name" placeholder="Name" required>
+                <label for="formTitleInput" class="form-label">取引先名</label>
+                <input type="text" class="form-control" id="formTitleInput" name="name" placeholder="取引先名" required>
             </div>
         </div>
     </div>

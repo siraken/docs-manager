@@ -6,7 +6,7 @@
 
 <div class="row mb-3">
 	<div class="col-12">
-		<a href="/clients/create" class="btn btn-light border">New Client</a>
+		<a href="/clients/create" class="btn btn-light border">取引先を新規作成</a>
 		<a href="/clients/truncate" class="btn btn-light border">Truncate</a>
 	</div>
 </div>
@@ -17,7 +17,7 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Name</th>
+                    <th>取引先名</th>
                 </tr>
             </thead>
             <tbody>
