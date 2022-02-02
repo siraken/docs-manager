@@ -14,7 +14,7 @@ class EstimateController extends Controller
     public function index()
     {
         $estimates = EstimateHeader::all();
-        return view('estimate/index', compact('estimates'));
+        return view('estimates/index', compact('estimates'));
     }
 
     /**
@@ -24,7 +24,7 @@ class EstimateController extends Controller
     public function create()
     {
         $estimates = EstimateHeader::all();
-        return view('estimate/create', compact('estimates'));
+        return view('estimates/create', compact('estimates'));
     }
 
     /**
@@ -34,7 +34,7 @@ class EstimateController extends Controller
     public function edit()
     {
         $estimates = EstimateHeader::all();
-        return view('estimate/edit', compact('estimates'));
+        return view('estimates/edit', compact('estimates'));
     }
 
     /**
@@ -44,7 +44,7 @@ class EstimateController extends Controller
     public function trash()
     {
         $estimates = EstimateHeader::all();
-        return view('estimate/index', compact('estimates'));
+        return view('estimates/index', compact('estimates'));
     }
 
 

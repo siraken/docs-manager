@@ -35,29 +35,29 @@ Route::get('/pdf', [EstimateController::class, 'pdf']);
  * Estimate
  */
 // GET
-Route::get('/estimate', [EstimateController::class, 'index'])->name('estimate');
-Route::get('/estimate/create', [EstimateController::class, 'create'])->name('estimate');
-Route::get('/estimate/edit', [EstimateController::class, 'edit'])->name('estimate');
-Route::get('/estimate/detail', function () {
-    return view('estimate/detail');
-})->name('estimate');
-Route::get('/estimate/trash', function () {
-    return view('estimate/trash');
-})->name('estimate');
+Route::get('/estimates', [EstimateController::class, 'index'])->name('estimates');
+Route::get('/estimates/create', [EstimateController::class, 'create'])->name('estimates');
+Route::get('/estimates/edit', [EstimateController::class, 'edit'])->name('estimates');
+Route::get('/estimates/detail', function () {
+    return view('estimates/detail');
+})->name('estimates');
+Route::get('/estimates/trash', function () {
+    return view('estimates/trash');
+})->name('estimates');
 
 /**
  * Invoice
  */
 // GET
-Route::get('/invoice', [InvoiceController::class, 'index'])->name('invoice');
-Route::get('/invoice/create', [InvoiceController::class, 'create'])->name('invoice');
-Route::get('/invoice/edit', [InvoiceController::class, 'edit'])->name('invoice');
-Route::get('/invoice/detail', function () {
-    return view('invoice/detail');
-})->name('invoice');
-Route::get('/invoice/trash', function () {
-    return view('invoice/trash');
-})->name('invoice');
+Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices');
+Route::get('/invoices/create', [InvoiceController::class, 'create'])->name('invoices');
+Route::get('/invoices/edit', [InvoiceController::class, 'edit'])->name('invoices');
+Route::get('/invoices/detail', function () {
+    return view('invoices/detail');
+})->name('invoices');
+Route::get('/invoices/trash', function () {
+    return view('invoices/trash');
+})->name('invoices');
 
 /**
  * Order
@@ -93,12 +93,12 @@ Route::post('/items/edit/{id}', [ItemController::class, 'edit']);
  * Inquiry
  */
 // GET
-Route::get('/inquiry', [InquiryController::class, 'index'])->name('inquiry');
-Route::get('/inquiry/create', [InquiryController::class, 'create'])->name('inquiry');
-Route::get('/inquiry/view/{id}', [InquiryController::class, 'view'])->name('inquiry');
-Route::get('/inquiry/truncate', [InquiryController::class, 'truncate'])->name('inquiry');
+Route::get('/inquiries', [InquiryController::class, 'index'])->name('inquiries');
+Route::get('/inquiries/create', [InquiryController::class, 'create'])->name('inquiries');
+Route::get('/inquiries/view/{id}', [InquiryController::class, 'view'])->name('inquiries');
+Route::get('/inquiries/truncate', [InquiryController::class, 'truncate'])->name('inquiries');
 // POST
-Route::post('/inquiry/create', [InquiryController::class, 'create']);
+Route::post('/inquiries/create', [InquiryController::class, 'create']);
 
 /**
  * Client
@@ -116,16 +116,16 @@ Route::post('/clients/edit/{id}', [ClientController::class, 'edit']);
  * Trip
  */
 // GET
-Route::get('/trip', [TravelController::class, 'index'])->name('trip');
-Route::get('/trip/create', [TravelController::class, 'create'])->name('trip');
-Route::get('/trip/pdf/{id}', [TravelController::class, 'pdf'])->name('trip');
+Route::get('/trips', [TravelController::class, 'index'])->name('trips');
+Route::get('/trips/create', [TravelController::class, 'create'])->name('trips');
+Route::get('/trips/pdf/{id}', [TravelController::class, 'pdf'])->name('trips');
 // POST
-Route::post('/trip/create', [TravelController::class, 'create']);
+Route::post('/trips/create', [TravelController::class, 'create']);
 
 /**
  * Expense
  */
 // GET
-Route::get('/expense', [TravelExpenseController::class, 'index'])->name('expense');
-Route::get('/expense/create', [TravelExpenseController::class, 'create'])->name('expense');
-Route::get('/expense/pdf/{id}', [TravelExpenseController::class, 'pdf'])->name('expense');
+Route::get('/expenses', [TravelExpenseController::class, 'index'])->name('expenses');
+Route::get('/expenses/create', [TravelExpenseController::class, 'create'])->name('expenses');
+Route::get('/expenses/pdf/{id}', [TravelExpenseController::class, 'pdf'])->name('expenses');
