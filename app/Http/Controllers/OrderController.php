@@ -43,8 +43,38 @@ class OrderController extends Controller
         $orders = OrderHeader::select($select)
         ->from('order_headers as o')
         ->join('clients as c', 'o.destination', '=', 'c.id')
+        ->where('o.is_deleted', '!=', '1')
         ->get();
         return view('orders/index', compact('orders'));
+    }
+
+    /**
+     * ゴミ箱: 削除済み一覧
+     */
+    public function trash()
+    {
+        $select = [
+            'o.id',
+            'o.responsible',
+            'o.honor_title',
+            'o.issued_date',
+            'o.exp_date',
+            'o.order_no',
+            'o.total_price',
+            'o.remarks',
+            'o.is_issued',
+            'o.is_ordered',
+            'o.is_deleted',
+            'o.is_converted',
+            'o.note',
+            'c.name as destination'
+        ];
+        $orders = OrderHeader::select($select)
+        ->from('order_headers as o')
+        ->join('clients as c', 'o.destination', '=', 'c.id')
+        ->where('o.is_deleted', '=', '1')
+        ->get();
+        return view('orders/trash', compact('orders'));
     }
 
     /**

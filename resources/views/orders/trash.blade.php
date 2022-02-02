@@ -1,79 +1,108 @@
-<?php
-$url_estimate = $this->Html->url("/estimate", true);
-$add_url     = $url_estimate.'/add';
-$edit_url    = $url_estimate.'/edit';
-$details_url    = $url_estimate.'/details';
-?>
-<style>
-.note {
-	background: #eee;
-	color: #111;
-	border: solid 1px #ddd;
-	padding: 3px 5px;
-	display: block;
-}
-</style>
+@extends('layouts/default')
+@section('page')
 
-	<div id="search_wrap">
-		<a href="javascript:void(0);" id="back_btn" class="btn btn-primary"><i class="fa fa-reply"></i> 戻る</a>
+@csrf
+
+<div class="row mb-3">
+	<div class="col-12">
+		<a href="/orders/" class="btn btn-light border">戻る</a>
 	</div>
+</div>
 
-	<table id="estimate_table">
-		<thead>
-			<tr>
-				<th style="width: 15%">ステータス</th>
-				<th style="width: 35%">文書</th>
-				<th style="width: 15%">発行日</th>
-				<th style="width: 15%">有効期限</th>
-				<th style="width: 20%">金額</th>
-			</tr>
-		</thead>
-		<tbody>
-			<?php foreach ($list as $row): ?>
-			<tr>
-				<td><span class="stat issued">未発行</span><span class="stat">未受注</span></td>
-				<td>
-					<a href="<?= $details_url . '/' . $row['estimate_headers']['estimate_no'];?>">
-						<?= empty($row['estimate_headers']['title']) ? $row['estimate_headers']['destination'].' '.$row['estimate_headers']['responsible'].' '.$row['estimate_headers']['honor_title'] : $row['estimate_headers']['title']; ?>
-					</a><br>
-					<small style="color: #777;"><?= $row['estimate_headers']['estimate_no'];?></small>
-					<?php if (!empty($row['estimate_headers']['note'])): ?>
-						<small class="note"><?= mb_strimwidth($row['estimate_headers']['note'], 0, 28, '...');?></small>
-					<?php endif; ?>
-				</td>
-				<td><?= date('Y/m/d', strtotime($row['estimate_headers']['issued_date']));?></td>
-				<td><?= !empty($row['estimate_headers']['exp_date']) ? date('Y/m/d', strtotime($row['estimate_headers']['exp_date'])) : '-';?></td>
-				<td><b><?= empty($row['estimate_headers']['price']) ? 0 : number_format($row['estimate_headers']['price']) ;?>円</b></td>
-			</tr>
-			<?php endforeach; ?>
-		</tbody>
-	</table>
+<div class="row">
+    <div class="col-12">
+        <table class="table iv-table">
+            <thead>
+                <tr>
+                    <th style="width: 10%;">ステータス</th>
+                    <th style="width: 40%;">文書</th>
+                    <th style="width: 15%;">発行日</th>
+                    <th style="width: 15%;">有効期限</th>
+                    <th style="width: 20%;">金額</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($orders as $row): ?>
+                <tr>
+                    <!-- ステータス -->
+                    <td>
+                        <!-- 発行状況 -->
+                        <?php
+                        $issued_status = '';
+                        $issued_status_class = ' ';
+                        switch ($row['is_issued']) {
+                            case 0:
+                                $issued_status = '未発行';
+                                $issued_status_class .= '';
+                                break;
+                            case 1:
+                                $issued_status = '発行済み';
+                                $issued_status_class .= 'set';
+                                break;
+                            default:
+                                $issued_status = '不明';
+                                $issued_status_class .= '';
+                                break;
+                        }
+                        ?>
+                        <span class="status{{ $issued_status_class }}" onclick="slipSetter.status(this, 'issued', {{ $row['id'] }}, {{ empty($row['is_issued']) ? '0' : $row['is_issued'] }})">{!! $row['is_issued'] === 1 ? '<i class="fa fa-fw fa-check"></i>' : '' !!}{{ $issued_status }}</span>
 
-	<?php if (empty($list)): ?>
-		<p style="text-align: center;"><?= 'データがありません';?></p>
-	<?php endif; ?>
+                        <!-- 受注状況 -->
+                        <?php
+                        $ordered_status = '';
+                        $ordered_status_class = ' ';
+                        switch ($row['is_ordered']) {
+                            case 0:
+                                $ordered_status = '未受注';
+                                $ordered_status_class .= '';
+                                break;
+                            case 1:
+                                $ordered_status = '受注済み';
+                                $ordered_status_class .= 'set';
+                                break;
+                            case 2:
+                                $ordered_status = '失注';
+                                $ordered_status_class .= 'miss';
+                                break;
+                            default:
+                                $ordered_status = '不明';
+                                $ordered_status_class .= '';
+                                break;
+                        }
+                        ?>
+                        <span class="status{{ $ordered_status_class }}"  onclick="slipSetter.status(this, 'ordered', {{ $row['id'] }}, {{ empty($row['is_ordered']) ? '0' : $row['is_ordered'] }})">{!! $row['is_ordered'] === 1 ? '<i class="fa fa-fw fa-check"></i>' : '' !!}{{ $ordered_status }}</span>
+                    </td>
+                    <!-- 文書 -->
+                    <td>
+                        <a href="<?= '/orders/edit/' . $row['id'];?>">
+                            <?= $row['destination'] ?>
+                        </a><br>
+                        <small style="color: #777;">#<?= $row['order_no'];?></small>
+                        <?php if (!empty($row['note'])): ?>
+                            <small class="note"><?= mb_strimwidth($row['note'], 0, 28, '...');?></small>
+                        <?php endif; ?>
+                    </td>
+                    <!-- 発行日 -->
+                    <td>
+                        <?= date('Y/m/d', strtotime($row['issued_date']));?>
+                    </td>
+                    <!-- 有効期限 -->
+                    <td>
+                        <?= !empty($row['exp_date']) ? date('Y/m/d', strtotime($row['exp_date'])) : '-';?>
+                    </td>
+                    <!-- 金額 -->
+                    <td>
+                        <b><?= empty($row['total_price']) ? 0 : number_format($row['total_price']) ;?>円</b>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
 
-<script type="text/javascript">
-$(function(){
+        @if (empty($orders)):
+            <p style="text-align: center;"><?= 'データがありません';?></p>
+        <?php endif; ?>
+    </div>
+</div>
 
-	$('#dt1').datepicker({ dateFormat:'yy/mm/dd', showButtonPanel: true });
-	$('#dt2').datepicker({ dateFormat:'yy/mm/dd', showButtonPanel: true });
-
-	$('#search_btn').on('click', function(event) {
-		$('#search_form').submit();
-	});
-
-	$('#back_btn').on('click', function(event) {
-		document.location.href = '<?= $url_estimate;?>';
-	});
-
-	$('.data-row').on('click', function(event) {
-		var id = $(this).attr('data-id');
-		$('body').append('<form id="edit"></form>');
-		$('#edit').attr('action', '<?= $edit_url;?>') .attr('method','post');
-		$('#edit').append('<input type="hidden" name="id" value="'+id+'">');
-		$('#edit').submit();
-	});
-
-});
-</script>
+@endsection

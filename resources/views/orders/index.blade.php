@@ -1,14 +1,5 @@
 @extends('layouts/default')
 @section('page')
-<style>
-.note {
-	background: #eee;
-	color: #111;
-	border: solid 1px #ddd;
-	padding: 3px 5px;
-	display: block;
-}
-</style>
 
 @csrf
 

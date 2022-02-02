@@ -67,12 +67,8 @@ Route::get('/orders', [OrderController::class, 'index'])->name('orders');
 Route::get('/orders/create', [OrderController::class, 'create'])->name('orders');
 Route::get('/orders/edit/{id}', [OrderController::class, 'edit'])->name('orders');
 Route::get('/orders/pdf/{id}', [OrderController::class, 'pdf'])->name('orders');
-Route::get('/orders/detail', function () {
-    return view('order/detail');
-})->name('orders');
-Route::get('/orders/trash', function () {
-    return view('order/trash');
-})->name('orders');
+Route::get('/orders/view/{id}', [OrderController::class, 'view'])->name('orders');
+Route::get('/orders/trash', [OrderController::class, 'trash'])->name('orders');
 // POST
 Route::post('/orders/create', [OrderController::class, 'create']);
 Route::post('/orders/edit/{id}', [OrderController::class, 'edit']);
