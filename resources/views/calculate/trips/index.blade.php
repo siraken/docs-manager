@@ -4,7 +4,7 @@
 <div class="row">
   <div class="col-12">
     <h4 class="heading">出張申請</h4>
-    <a class="btn btn-primary" href="/trip/create"><i class="bi bi-plus-circle-fill me-2"></i>出張申請をする</a>
+    <a class="btn btn-light border" href="/trips/create"><i class="bi bi-plus-circle me-2"></i>出張申請をする</a>
   </div>
 </div>
 
@@ -37,9 +37,9 @@
                 <i class="bi bi-gear-fill"></i>
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                <li><a class="dropdown-item" href="/trip/pdf/<?=$trip->id?>">PDF</a></li>
-                <li><a class="dropdown-item" href="/trip/view/<?=$trip->id?>">View</a></li>
-                <li><a class="dropdown-item" href="/trip/edit/<?=$trip->id?>">Edit</a></li>
+                <li><a class="dropdown-item" href="/trips/pdf/<?=$trip->id?>">PDF</a></li>
+                <li><a class="dropdown-item" href="/trips/view/<?=$trip->id?>">View</a></li>
+                <li><a class="dropdown-item" href="/trips/edit/<?=$trip->id?>">Edit</a></li>
                 <li>
                   {{-- <?= $this->Form->postLink(__('Delete'),
                     ['action' => 'delete', $trip->id],

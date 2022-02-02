@@ -28,7 +28,7 @@ class TravelController extends Controller
             $travel = new Travel();
             if ($travel->fill($request->all())->save())
             {
-                redirect('/trip')->with('flash_message', 'Success');
+                redirect('/trips')->with('flash_message', 'Success');
             }
         }
 

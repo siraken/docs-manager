@@ -14,7 +14,7 @@ class InquiryController extends Controller
     public function index()
     {
         $inquiries = Inquiry::all();
-        return view('inquiry/index', compact('inquiries'));
+        return view('inquiries/index', compact('inquiries'));
     }
 
     /**
@@ -28,11 +28,11 @@ class InquiryController extends Controller
             $inquiry = new Inquiry();
             if ($inquiry->fill($request->all())->save())
             {
-                return redirect('/inquiry')->with('flash_message', 'Successful');
+                return redirect('/inquiries')->with('flash_message', 'Successful');
             }
         }
 
-        return view('inquiry/create');
+        return view('inquiries/create');
     }
 
     /**
@@ -42,7 +42,7 @@ class InquiryController extends Controller
     public function view($id)
     {
         $inquiry = Inquiry::find($id);
-        return view('inquiry/view', compact('inquiry'));
+        return view('inquiries/view', compact('inquiry'));
     }
 
     /**
@@ -53,7 +53,7 @@ class InquiryController extends Controller
     {
         if (Inquiry::truncate())
         {
-            return redirect('/inquiry')->with('flash_message', 'Truncate Successful');
+            return redirect('/inquiries')->with('flash_message', 'Truncate Successful');
         }
     }
 }
