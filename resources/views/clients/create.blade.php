@@ -5,8 +5,8 @@
     @csrf
     <div class="row mb-3">
         <div class="col-12">
-            <a href="./" class="btn btn-primary"><i class="fa fa-chevron-left me-2"></i>Back</a>
-            <button type="submit" class="btn btn-primary"><i class="fa fa-save me-2"></i>Save</button>
+            <a href="/clients" class="btn btn-light border">Back</a>
+            <button type="submit" class="btn btn-light border">Save</button>
         </div>
     </div>
 

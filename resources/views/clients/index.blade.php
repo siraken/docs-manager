@@ -6,8 +6,8 @@
 
 <div class="row mb-3">
 	<div class="col-12">
-		<a href="/client/create" class="btn btn-primary"><i class="fa fa-plus me-2"></i>New Client</a>
-		<a href="/client/truncate" class="btn btn-primary"><i class="fa fa-eraser me-2"></i>Truncate</a>
+		<a href="/clients/create" class="btn btn-light border">New Client</a>
+		<a href="/clients/truncate" class="btn btn-light border">Truncate</a>
 	</div>
 </div>
 
@@ -24,8 +24,8 @@
                 @if ($clients)
                 @foreach ($clients as $row)
                 <tr>
-                    <td><?= $row->id ?></td>
-                    <td><a href="/client/view/<?= $row->id ?>"><?= $row->name ?></a></td>
+                    <td>{{ $row->id }}</td>
+                    <td><a href="/clients/edit/{{ $row->id }}">{{ $row->name }}</a></td>
                 </tr>
                 @endforeach
                 @else

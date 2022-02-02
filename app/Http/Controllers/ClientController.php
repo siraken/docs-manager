@@ -10,7 +10,7 @@ class ClientController extends Controller
     public function index()
     {
         $clients = Client::all();
-        return view('client/index', compact('clients'));
+        return view('clients/index', compact('clients'));
     }
 
     /**
@@ -24,11 +24,11 @@ class ClientController extends Controller
             $client = new Client();
             if ($client->fill($request->all())->save())
             {
-                return redirect('/client')->with('flash_message', 'Successful');
+                return redirect('/clients')->with('flash_message', 'Successful');
             }
         }
 
-        return view('client/create');
+        return view('clients/create');
     }
 
     /**
@@ -39,7 +39,7 @@ class ClientController extends Controller
     {
         if (Client::truncate())
         {
-            return redirect('/client')->with('flash_message', 'Truncate Successful');
+            return redirect('/clients')->with('flash_message', 'Truncate Successful');
         }
     }
 }

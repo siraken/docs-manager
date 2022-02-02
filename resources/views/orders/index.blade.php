@@ -14,8 +14,8 @@
 
 <div class="row mb-3">
 	<div class="col-12">
-		<a href="/order/create" class="btn btn-light border">発注書を新しく作る</a>
-		<a href="/order/trash" class="btn btn-light border">ごみ箱</a>
+		<a href="/orders/create" class="btn btn-light border">発注書を新しく作る</a>
+		<a href="/orders/trash" class="btn btn-light border">ごみ箱</a>
 	</div>
 </div>
 
@@ -84,7 +84,7 @@
                     </td>
                     <!-- 文書 -->
                     <td>
-                        <a href="<?= '/order/edit/' . $row['id'];?>">
+                        <a href="<?= '/orders/edit/' . $row['id'];?>">
                             <?= $row['destination'] ?>
                         </a><br>
                         <small style="color: #777;">#<?= $row['order_no'];?></small>

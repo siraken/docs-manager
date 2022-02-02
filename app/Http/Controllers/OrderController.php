@@ -44,7 +44,7 @@ class OrderController extends Controller
         ->from('order_headers as o')
         ->join('clients as c', 'o.destination', '=', 'c.id')
         ->get();
-        return view('order/index', compact('orders'));
+        return view('orders/index', compact('orders'));
     }
 
     /**
@@ -73,8 +73,8 @@ class OrderController extends Controller
                 "tax_price" => $req['taxTotal'],
                 "total_price" => $req['totalPrice'],
                 "remarks" => $req['remarks'],
-                "is_issued" => $req['is_issued'],
-                "is_ordered" => $req['is_ordered'],
+                "is_issued" => 0,
+                "is_ordered" => 0,
                 "reg_uid" => $req['reg_uid'],
             ];
 
@@ -115,11 +115,11 @@ class OrderController extends Controller
 
             if ($isSuccess)
             {
-                return redirect('/order')->with('flash_message', 'Successful');
+                return redirect('/orders')->with('flash_message', 'Successful');
             }
 
         }
-        return view('order/create', compact('clients'));
+        return view('orders/create', compact('clients'));
     }
 
     /**
@@ -194,7 +194,7 @@ class OrderController extends Controller
 
             if ($isSuccess)
             {
-                return redirect('/order')->with('flash_message', 'Successful');
+                return redirect('/orders')->with('flash_message', 'Successful');
             }
 
         }
@@ -202,7 +202,7 @@ class OrderController extends Controller
         $clients = Client::all();
         $header = OrderHeader::find($id);
         $details = OrderDetail::where('slip_id', $id)->get();
-        return view('order/edit', compact('clients', 'header', 'details'));
+        return view('orders/edit', compact('clients', 'header', 'details'));
     }
 
     /**

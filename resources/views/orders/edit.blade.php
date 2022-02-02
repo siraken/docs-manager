@@ -18,9 +18,9 @@ $items = [];
         {{-- control --}}
         <div class="row mb-3">
             <div class="col-12">
-                <a href="/order/" class="btn btn-light border">戻る</a>
+                <a href="/orders/" class="btn btn-light border">戻る</a>
                 <button type="submit" class="btn btn-light border">保存する</button>
-                <a href="/order/pdf/{{ $header['id'] }}" class="btn btn-light border">PDFで出力する</a>
+                <a href="/orders/pdf/{{ $header['id'] }}" class="btn btn-light border">PDFで出力する</a>
             </div>
         </div>
         {{-- 取引先 --}}

@@ -5442,7 +5442,7 @@ var slipSetter = {
    */
   status: function status(el, type, id, currentStatus) {
     var csrf = document.getElementsByName("_token")[0].value;
-    var url = "/order/set-status";
+    var url = "/orders/set-status";
     axios.post(url, {
       type: type,
       id: id,

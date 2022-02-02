@@ -63,20 +63,20 @@ Route::get('/invoice/trash', function () {
  * Order
  */
 // GET
-Route::get('/order', [OrderController::class, 'index'])->name('order');
-Route::get('/order/create', [OrderController::class, 'create'])->name('order');
-Route::get('/order/edit/{id}', [OrderController::class, 'edit'])->name('order');
-Route::get('/order/pdf/{id}', [OrderController::class, 'pdf'])->name('order');
-Route::get('/order/detail', function () {
+Route::get('/orders', [OrderController::class, 'index'])->name('orders');
+Route::get('/orders/create', [OrderController::class, 'create'])->name('orders');
+Route::get('/orders/edit/{id}', [OrderController::class, 'edit'])->name('orders');
+Route::get('/orders/pdf/{id}', [OrderController::class, 'pdf'])->name('orders');
+Route::get('/orders/detail', function () {
     return view('order/detail');
-})->name('order');
-Route::get('/order/trash', function () {
+})->name('orders');
+Route::get('/orders/trash', function () {
     return view('order/trash');
-})->name('order');
+})->name('orders');
 // POST
-Route::post('/order/create', [OrderController::class, 'create']);
-Route::post('/order/edit/{id}', [OrderController::class, 'edit']);
-Route::post('/order/set-status', [OrderController::class, 'setStatus']);
+Route::post('/orders/create', [OrderController::class, 'create']);
+Route::post('/orders/edit/{id}', [OrderController::class, 'edit']);
+Route::post('/orders/set-status', [OrderController::class, 'setStatus']);
 
 /**
  * Item
@@ -104,12 +104,13 @@ Route::post('/inquiry/create', [InquiryController::class, 'create']);
  * Client
  */
 // GET
-Route::get('/client', [ClientController::class, 'index'])->name('client');
-Route::get('/client/create', [ClientController::class, 'create'])->name('client');
-Route::get('/client/view/{id}', [ClientController::class, 'view'])->name('client');
-Route::get('/client/truncate', [ClientController::class, 'truncate'])->name('client');
+Route::get('/clients', [ClientController::class, 'index'])->name('clients');
+Route::get('/clients/create', [ClientController::class, 'create'])->name('clients');
+Route::get('/clients/edit/{id}', [ClientController::class, 'edit'])->name('clients');
+Route::get('/clients/truncate', [ClientController::class, 'truncate'])->name('clients');
 // POST
-Route::post('/client/create', [ClientController::class, 'create']);
+Route::post('/clients/create', [ClientController::class, 'create']);
+Route::post('/clients/edit/{id}', [ClientController::class, 'edit']);
 
 /**
  * Trip
