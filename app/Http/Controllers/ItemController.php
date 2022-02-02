@@ -14,7 +14,7 @@ class ItemController extends Controller
     public function index()
     {
         $items = Item::all();
-        return view('item/index', compact('items'));
+        return view('items/index', compact('items'));
     }
 
     /**
@@ -28,19 +28,28 @@ class ItemController extends Controller
             $item = new Item();
             if ($item->fill($request->all())->save())
             {
-                return redirect('/item')->with('flash_message', 'Successful');
+                return redirect('/items')->with('flash_message', 'Successful');
             }
         }
 
-        return view('item/create');
+        return view('items/create');
     }
 
     /**
      * Edit
      *
      */
-    public function edit()
+    public function edit(Request $request, $id = null)
     {
-        return view('item/edit');
+        $item = Item::find($id);
+
+        if ($request->isMethod('POST'))
+        {
+            if ($item->fill($request->all())->save())
+            {
+                return redirect('/items')->with('flash_message', 'Successful');
+            }
+        }
+        return view('items/edit', compact('item'));
     }
 }

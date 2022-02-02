@@ -48,12 +48,12 @@
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('trip*') ? 'active fw-bold' : '' }}" href="/trip">
+                          <a class="nav-link {{ request()->route()->named('trips*') ? 'active fw-bold' : '' }}" href="/trips">
                             <span class="ml-2">出張申請</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('expense*') ? 'active fw-bold' : '' }}" href="/expense">
+                          <a class="nav-link {{ request()->route()->named('expenses*') ? 'active fw-bold' : '' }}" href="/expenses">
                             <span class="ml-2">出張旅費精算</span>
                           </a>
                         </li>
@@ -63,32 +63,32 @@
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('estimate*') ? 'active fw-bold' : '' }}" href="/estimate">
+                          <a class="nav-link {{ request()->route()->named('estimates*') ? 'active fw-bold' : '' }}" href="/estimates">
                             <span class="ml-2">見積書</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('invoice*') ? 'active fw-bold' : '' }}" href="/invoice">
+                          <a class="nav-link {{ request()->route()->named('invoices*') ? 'active fw-bold' : '' }}" href="/invoices">
                             <span class="ml-2">請求書</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('order*') ? 'active fw-bold' : '' }}" href="/order">
+                          <a class="nav-link {{ request()->route()->named('orders*') ? 'active fw-bold' : '' }}" href="/orders">
                             <span class="ml-2">発注書</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('item*') ? 'active fw-bold' : '' }}" href="/item">
+                          <a class="nav-link {{ request()->route()->named('items*') ? 'active fw-bold' : '' }}" href="/items">
                             <span class="ml-2">商品</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('inquiry*') ? 'active fw-bold' : '' }}" href="/inquiry">
+                          <a class="nav-link {{ request()->route()->named('inquiries*') ? 'active fw-bold' : '' }}" href="/inquiries">
                             <span class="ml-2">問い合わせ</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('client*') ? 'active fw-bold' : '' }}" href="/client">
+                          <a class="nav-link {{ request()->route()->named('clients*') ? 'active fw-bold' : '' }}" href="/clients">
                             <span class="ml-2">取引先</span>
                           </a>
                         </li>
