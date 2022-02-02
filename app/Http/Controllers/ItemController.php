@@ -14,7 +14,7 @@ class ItemController extends Controller
     public function index()
     {
         $items = Item::all();
-        return view('master/item/index', compact('items'));
+        return view('item/index', compact('items'));
     }
 
     /**
@@ -32,7 +32,7 @@ class ItemController extends Controller
             }
         }
 
-        return view('master/item/create');
+        return view('item/create');
     }
 
     /**
@@ -41,6 +41,6 @@ class ItemController extends Controller
      */
     public function edit()
     {
-        return view('master/item/edit');
+        return view('item/edit');
     }
 }
