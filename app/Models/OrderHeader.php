@@ -23,6 +23,8 @@ class OrderHeader extends Model
         'remarks',
         'is_issued',
         'is_ordered',
+        'is_deleted',
+        'is_converted',
         // 'reg_uid',
     ];
 }

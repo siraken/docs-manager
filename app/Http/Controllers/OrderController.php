@@ -31,6 +31,7 @@ class OrderController extends Controller
             'o.issued_date',
             'o.exp_date',
             'o.order_no',
+            'o.title',
             'o.total_price',
             'o.remarks',
             'o.is_issued',
@@ -45,6 +46,9 @@ class OrderController extends Controller
         ->join('clients as c', 'o.destination', '=', 'c.id')
         ->where('o.is_deleted', '!=', '1')
         ->get();
+        // ->toSql();
+        // echo($orders);
+        // exit;
         return view('orders/index', compact('orders'));
     }
 
@@ -60,6 +64,7 @@ class OrderController extends Controller
             'o.issued_date',
             'o.exp_date',
             'o.order_no',
+            'o.title',
             'o.total_price',
             'o.remarks',
             'o.is_issued',
@@ -105,7 +110,8 @@ class OrderController extends Controller
                 "remarks" => $req['remarks'],
                 "is_issued" => 0,
                 "is_ordered" => 0,
-                "reg_uid" => $req['reg_uid'],
+                "is_deleted" => 0,
+                "is_converted" => 0,
             ];
 
             $OrderHeader = new OrderHeader();
@@ -157,7 +163,6 @@ class OrderController extends Controller
      */
     public function edit(Request $request, $id)
     {
-
         if ($request->isMethod('POST'))
         {
             $slip_header = [];
@@ -183,7 +188,8 @@ class OrderController extends Controller
                 "remarks" => $req['remarks'],
                 "is_issued" => $req['is_issued'],
                 "is_ordered" => $req['is_ordered'],
-                "reg_uid" => $req['reg_uid'],
+                "is_deleted" => $req['is_deleted'],
+                "is_converted" => $req['is_converted'],
                 // "" => $req[''],
             ];
 

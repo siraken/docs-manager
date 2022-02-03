@@ -32,6 +32,25 @@ class ClientController extends Controller
     }
 
     /**
+     * Edit
+     *
+     */
+    public function edit(Request $request, $id = null)
+    {
+        $client = Client::find($id);
+
+        if ($request->isMethod('POST'))
+        {
+            if ($client->fill($request->all())->save())
+            {
+                return redirect('/clients')->with('flash_message', 'Successful');
+            }
+        }
+
+        return view('clients/edit', compact('client'));
+    }
+
+    /**
      * Truncate
      *
      */

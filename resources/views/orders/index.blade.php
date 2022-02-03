@@ -15,19 +15,20 @@
         <table class="table iv-table">
             <thead>
                 <tr>
-                    <th style="width: 10%;">ステータス</th>
-                    <th style="width: 40%;">文書</th>
-                    <th style="width: 15%;">発行日</th>
-                    <th style="width: 15%;">有効期限</th>
-                    <th style="width: 20%;">金額</th>
+                    <th class="">ステータス</th>
+                    <th class="">文書</th>
+                    <th class="">発行日</th>
+                    <th class="">有効期限</th>
+                    <th class="">金額</th>
+                    <th class=""></th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($orders as $row): ?>
                 <tr>
-                    <!-- ステータス -->
+                    {{-- ステータス --}}
                     <td>
-                        <!-- 発行状況 -->
+                        {{-- 発行状況 --}}
                         <?php
                         $issued_status = '';
                         $issued_status_class = ' ';
@@ -48,7 +49,7 @@
                         ?>
                         <span class="status{{ $issued_status_class }}" onclick="slipSetter.status(this, 'issued', {{ $row['id'] }}, {{ empty($row['is_issued']) ? '0' : $row['is_issued'] }})">{!! $row['is_issued'] === 1 ? '<i class="fa fa-fw fa-check"></i>' : '' !!}{{ $issued_status }}</span>
 
-                        <!-- 受注状況 -->
+                        {{-- 受注状況 --}}
                         <?php
                         $ordered_status = '';
                         $ordered_status_class = ' ';
@@ -73,36 +74,51 @@
                         ?>
                         <span class="status{{ $ordered_status_class }}"  onclick="slipSetter.status(this, 'ordered', {{ $row['id'] }}, {{ empty($row['is_ordered']) ? '0' : $row['is_ordered'] }})">{!! $row['is_ordered'] === 1 ? '<i class="fa fa-fw fa-check"></i>' : '' !!}{{ $ordered_status }}</span>
                     </td>
-                    <!-- 文書 -->
+                    {{-- 文書 --}}
                     <td>
-                        <a href="<?= '/orders/edit/' . $row['id'];?>">
-                            <?= $row['destination'] ?>
+                        <a href="{{ '/orders/edit/'.$row['id'] }}">
+                            @if (!empty($row['title']))
+                            {{ $row['title'] }}（{{ $row['destination'] }}）
+                            @else
+                            {{ $row['destination'] }}
+                            @endif
                         </a><br>
-                        <small style="color: #777;">#<?= $row['order_no'];?></small>
-                        <?php if (!empty($row['note'])): ?>
+                        <small style="color: #777;">#{{ $row['order_no'] }}</small>
+                        @if (!empty($row['note'])):
                             <small class="note"><?= mb_strimwidth($row['note'], 0, 28, '...');?></small>
-                        <?php endif; ?>
+                        @endif
                     </td>
-                    <!-- 発行日 -->
+                    {{-- 発行日 --}}
                     <td>
-                        <?= date('Y/m/d', strtotime($row['issued_date']));?>
+                        {{ date('Y/m/d', strtotime($row['issued_date'])) }}
                     </td>
-                    <!-- 有効期限 -->
+                    {{-- 有効期限 --}}
                     <td>
-                        <?= !empty($row['exp_date']) ? date('Y/m/d', strtotime($row['exp_date'])) : '-';?>
+                        {{ !empty($row['exp_date']) ? date('Y/m/d', strtotime($row['exp_date'])) : '-' }}
                     </td>
-                    <!-- 金額 -->
+                    {{-- 金額 --}}
                     <td>
-                        <b><?= empty($row['total_price']) ? 0 : number_format($row['total_price']) ;?>円</b>
+                        <b>{{ empty($row['total_price']) ? 0 : number_format($row['total_price']) }}円</b>
+                    </td>
+                    {{-- アクション --}}
+                    <td>
+                        <div class="dropdown">
+                            <button class="btn btn-light border dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-gear-fill"></i>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                <li><a class="dropdown-item" href="/orders/pdf/{{ $row->id }}">PDF出力</a></li>
+                            </ul>
+                          </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
 
-        @if (empty($orders)):
-            <p style="text-align: center;"><?= 'データがありません';?></p>
-        <?php endif; ?>
+        @if (empty($orders))
+            <p style="text-align: center;">データがありません</p>
+        @endif
     </div>
 </div>
 

@@ -17448,15 +17448,16 @@ textarea.form-control-lg {
 }
 .iv-table .status {
   display: block;
-  min-width: 70px;
-  font-size: 80%;
+  width: 100%;
+  max-width: 4.5rem;
+  font-size: 0.75rem;
   text-align: center;
   -webkit-user-select: none;
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
   padding: 3px 7px;
-  margin: 2px;
+  margin: 2px 0;
   border: solid 1px #ddd;
 }
 .iv-table .status:hover {
