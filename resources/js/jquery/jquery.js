@@ -1,3 +1,5 @@
+import { marked } from "marked";
+
 const $ = require("jquery");
 require("jquery-ui/ui/widgets/sortable");
 
@@ -142,6 +144,12 @@ $(() => {
         update: (event, ui) => {
             // console.log($("#sortable").sortable("toArray"));
         },
+    });
+
+    // マークダウンプレビュー
+    $("#description").on("input", () => {
+        let html = marked($("#description").val());
+        $("#preview").html(html);
     });
 
     // windowオブジェクトに行追加処理を追加

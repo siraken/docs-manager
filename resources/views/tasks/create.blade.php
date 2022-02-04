@@ -10,15 +10,20 @@
     </div>
 
     <div class="row">
-        <div class="col-6">
-            @csrf
-
+        @csrf
+        <div class="col-12">
             <label class="form-label">タイトル<span class="badge bg-danger ms-1">必須</span></label>
             <input type="text" name="title" class="form-control" required>
-
+        </div>
+        <div class="col-6">
             <label class="form-label">詳細</label>
-            <textarea name="description" id="description" class="form-control" cols="30" rows="10"></textarea>
-
+            <textarea name="description" id="description" class="form-control" style="width: 100%; height: 480px;"></textarea>
+        </div>
+        <div class="col-6">
+            <label class="form-label">プレビュー</label>
+            <div id="preview" style="width: 100%; height: 480px; overflow-y: scroll;"></div>
+        </div>
+        <div class="col-12">
             <label class="form-label">ステータス</label>
             <input type="text" name="status" class="form-control">
 
