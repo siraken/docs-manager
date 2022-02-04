@@ -9,6 +9,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\TravelController;
 use App\Http\Controllers\TravelExpenseController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\TaskController;
 
 /*
 |--------------------------------------------------------------------------
@@ -127,3 +128,13 @@ Route::post('/trips/create', [TravelController::class, 'create']);
 Route::get('/expenses', [TravelExpenseController::class, 'index'])->name('expenses');
 Route::get('/expenses/create', [TravelExpenseController::class, 'create'])->name('expenses');
 Route::get('/expenses/pdf/{id}', [TravelExpenseController::class, 'pdf'])->name('expenses');
+
+/**
+ * Tasks
+ */
+// GET
+Route::get('/tasks', [TaskController::class, 'index'])->name('tasks');
+Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks');
+Route::get('/tasks/view/{id}', [TaskController::class, 'view'])->name('tasks');
+// POST
+Route::post('/tasks/create', [TaskController::class, 'create'])->name('tasks');

@@ -103,6 +103,11 @@
                             <span class="ml-2">取引先</span>
                           </a>
                         </li>
+                        <li class="nav-item">
+                          <a class="nav-link {{ request()->route()->named('tasks*') ? 'active fw-bold' : '' }}" href="/tasks">
+                            <span class="ml-2">タスク</span>
+                          </a>
+                        </li>
                     </ul>
                 </div>
             </nav>

@@ -12,6 +12,7 @@
 -   inquiries
 -   travel_expenses
 -   travels
+-   tasks
 
 ## Fonts / Icons
 
