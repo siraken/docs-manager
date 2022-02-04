@@ -4,7 +4,7 @@
 <div class="row">
     <div class="col-12">
         <a href="/tasks/" class="btn btn-light border">
-            <i class="bi-plus-circle me-2"></i>戻る
+            戻る
         </a>
     </div>
 </div>
