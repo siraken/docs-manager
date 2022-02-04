@@ -5395,6 +5395,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 window.Vue = vue_dist_vue_esm__WEBPACK_IMPORTED_MODULE_1__["default"];
+window.Toast = bootstrap__WEBPACK_IMPORTED_MODULE_0__.Toast;
 window._ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests

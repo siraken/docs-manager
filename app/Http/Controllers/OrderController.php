@@ -392,6 +392,73 @@ class OrderController extends Controller
     }
 
     /**
+     * CSVエクスポート（バックアップ用）
+     */
+    public function csv()
+    {
+        $headers = OrderHeader::all();
+        $details = OrderDetail::all();
+
+        $filename = "";
+
+        $csv_header = [
+
+        ];
+
+        // 書き込み用ファイルを開く
+        $f = fopen($filename, 'w');
+
+        if ($f) {
+            // カラムの書き込み
+            mb_convert_variables('SJIS', 'UTF-8', $csv_header);
+            fputcsv($f, $csv_header);
+
+            // データの書き込み
+            foreach ($details as $row) {
+                mb_convert_variables('SJIS', 'UTF-8', $row);
+                fputcsv($f, $row);
+            }
+        }
+        // ファイルを閉じる
+        fclose($f);
+
+        // HTTPヘッダ
+        header("Content-Type: application/octet-stream");
+        header('Content-Length: '.filesize($filename));
+        header('Content-Disposition: attachment; filename=test.csv');
+        readfile($filename);
+    }
+
+    /**
+     * ごみ箱に入れる
+     */
+    public function delete($id = null)
+    {
+        $order = OrderHeader::find($id);
+        $order->is_deleted = 1;
+
+        if ($order->save())
+        {
+            return redirect('/orders')->with('flash_message', 'Successful');
+        }
+    }
+
+    /**
+     * ごみ箱から戻す
+     */
+    public function restore($id = null)
+    {
+        $order = OrderHeader::find($id);
+        $order->is_deleted = 0;
+
+        if ($order->save())
+        {
+            session()->flash('flash_message', 'Successful');
+            return redirect('/orders')->with('flash_message', 'Successful');
+        }
+    }
+
+    /**
      * ステータス変更
      */
     public function setStatus()

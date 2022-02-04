@@ -84,9 +84,6 @@
                             @endif
                         </a><br>
                         <small style="color: #777;">#{{ $row['order_no'] }}</small>
-                        @if (!empty($row['note'])):
-                            <small class="note"><?= mb_strimwidth($row['note'], 0, 28, '...');?></small>
-                        @endif
                     </td>
                     {{-- 発行日 --}}
                     <td>
@@ -107,7 +104,11 @@
                                 <i class="bi bi-gear-fill"></i>
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                @if (!empty($row->note))
+                                <li><small class="dropdown-item disabled">{{ $row->note }}</small></li>
+                                @endif
                                 <li><a class="dropdown-item" href="/orders/pdf/{{ $row->id }}">PDF出力</a></li>
+                                <li><a class="dropdown-item" href="/orders/delete/{{ $row->id }}">ごみ箱に入れる</a></li>
                             </ul>
                           </div>
                     </td>
@@ -121,6 +122,5 @@
         @endif
     </div>
 </div>
-
 
 @endsection

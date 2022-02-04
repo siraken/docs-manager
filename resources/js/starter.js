@@ -1,7 +1,9 @@
 import Vue from "vue/dist/vue.esm";
-import "bootstrap";
+import * as bootstrap from "bootstrap";
 
 window.Vue = Vue;
+
+window.Toast = bootstrap.Toast;
 
 window._ = require("lodash");
 

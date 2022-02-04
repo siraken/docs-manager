@@ -9,6 +9,18 @@
     <script src="/js/app.js"></script>
 </head>
 <body>
+    {{-- flash --}}
+    @if (session('flash_message'))
+        <div class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    {{ session('flash_message') }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        <script>Toast.show()</script>
+    @endif
     {{-- navigation --}}
     <nav class="navbar navbar-light bg-light p-3 border-bottom">
         <div class="d-flex col-12 col-md-3 col-lg-2 mb-2 mb-lg-0 flex-wrap flex-md-nowrap justify-content-between">
@@ -35,7 +47,6 @@
             </div>
         </div>
     </nav>
-
     {{-- container --}}
     <div class="container-fluid">
         <div class="row">
@@ -101,14 +112,5 @@
             </main>
         </div>
     </div>
-
-    {{-- flash --}}
-    @if (session('flash_message'))
-        <div class="row mb-3">
-            <div class="bg-success text-white rounded p-3">
-                <i class="fa fa-check-circle me-2"></i>{{ session('flash_message') }}
-            </div>
-        </div>
-    @endif
 </body>
 </html>

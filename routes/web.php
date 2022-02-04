@@ -68,6 +68,8 @@ Route::get('/orders/create', [OrderController::class, 'create'])->name('orders')
 Route::get('/orders/edit/{id}', [OrderController::class, 'edit'])->name('orders');
 Route::get('/orders/pdf/{id}', [OrderController::class, 'pdf'])->name('orders');
 Route::get('/orders/view/{id}', [OrderController::class, 'view'])->name('orders');
+Route::get('/orders/delete/{id}', [OrderController::class, 'delete'])->name('orders');
+Route::get('/orders/restore/{id}', [OrderController::class, 'restore'])->name('orders');
 Route::get('/orders/trash', [OrderController::class, 'trash'])->name('orders');
 // POST
 Route::post('/orders/create', [OrderController::class, 'create']);
