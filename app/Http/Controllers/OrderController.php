@@ -394,39 +394,36 @@ class OrderController extends Controller
     /**
      * CSVエクスポート（バックアップ用）
      */
-    public function csv()
+    public function csv($id = null)
     {
-        $headers = OrderHeader::all();
-        $details = OrderDetail::all();
+        $header = OrderHeader::find($id);
+        $details = OrderDetail::where('slip_id', '=', $id)->get();
 
-        $filename = "";
+        $header = json_decode(json_encode($header), true);
+        $details = json_decode(json_encode($details), true);
 
-        $csv_header = [
+        $headerColumns = array_keys(json_decode(json_encode($header), true));
+        $detailColumns = array_keys(json_decode(json_encode($details[0]), true));
+        $csv_header = array_merge($headerColumns, $detailColumns);
 
-        ];
+        $filename = './'.$header['order_no'].'.csv';
 
-        // 書き込み用ファイルを開く
-        $f = fopen($filename, 'w');
-
-        if ($f) {
-            // カラムの書き込み
-            mb_convert_variables('SJIS', 'UTF-8', $csv_header);
-            fputcsv($f, $csv_header);
-
-            // データの書き込み
-            foreach ($details as $row) {
-                mb_convert_variables('SJIS', 'UTF-8', $row);
-                fputcsv($f, $row);
-            }
+        // ファイルを開く
+        $fp = fopen($filename, 'w');
+        fputcsv($fp, $csv_header);
+        // 1行ずつ配列の内容をファイルに書き込む
+        foreach ($details as $fields) {
+            fputcsv($fp, $fields);
         }
         // ファイルを閉じる
-        fclose($f);
+        fclose($fp);
 
         // HTTPヘッダ
         header("Content-Type: application/octet-stream");
         header('Content-Length: '.filesize($filename));
         header('Content-Disposition: attachment; filename=test.csv');
         readfile($filename);
+        unlink($filename);
     }
 
     /**
