@@ -28,7 +28,7 @@
                     <td>{{ $row['client_id'] }}</td>
                     <td>
                         <a href="/tasks/edit/{{ $row['id'] }}">編集</a>
-                        <a href="javascript:void(0);" onclick="deleteItem({{ $row['id'] }});">削除</a>
+                        <a href="/tasks/delete/{{ $row['id'] }}">削除</a>
                     </td>
                 </tr>
                 @endforeach

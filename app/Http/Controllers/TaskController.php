@@ -33,4 +33,12 @@ class TaskController extends Controller
         $task->description = Markdown::defaultTransform($task->description);
         return view('tasks/view', compact('task'));
     }
+
+    public function delete($id = null)
+    {
+        $task = Task::find($id);
+        if ($task->delete()) {
+            return redirect('/tasks/')->with('flash_message', 'Successful');
+        }
+    }
 }
