@@ -5440,7 +5440,7 @@ window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 var axiosBase = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 
 var axios = axiosBase.create({
-  baseURL: "http://127.0.0.1:8000",
+  // baseURL: "http://127.0.0.1:8000",
   headers: {
     "Content-Type": "application/json",
     "X-Requested-With": "XMLHttpRequest"
