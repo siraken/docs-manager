@@ -22,9 +22,10 @@ use App\Http\Controllers\TaskController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+// Route::get('/', function () {
+//     return view('welcome');
+// })->name('home');
+Route::get('/', [OrderController::class, 'index'])->name('orders');
 
 Route::get('/pricing', function () {
     return view('calculate/pricing');
