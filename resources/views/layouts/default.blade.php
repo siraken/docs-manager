@@ -60,52 +60,52 @@
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('trips*') ? 'active fw-bold' : '' }}" href="{{ route('trips.index') }}">
+                          <a class="nav-link {{ request()->route()->named('trips.*') ? 'active fw-bold' : '' }}" href="{{ route('trips.index') }}">
                             <span class="ml-2">出張申請</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('expenses*') ? 'active fw-bold' : '' }}" href="{{ route('expenses.index') }}">
+                          <a class="nav-link {{ request()->route()->named('expenses.*') ? 'active fw-bold' : '' }}" href="{{ route('expenses.index') }}">
                             <span class="ml-2">出張旅費精算</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('pricing*') ? 'active fw-bold' : '' }}" href="/pricing">
+                          <a class="nav-link {{ request()->route()->named('pricing.*') ? 'active fw-bold' : '' }}" href="/pricing">
                             <span class="ml-2">料金試算</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('estimates*') ? 'active fw-bold' : '' }}" href="{{ route('estimates.index') }}">
+                          <a class="nav-link {{ request()->route()->named('estimates.*') ? 'active fw-bold' : '' }}" href="{{ route('estimates.index') }}">
                             <span class="ml-2">見積書</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('invoices*') ? 'active fw-bold' : '' }}" href="{{ route('invoices.index') }}">
+                          <a class="nav-link {{ request()->route()->named('invoices.*') ? 'active fw-bold' : '' }}" href="{{ route('invoices.index') }}">
                             <span class="ml-2">請求書</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('orders*') ? 'active fw-bold' : '' }}" href="{{ route('orders.index') }}">
+                          <a class="nav-link {{ request()->route()->named('orders.*') ? 'active fw-bold' : '' }}" href="{{ route('orders.index') }}">
                             <span class="ml-2">発注書</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('items*') ? 'active fw-bold' : '' }}" href="{{ route('items.index') }}">
+                          <a class="nav-link {{ request()->route()->named('items.*') ? 'active fw-bold' : '' }}" href="{{ route('items.index') }}">
                             <span class="ml-2">商品</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('inquiries*') ? 'active fw-bold' : '' }}" href="{{ route('inquiries.index') }}">
+                          <a class="nav-link {{ request()->route()->named('inquiries.*') ? 'active fw-bold' : '' }}" href="{{ route('inquiries.index') }}">
                             <span class="ml-2">問い合わせ</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('clients*') ? 'active fw-bold' : '' }}" href="{{ route('clients.index') }}">
+                          <a class="nav-link {{ request()->route()->named('clients.*') ? 'active fw-bold' : '' }}" href="{{ route('clients.index') }}">
                             <span class="ml-2">取引先</span>
                           </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('tasks*') ? 'active fw-bold' : '' }}" href="{{ route('tasks.index') }}">
+                          <a class="nav-link {{ request()->route()->named('tasks.*') ? 'active fw-bold' : '' }}" href="{{ route('tasks.index') }}">
                             <span class="ml-2">タスク</span>
                           </a>
                         </li>
