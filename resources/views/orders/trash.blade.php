@@ -5,8 +5,8 @@
 
 <div class="row mb-3">
 	<div class="col-12">
-		<a href="/orders/" class="btn btn-light border">戻る</a>
-		<a href="/orders/trash" class="btn btn-danger border">ごみ箱を空にする</a>
+		<a href="{{ route('orders.index') }}" class="btn btn-light border">戻る</a>
+		<a href="{{ route('orders.index') }}" class="btn btn-danger border">ごみ箱を空にする</a>
 	</div>
 </div>
 
@@ -76,7 +76,7 @@
                     </td>
                     {{-- 文書 --}}
                     <td>
-                        <a href="{{ '/orders/edit/'.$row['id'] }}">
+                        <a href="{{ route('orders.edit', ['id' => $row['id']]) }}">
                             @if (!empty($row['title']))
                             {{ $row['title'] }}（{{ $row['destination'] }}）
                             @else
@@ -107,7 +107,7 @@
                                 @if (!empty($row->note))
                                 <li><small class="dropdown-item disabled">{{ $row->note }}</small></li>
                                 @endif
-                                <li><a class="dropdown-item" href="/orders/restore/{{ $row->id }}">ごみ箱から戻す</a></li>
+                                <li><a class="dropdown-item" href="{{ route('orders.restore', ['id' => $row['id']]) }}">ごみ箱から戻す</a></li>
                             </ul>
                           </div>
                     </td>

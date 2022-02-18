@@ -5,8 +5,8 @@
 
 <div class="row mb-3">
 	<div class="col-12">
-		<a href="/orders/create" class="btn btn-light border">発注書を新しく作る</a>
-		<a href="/orders/trash" class="btn btn-light border">ごみ箱</a>
+		<a href="{{ route('orders.create') }}" class="btn btn-light border">発注書を新しく作る</a>
+		<a href="{{ route('orders.trash') }}" class="btn btn-light border">ごみ箱</a>
 	</div>
 </div>
 
@@ -76,7 +76,7 @@
                     </td>
                     {{-- 文書 --}}
                     <td>
-                        <a href="{{ '/orders/edit/'.$row['id'] }}">
+                        <a href="{{ route('orders.edit', ['id' => $row['id']]) }}">
                             @if (!empty($row['title']))
                             {{ $row['title'] }}（{{ $row['destination'] }}）
                             @else
@@ -107,8 +107,8 @@
                                 @if (!empty($row->note))
                                 <li><small class="dropdown-item disabled">{{ $row->note }}</small></li>
                                 @endif
-                                <li><a class="dropdown-item" href="/orders/pdf/{{ $row->id }}">PDF出力</a></li>
-                                <li><a class="dropdown-item" href="/orders/delete/{{ $row->id }}">ごみ箱に入れる</a></li>
+                                <li><a class="dropdown-item" href="{{ route('orders.pdf', ['id' => $row['id']]) }}">PDF出力</a></li>
+                                <li><a class="dropdown-item" href="{{ route('orders.delete', ['id' => $row['id']]) }}">ごみ箱に入れる</a></li>
                             </ul>
                           </div>
                     </td>

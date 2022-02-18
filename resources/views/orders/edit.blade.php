@@ -15,7 +15,7 @@ $items = [];
     {{-- control --}}
     <div class="row mb-3">
         <div class="col-12">
-            <a href="/orders/" class="btn btn-light border">戻る</a>
+            <a href="{{ route('orders.index') }}" class="btn btn-light border">戻る</a>
             <button type="submit" class="btn btn-light border">保存する</button>
         </div>
     </div>
