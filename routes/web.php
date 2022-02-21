@@ -10,6 +10,7 @@ use App\Http\Controllers\TravelController;
 use App\Http\Controllers\TravelExpenseController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,8 +26,19 @@ use App\Http\Controllers\TaskController;
 // Route::get('/', function () {
 //     return view('welcome');
 // })->name('home');
-Route::get('/', [OrderController::class, 'index'])->name('orders');
+Route::get('/', [OrderController::class, 'index'])->name('orders.index');
 
+/**
+ * Sign In
+ */
+Route::get('/login', function() {
+    return view('login');
+})->name('login');
+Route::post('/login', [UserController::class, 'postSignIn'])->name('loginAuth');
+
+/**
+ * Pricing
+ */
 Route::get('/pricing', function () {
     return view('calculate/pricing');
 })->name('pricing.index');
