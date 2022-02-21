@@ -42,6 +42,9 @@ class ItemController extends Controller
     public function edit(Request $request, $id = null)
     {
         $item = Item::find($id);
+        if ($item === null) {
+            abort(404, 'Not Found ;(');
+        }
 
         if ($request->isMethod('POST'))
         {
