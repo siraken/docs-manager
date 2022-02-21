@@ -3,7 +3,7 @@
 
 <div class="row">
     <div class="col-12">
-        <a href="/tasks/create" class="btn btn-light border">
+        <a href="{{ route('tasks.create') }}" class="btn btn-light border">
             <i class="bi-plus-circle me-2"></i>タスクの新規登録
         </a>
     </div>
@@ -23,12 +23,12 @@
             <tbody>
                 @foreach ($tasks as $row)
                 <tr>
-                    <td><a href="/tasks/view/{{ $row['id'] }}">{{ $row['title'] }}</a></td>
+                    <td><a href="{{ route('tasks.view', ['id' => $row['id']]) }}">{{ $row['title'] }}</a></td>
                     <td>{{ $row['description'] }}</td>
                     <td>{{ $row['client_id'] }}</td>
                     <td>
-                        <a href="/tasks/edit/{{ $row['id'] }}">編集</a>
-                        <a href="/tasks/delete/{{ $row['id'] }}">削除</a>
+                        <a href="{{ route('tasks.edit', ['id' => $row['id']]) }}">編集</a>
+                        <a href="{{ route('tasks.delete', ['id' => $row['id']]) }}">削除</a>
                     </td>
                 </tr>
                 @endforeach

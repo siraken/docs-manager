@@ -3,7 +3,7 @@
 
 <div class="row">
     <div class="col-12">
-        <a href="/tasks/" class="btn btn-light border">
+        <a href="{{ route('tasks.index') }}" class="btn btn-light border">
             戻る
         </a>
     </div>

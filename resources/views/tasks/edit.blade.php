@@ -4,7 +4,7 @@
 <form method="post" action="" autocomplete="off" id="MainForm">
     <div class="row mb-3">
         <div class="col-12">
-            <a href="/tasks/" class="btn btn-light border">戻る</a>
+            <a href="{{ route('tasks.index') }}" class="btn btn-light border">戻る</a>
             <button class="btn btn-light border" type="submit">保存する</button>
         </div>
     </div>
