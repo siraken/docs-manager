@@ -3,7 +3,7 @@
 
 <div class="row">
     <div class="col-12">
-        <a href="/items/create" class="btn btn-light border">
+        <a href="{{ route('items.create') }}" class="btn btn-light border">
             <i class="bi-plus-circle me-2"></i>品目の新規登録
         </a>
     </div>
@@ -46,7 +46,7 @@
                         ?>
                     </td>
                     <td>
-                        <a href="/items/edit/{{ $row['id'] }}">編集</a>
+                        <a href="{{ route('items.edit', ['id' => $row['id']]) }}{{ $row['id'] }}">編集</a>
                         <a href="javascript:void(0);" onclick="deleteItem({{ $row['id'] }});">削除</a>
                     </td>
                 </tr>
