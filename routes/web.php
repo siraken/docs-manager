@@ -149,6 +149,7 @@ Route::get('/expenses/pdf/{id}', [TravelExpenseController::class, 'pdf'])->name(
 // GET
 Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
 Route::get('/tasks/create', [TaskController::class, 'create'])->name('tasks.create');
+Route::get('/tasks/edit/{id}', [TaskController::class, 'edit'])->name('tasks.edit');
 Route::get('/tasks/view/{id}', [TaskController::class, 'view'])->name('tasks.view');
 Route::get('/tasks/delete/{id}', [TaskController::class, 'delete'])->name('tasks.delete');
 // POST
