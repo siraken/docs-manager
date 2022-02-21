@@ -6,8 +6,8 @@
 
 <div class="row mb-3">
 	<div class="col-12">
-		<a href="/clients/create" class="btn btn-light border">取引先を新規作成</a>
-		<a href="/clients/truncate" class="btn btn-light border">Truncate</a>
+		<a href="{{ route('clients.create') }}" class="btn btn-light border">取引先を新規作成</a>
+		<a href="{{ route('clients.truncate') }}" class="btn btn-light border">Truncate</a>
 	</div>
 </div>
 
@@ -25,7 +25,7 @@
                 @foreach ($clients as $row)
                 <tr>
                     <td>{{ $row->id }}</td>
-                    <td><a href="/clients/edit/{{ $row->id }}">{{ $row->name }}</a></td>
+                    <td><a href="{{ route('clients.edit', ['id' => $row['id']]) }}">{{ $row->name }}</a></td>
                 </tr>
                 @endforeach
                 @else
