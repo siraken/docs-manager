@@ -5,7 +5,7 @@
     @csrf
     <div class="row mb-3">
         <div class="col-12">
-            <a href="/inquiries" class="btn btn-light border">戻る</a>
+            <a href="{{ route('inquiries.index') }}" class="btn btn-light border">戻る</a>
             <button type="submit" class="btn btn-light border">保存する</button>
         </div>
     </div>
