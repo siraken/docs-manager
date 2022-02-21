@@ -4,7 +4,7 @@
 <div class="row">
   <div class="col-12">
     <h4 class="heading">出張申請</h4>
-    <a class="btn btn-light border" href="/trips/create"><i class="bi bi-plus-circle me-2"></i>出張申請をする</a>
+    <a class="btn btn-light border" href="{{ route('trips.create') }}"><i class="bi bi-plus-circle me-2"></i>出張申請をする</a>
   </div>
 </div>
 
@@ -24,27 +24,27 @@
       </thead>
       <tbody>
           <?php //$trips = []; ?>
-        <?php foreach ($trips as $trip): ?>
+        <?php foreach ($trips as $row): ?>
         <tr>
-          <td class="align-middle"><?= date('Y/m/d', strtotime($trip->apply_date)) ?></td>
-          <td class="align-middle"><?= ($trip->dir) ?></td>
-          <td class="align-middle" class="hide-on-small-only"><?= mb_strimwidth($trip->purpose, 0, 30, "...") ?></td>
-          <td class="align-middle" class="hide-on-small-only"><?= date('Y/m/d', strtotime($trip->date_from)) ?></td>
-          <td class="align-middle"><?= ($trip->apply_person) ?></td>
+          <td class="align-middle"><?= date('Y/m/d', strtotime($row->apply_date)) ?></td>
+          <td class="align-middle"><?= ($row->dir) ?></td>
+          <td class="align-middle" class="hide-on-small-only"><?= mb_strimwidth($row->purpose, 0, 30, "...") ?></td>
+          <td class="align-middle" class="hide-on-small-only"><?= date('Y/m/d', strtotime($row->date_from)) ?></td>
+          <td class="align-middle"><?= ($row->apply_person) ?></td>
           <td class="align-middle">
             <div class="dropdown">
               <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-gear-fill"></i>
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                <li><a class="dropdown-item" href="/trips/pdf/<?=$trip->id?>">PDF</a></li>
-                <li><a class="dropdown-item" href="/trips/view/<?=$trip->id?>">View</a></li>
-                <li><a class="dropdown-item" href="/trips/edit/<?=$trip->id?>">Edit</a></li>
+                <li><a class="dropdown-item" href="{{ route('trips.pdf', ['id' => $row['id']]) }}">PDF</a></li>
+                {{-- <li><a class="dropdown-item" href="{{ route('trips.view', ['id' => $row['id']]) }}">View</a></li> --}}
+                {{-- <li><a class="dropdown-item" href="{{ route('trips.edit', ['id' => $row['id']]) }}">Edit</a></li> --}}
                 <li>
                   {{-- <?= $this->Form->postLink(__('Delete'),
-                    ['action' => 'delete', $trip->id],
+                    ['action' => 'delete', $row->id],
                     ['class' => 'dropdown-item'],
-                    ['confirm' => __('Are you sure you want to delete # {0}?', $trip->id)]
+                    ['confirm' => __('Are you sure you want to delete # {0}?', $row->id)]
                   ) ?></li> --}}
               </ul>
             </div>

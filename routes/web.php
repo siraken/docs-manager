@@ -29,7 +29,7 @@ Route::get('/', [OrderController::class, 'index'])->name('orders');
 
 Route::get('/pricing', function () {
     return view('calculate/pricing');
-})->name('pricing');
+})->name('pricing.index');
 
 Route::get('/pdf', [EstimateController::class, 'pdf']);
 
