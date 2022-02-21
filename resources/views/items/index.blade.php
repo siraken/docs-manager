@@ -46,7 +46,7 @@
                         ?>
                     </td>
                     <td>
-                        <a href="{{ route('items.edit', ['id' => $row['id']]) }}{{ $row['id'] }}">編集</a>
+                        <a href="{{ route('items.edit', ['id' => $row['id']]) }}">編集</a>
                         <a href="javascript:void(0);" onclick="deleteItem({{ $row['id'] }});">削除</a>
                     </td>
                 </tr>
