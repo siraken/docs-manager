@@ -151,7 +151,16 @@ class OrderController extends Controller
 
             if ($isSuccess)
             {
-                return redirect('/orders')->with('flash_message', 'Successful');
+                return redirect('/orders')->with([
+                    'flash_message' => 'Successful',
+                    'flash_status' => 'success',
+                    'flash_icon' => 'check-circle-fill',
+                ]);
+                // return redirect('/orders')->with([
+                //     'flash_message' => '失敗しました',
+                //     'flash_status' => 'danger',
+                //     'flash_icon' => 'x-circle-fill',
+                // ]);
             }
 
         }
@@ -230,7 +239,11 @@ class OrderController extends Controller
 
             if ($isSuccess)
             {
-                return redirect('/orders')->with('flash_message', 'Successful');
+                return redirect('/orders')->with([
+                    'flash_message' => 'Successful',
+                    'flash_status' => 'success',
+                    'flash_icon' => 'check-circle-fill',
+                ]);
             }
 
         }
@@ -436,7 +449,11 @@ class OrderController extends Controller
 
         if ($order->save())
         {
-            return redirect('/orders')->with('flash_message', 'Successful');
+            return redirect('/orders')->with([
+                'flash_message' => 'Successful',
+                'flash_status' => 'success',
+                'flash_icon' => 'check-circle-fill',
+            ]);
         }
     }
 
@@ -450,8 +467,11 @@ class OrderController extends Controller
 
         if ($order->save())
         {
-            session()->flash('flash_message', 'Successful');
-            return redirect('/orders')->with('flash_message', 'Successful');
+            return redirect('/orders')->with([
+                'flash_message' => 'Successful',
+                'flash_status' => 'success',
+                'flash_icon' => 'check-circle-fill',
+            ]);
         }
     }
 

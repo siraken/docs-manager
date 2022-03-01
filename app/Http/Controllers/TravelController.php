@@ -28,7 +28,11 @@ class TravelController extends Controller
             $travel = new Travel();
             if ($travel->fill($request->all())->save())
             {
-                redirect('/trips')->with('flash_message', 'Success');
+                return redirect('/trips')->with([
+                    'flash_message' => 'Successful',
+                    'flash_status' => 'success',
+                    'flash_icon' => 'check-circle-fill',
+                ]);
             }
         }
 

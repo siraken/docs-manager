@@ -28,7 +28,11 @@ class ItemController extends Controller
             $item = new Item();
             if ($item->fill($request->all())->save())
             {
-                return redirect('/items')->with('flash_message', 'Successful');
+                return redirect('/items')->with([
+                    'flash_message' => 'Successful',
+                    'flash_status' => 'success',
+                    'flash_icon' => 'check-circle-fill',
+                ]);
             }
         }
 
@@ -50,7 +54,11 @@ class ItemController extends Controller
         {
             if ($item->fill($request->all())->save())
             {
-                return redirect('/items')->with('flash_message', 'Successful');
+                return redirect('/items')->with([
+                    'flash_message' => 'Successful',
+                    'flash_status' => 'success',
+                    'flash_icon' => 'check-circle-fill',
+                ]);
             }
         }
         return view('items/edit', compact('item'));
