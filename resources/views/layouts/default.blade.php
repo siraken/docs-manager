@@ -40,13 +40,13 @@
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Novalumo
+                            {{ session('name') }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                             <li><a class="dropdown-item" href="#">Settings</a></li>
                             <li><a class="dropdown-item" href="#">---</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#">Logout</a></li>
+                            <li><a class="dropdown-item" href="javascript:toBeLoggedOut.submit()">Logout</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -114,6 +114,11 @@
                             <span class="ml-2">タスク</span>
                           </a>
                         </li>
+                        <li class="nav-item">
+                          <a class="nav-link {{ request()->route()->named('users.*') ? 'active fw-bold' : '' }}" href="{{ route('users.index') }}">
+                            <span class="ml-2">ユーザー管理</span>
+                          </a>
+                        </li>
                     </ul>
                 </div>
             </nav>
@@ -123,5 +128,8 @@
             </main>
         </div>
     </div>
+    <form name="toBeLoggedOut" method="POST" action="/logout">
+        @csrf
+    </form>
 </body>
 </html>

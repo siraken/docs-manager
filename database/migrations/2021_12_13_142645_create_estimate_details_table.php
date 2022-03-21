@@ -15,14 +15,13 @@ class CreateEstimateDetailsTable extends Migration
     {
         Schema::create('estimate_details', function (Blueprint $table) {
             $table->id();
-            $table->string('estimate_no');
-            $table->string('seq_no');
+            $table->string('slip_id');
             $table->string('item_name');
-            $table->string('qty');
-            $table->string('cost');
-            $table->string('tax_id');
-            $table->string('tax');
-            $table->string('unit');
+            $table->string('quantity')->nullable();
+            $table->string('unit')->nullable();
+            $table->string('cost')->nullable();
+            $table->string('tax_id')->nullable();
+            $table->string('price')->nullable();
             $table->timestamps();
         });
     }

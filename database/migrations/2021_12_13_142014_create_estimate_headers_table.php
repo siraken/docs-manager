@@ -16,19 +16,21 @@ class CreateEstimateHeadersTable extends Migration
         Schema::create('estimate_headers', function (Blueprint $table) {
             $table->id();
             $table->string('destination');
-            $table->string('honor_title');
-            $table->string('responsible');
+            $table->string('responsible')->nullable();
+            $table->string('honor_title')->nullable();
             $table->date('issued_date');
-            $table->date('exp_date');
+            $table->date('exp_date')->nullable();
             $table->string('estimate_no');
-            $table->string('title');
-            $table->integer('price');
-            $table->string('remarks');
-            $table->integer('is_issued');
-            $table->integer('is_paid');
-            $table->integer('is_deleted');
-            $table->integer('is_converted');
-            $table->string('note');
+            $table->string('title')->nullable();
+            $table->integer('subtotal_price');
+            $table->integer('tax_price');
+            $table->integer('total_price');
+            $table->string('remarks')->nullable();
+            $table->integer('is_issued')->nullable();
+            $table->integer('is_paid')->nullable();
+            $table->integer('is_deleted')->nullable();
+            $table->integer('is_converted')->nullable();
+            $table->string('note')->nullable();
             $table->timestamps();
         });
     }

@@ -1,8 +1,32 @@
 #!/bin/bash
+set -Ceux
+
+ARGS=${@:2}
 
 case $1 in
+"init")
+    cp ./env.example .env
+    ./vendor/bin/sail up
+;;
 "up")
     ./vendor/bin/sail up
+;;
+"down")
+    ./vendor/bin/sail down
+;;
+"restart")
+    ./vendor/bin/sail restart
+;;
+"artisan")
+    ./vendor/bin/sail artisan $ARGS
+;;
+"seed:user")
+    ./vendor/bin/sail artisan db:seed --class=UserSeeder
+;;
+"db:reset")
+    ./vendor/bin/sail artisan migrate:reset
+    ./vendor/bin/sail artisan migrate
+    ./vendor/bin/sail artisan db:seed --class=UserSeeder
 ;;
 *)
     echo Unexpected command.
