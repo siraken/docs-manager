@@ -60,64 +60,64 @@
                 <div class="position-sticky pt-md-5">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('home*') ? 'active fw-bold' : '' }}" aria-current="page" href="/">
-                            <span class="ml-2">ダッシュボード</span>
-                          </a>
+                            <a class="nav-link {{ request()->route()->named('home*') ? 'active fw-bold' : '' }}" aria-current="page" href="/">
+                                <span class="ml-2">ダッシュボード</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('trips.*') ? 'active fw-bold' : '' }}" href="{{ route('trips.index') }}">
-                            <span class="ml-2">出張申請</span>
-                          </a>
+                            <a class="nav-link {{ request()->route()->named('trips.*') ? 'active fw-bold' : '' }}" href="{{ route('trips.index') }}">
+                                <span class="ml-2">出張申請</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('expenses.*') ? 'active fw-bold' : '' }}" href="{{ route('expenses.index') }}">
-                            <span class="ml-2">出張旅費精算</span>
-                          </a>
+                            <a class="nav-link {{ request()->route()->named('expenses.*') ? 'active fw-bold' : '' }}" href="{{ route('expenses.index') }}">
+                                <span class="ml-2">出張旅費精算</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('pricing.*') ? 'active fw-bold' : '' }}" href="/pricing">
-                            <span class="ml-2">料金試算</span>
-                          </a>
+                            <a class="nav-link {{ request()->route()->named('pricing.*') ? 'active fw-bold' : '' }}" href="/pricing">
+                                <span class="ml-2">料金試算</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('estimates.*') ? 'active fw-bold' : '' }}" href="{{ route('estimates.index') }}">
-                            <span class="ml-2">見積書</span>
-                          </a>
+                            <a class="nav-link {{ request()->route()->named('estimates.*') ? 'active fw-bold' : '' }}" href="{{ route('estimates.index') }}">
+                                <span class="ml-2">見積書</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('invoices.*') ? 'active fw-bold' : '' }}" href="{{ route('invoices.index') }}">
-                            <span class="ml-2">請求書</span>
-                          </a>
+                            <a class="nav-link {{ request()->route()->named('invoices.*') ? 'active fw-bold' : '' }}" href="{{ route('invoices.index') }}">
+                                <span class="ml-2">請求書</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('orders.*') ? 'active fw-bold' : '' }}" href="{{ route('orders.index') }}">
-                            <span class="ml-2">発注書</span>
-                          </a>
+                            <a class="nav-link {{ request()->route()->named('orders.*') ? 'active fw-bold' : '' }}" href="{{ route('orders.index') }}">
+                                <span class="ml-2">発注書</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('items.*') ? 'active fw-bold' : '' }}" href="{{ route('items.index') }}">
-                            <span class="ml-2">商品</span>
-                          </a>
+                            <a class="nav-link {{ request()->route()->named('items.*') ? 'active fw-bold' : '' }}" href="{{ route('items.index') }}">
+                                <span class="ml-2">商品</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('inquiries.*') ? 'active fw-bold' : '' }}" href="{{ route('inquiries.index') }}">
-                            <span class="ml-2">問い合わせ</span>
-                          </a>
+                            <a class="nav-link {{ request()->route()->named('inquiries.*') ? 'active fw-bold' : '' }}" href="{{ route('inquiries.index') }}">
+                                <span class="ml-2">問い合わせ</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('clients.*') ? 'active fw-bold' : '' }}" href="{{ route('clients.index') }}">
-                            <span class="ml-2">取引先</span>
-                          </a>
+                            <a class="nav-link {{ request()->route()->named('clients.*') ? 'active fw-bold' : '' }}" href="{{ route('clients.index') }}">
+                                <span class="ml-2">取引先</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('tasks.*') ? 'active fw-bold' : '' }}" href="{{ route('tasks.index') }}">
-                            <span class="ml-2">タスク</span>
-                          </a>
+                            <a class="nav-link {{ request()->route()->named('tasks.*') ? 'active fw-bold' : '' }}" href="{{ route('tasks.index') }}">
+                                <span class="ml-2">タスク</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                          <a class="nav-link {{ request()->route()->named('users.*') ? 'active fw-bold' : '' }}" href="{{ route('users.index') }}">
-                            <span class="ml-2">ユーザー管理</span>
-                          </a>
+                            <a class="nav-link {{ request()->route()->named('users.*') ? 'active fw-bold' : '' }}" href="{{ route('users.index') }}">
+                                <span class="ml-2">ユーザー管理</span>
+                            </a>
                         </li>
                     </ul>
                 </div>
@@ -128,7 +128,7 @@
             </main>
         </div>
     </div>
-    <form name="toBeLoggedOut" method="POST" action="/logout">
+    <form name="toBeLoggedOut" method="POST" action="{{ route('logout') }}">
         @csrf
     </form>
 </body>
