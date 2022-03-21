@@ -1,0 +1,10 @@
+#!/bin/bash
+
+case $1 in
+"up")
+    ./vendor/bin/sail up
+;;
+*)
+    echo Unexpected command.
+;;
+esac
