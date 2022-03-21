@@ -43,8 +43,8 @@
                             {{ session('name') }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li><small class="dropdown-item disabled" >{{ session('email') }}</small></li>
                             <li><a class="dropdown-item" href="#">Settings</a></li>
-                            <li><a class="dropdown-item" href="#">---</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="javascript:toBeLoggedOut.submit()">Logout</a></li>
                         </ul>
@@ -117,6 +117,11 @@
                         <li class="nav-item">
                             <a class="nav-link {{ request()->route()->named('users.*') ? 'active fw-bold' : '' }}" href="{{ route('users.index') }}">
                                 <span class="ml-2">ユーザー管理</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->route()->named('users.*') ? 'active fw-bold' : '' }}" href="{{ route('users.index') }}">
+                                <span class="ml-2">セキュリティ</span>
                             </a>
                         </li>
                     </ul>

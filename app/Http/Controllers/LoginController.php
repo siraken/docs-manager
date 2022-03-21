@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Access;
 
 class LoginController extends Controller
 {
@@ -13,6 +14,13 @@ class LoginController extends Controller
      */
     public function auth(Request $request)
     {
+        $access = new Access();
+
+        // return response('This website is not working.', 500)
+        //     ->header('Content-Type', 'text/plain');
+
+        $access->timestamps = false;
+
         if (User::all()->count() === 0)
         {
             return redirect('/users/create');
@@ -23,6 +31,12 @@ class LoginController extends Controller
         // ユーザーが存在しない場合
         if ($user === null)
         {
+            // アクセスログの記録
+            $access->user_id = null;
+            $access->status = 'not found [' . $request->email . ']';
+            $access->access_date = date('Y-m-d H:i:s');
+            $access->save();
+
             return redirect('/login')->with([
                 'flash_message' => 'The user does not exist.',
                 'flash_status' => 'danger',
@@ -35,9 +49,16 @@ class LoginController extends Controller
         {
             // セッション
             session([
+                'user_id' => $user->id,
                 'name'  => $user->name,
                 'email' => $user->email
             ]);
+
+            // アクセスログの記録
+            $access->user_id = $user->id;
+            $access->status = 'logged in';
+            $access->access_date = date('Y-m-d H:i:s');
+            $access->save();
 
             return redirect('/')->with([
                 'flash_message' => 'Logged in as ' . $user->name,
@@ -47,6 +68,12 @@ class LoginController extends Controller
         }
         else
         {
+            // アクセスログの記録
+            $access->user_id = $user->id;
+            $access->status = 'wrong password [' . $request->email . ':' . $request->password . ']';
+            $access->access_date = date('Y-m-d H:i:s');
+            $access->save();
+
             return redirect('/login')->with([
                 'flash_message' => 'Failed to login.',
                 'flash_status' => 'danger',
@@ -60,6 +87,14 @@ class LoginController extends Controller
      */
     public function destroy()
     {
+        // アクセスログの記録
+        $access = new Access();
+        $access->timestamps = false;
+        $access->user_id = session('user_id');
+        $access->status = 'logged out';
+        $access->access_date = date('Y-m-d H:i:s');
+        $access->save();
+
         // セッションを破棄
         session()->flush();
 
