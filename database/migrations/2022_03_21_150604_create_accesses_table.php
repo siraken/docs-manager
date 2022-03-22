@@ -18,6 +18,7 @@ class CreateAccessesTable extends Migration
             $table->integer('user_id')->nullable();
             $table->string('status')->nullable();
             $table->dateTime('access_date');
+            $table->string('ip_address')->nullable();
             $table->integer('is_suspicious')->nullable();
         });
     }

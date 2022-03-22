@@ -13,7 +13,7 @@ class Access extends Model
         'user_id',
         'status',
         'access_date',
+        'ip_address',
         'is_suspicious',
-        // TODO: IPアドレスを追加する
     ];
 }

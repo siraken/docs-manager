@@ -35,8 +35,7 @@ class LoginController extends Controller
             $access->user_id = null;
             $access->status = 'not found [' . $request->email . ']';
             $access->access_date = date('Y-m-d H:i:s');
-            // TODO: IPアドレスを取得する
-            // $request-> ip()
+            $access->ip_address = $request->ip();
             $access->save();
 
             return redirect('/login')->with([
@@ -60,6 +59,7 @@ class LoginController extends Controller
             $access->user_id = $user->id;
             $access->status = 'logged in';
             $access->access_date = date('Y-m-d H:i:s');
+            $access->ip_address = $request->ip();
             $access->save();
 
             return redirect('/')->with([
@@ -74,6 +74,7 @@ class LoginController extends Controller
             $access->user_id = $user->id;
             $access->status = 'wrong password [' . $request->email . ':' . $request->password . ']';
             $access->access_date = date('Y-m-d H:i:s');
+            $access->ip_address = $request->ip();
             $access->save();
 
             return redirect('/login')->with([
@@ -87,7 +88,7 @@ class LoginController extends Controller
     /**
      * ログアウト
      */
-    public function destroy()
+    public function destroy(Request $request)
     {
         // アクセスログの記録
         $access = new Access();
@@ -95,6 +96,7 @@ class LoginController extends Controller
         $access->user_id = session('user_id');
         $access->status = 'logged out';
         $access->access_date = date('Y-m-d H:i:s');
+        $access->ip_address = $request->ip();
         $access->save();
 
         // セッションを破棄
