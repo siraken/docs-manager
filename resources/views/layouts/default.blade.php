@@ -43,6 +43,7 @@
                             {{ session('name') }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li><small class="dropdown-item disabled" >ID: {{ session('user_id') }}</small></li>
                             <li><small class="dropdown-item disabled" >{{ session('email') }}</small></li>
                             <li><a class="dropdown-item" href="#">Settings</a></li>
                             <li><hr class="dropdown-divider"></li>

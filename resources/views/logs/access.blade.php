@@ -14,7 +14,7 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th style="width: 10%;">ユーザー</th>
+                    <th style="width: 10%;">UID</th>
                     <th style="width: 35%;">ステータス</th>
                     <th style="width: 15%;">日付</th>
                     <th style="width: 30%;">IP</th>
@@ -24,7 +24,7 @@
             <tbody>
                 @foreach ($logs as $row)
                 <tr>
-                    <td>{{ $row['user_id'] || '不明' }}</td>
+                    <td>{{ empty($row['user_id']) ? '不明' : $row['user_id'] }}</td>
                     <td><a href="{{ route('logs.access', ['id' => $row['id']]) }}">{{ $row['status'] }}</a></td>
                     <td>{{ $row['access_date'] }}</td>
                     <td>{!! $row['ip_address'] !!}</td>
