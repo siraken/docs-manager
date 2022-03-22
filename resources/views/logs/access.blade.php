@@ -27,8 +27,8 @@
                     <td>{{ $row['user_id'] || '不明' }}</td>
                     <td><a href="{{ route('logs.access', ['id' => $row['id']]) }}">{{ $row['status'] }}</a></td>
                     <td>{{ $row['access_date'] }}</td>
-                    <td>{{ $row['ip_address'] }}</td>
-                    <td>{{ $row['is_suspicious'] ? 'いいえ' : 'はい' }}</td>
+                    <td>{!! $row['ip_address'] !!}</td>
+                    <td>{{ $row['is_suspicious'] ? 'No' : 'Yes' }}</td>
                 </tr>
                 @endforeach
             </tbody>
