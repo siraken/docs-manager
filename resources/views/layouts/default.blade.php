@@ -120,7 +120,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->route()->named('users.*') ? 'active fw-bold' : '' }}" href="{{ route('users.index') }}">
+                            <a class="nav-link {{ request()->route()->named('logs.*') ? 'active fw-bold' : '' }}" href="{{ route('logs.access') }}">
                                 <span class="ml-2">セキュリティ</span>
                             </a>
                         </li>

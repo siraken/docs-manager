@@ -35,6 +35,8 @@ class LoginController extends Controller
             $access->user_id = null;
             $access->status = 'not found [' . $request->email . ']';
             $access->access_date = date('Y-m-d H:i:s');
+            // TODO: IPアドレスを取得する
+            // $request-> ip()
             $access->save();
 
             return redirect('/login')->with([

@@ -12,6 +12,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\LogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -179,4 +180,10 @@ Route::middleware('login')->group(function() {
     Route::post('/users/create', [UserController::class, 'create']);
     Route::post('/users/edit/{id}', [UserController::class, 'edit']);
 
+    /**
+     * Logs
+     */
+    // GET
+    // Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
+    Route::get('/logs/access', [LogController::class, 'access'])->name('logs.access');
 });

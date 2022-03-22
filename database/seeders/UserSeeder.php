@@ -26,6 +26,15 @@ class UserSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
+        // guest account
+        DB::table('users')->insert([
+            'name' => 'ゲスト',
+            'email' => 'guest@novalumo.dev',
+            'password' => Hash::make('guest'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         // dummy data
         $faker = Factory::create('ja_JP');
         for ($i = 0; $i < 5; $i++)

@@ -14,5 +14,6 @@ class Access extends Model
         'status',
         'access_date',
         'is_suspicious',
+        // TODO: IPアドレスを追加する
     ];
 }
