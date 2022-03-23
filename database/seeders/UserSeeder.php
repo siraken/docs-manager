@@ -17,23 +17,31 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        // admin account
-        DB::table('users')->insert([
-            'name' => 'Administrator',
-            'email' => 'admin@novalumo.com',
-            'password' => Hash::make('novalumo'),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // initial accounts array
+        $accounts = [
+            [
+                'name' => 'Administrator',
+                'email' => 'admin@novalumo.com',
+                'password' => 'novalumo',
+            ],
+            [
+                'name' => 'Guest',
+                'email' => 'guest@novalumo.dev',
+                'password' => 'guest',
+            ],
+        ];
 
-        // guest account
-        DB::table('users')->insert([
-            'name' => 'ゲスト',
-            'email' => 'guest@novalumo.dev',
-            'password' => Hash::make('guest'),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // create initial accounts
+        foreach ($accounts as $account)
+        {
+            DB::table('users')->insert([
+                'name' => $account['name'],
+                'email' => $account['email'],
+                'password' => Hash::make($account['password']),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         // dummy data
         $faker = Factory::create('ja_JP');

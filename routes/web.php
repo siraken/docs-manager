@@ -13,6 +13,8 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LogController;
+use App\Http\Controllers\WorkController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,7 +40,7 @@ Route::post('/login', [LoginController::class, 'auth'])->name('loginAuth');
  */
 Route::middleware('login')->group(function() {
 
-    Route::get('/', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
     /**
@@ -168,6 +170,18 @@ Route::middleware('login')->group(function() {
     Route::get('/tasks/delete/{id}', [TaskController::class, 'delete'])->name('tasks.delete');
     // POST
     Route::post('/tasks/create', [TaskController::class, 'create']);
+
+    /**
+     * Works
+     */
+    // GET
+    Route::get('/works', [WorkController::class, 'index'])->name('works.index');
+    Route::get('/works/analysis', [WorkController::class, 'analysis'])->name('works.analysis');
+    Route::get('/works/create', [WorkController::class, 'create'])->name('works.create');
+    Route::get('/works/edit/{id}', [WorkController::class, 'edit'])->name('works.edit');
+    // POST
+    Route::post('/works/create', [WorkController::class, 'create']);
+    Route::post('/works/edit/{id}', [WorkController::class, 'edit']);
 
     /**
      * User

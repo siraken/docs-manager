@@ -20,13 +20,13 @@ case $1 in
 "artisan")
     ./vendor/bin/sail artisan $ARGS
 ;;
-"seed:user")
+"db:user")
     ./vendor/bin/sail artisan db:seed --class=UserSeeder
 ;;
 "db:reset")
     ./vendor/bin/sail artisan migrate:reset
     ./vendor/bin/sail artisan migrate
-    ./vendor/bin/sail artisan db:seed --class=UserSeeder
+    ./vendor/bin/sail artisan db:seed
 ;;
 *)
     echo Unexpected command.

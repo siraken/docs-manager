@@ -43,8 +43,10 @@
                             {{ session('name') }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><small class="dropdown-item disabled" >ID: {{ session('user_id') }}</small></li>
-                            <li><small class="dropdown-item disabled" >{{ session('email') }}</small></li>
+                            <li><small class="dropdown-item disabled" >
+                                ID: {{ session('user_id') }}<br>
+                                {{ session('email') }}
+                            </small></li>
                             <li><a class="dropdown-item" href="#">Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="javascript:toBeLoggedOut.submit()">Logout</a></li>
@@ -61,7 +63,7 @@
                 <div class="position-sticky pt-md-5">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->route()->named('home*') ? 'active fw-bold' : '' }}" aria-current="page" href="/">
+                            <a class="nav-link {{ request()->route()->named('dashboard.*') ? 'active fw-bold' : '' }}" aria-current="page" href="/">
                                 <span class="ml-2">ダッシュボード</span>
                             </a>
                         </li>
@@ -113,6 +115,11 @@
                         <li class="nav-item">
                             <a class="nav-link {{ request()->route()->named('tasks.*') ? 'active fw-bold' : '' }}" href="{{ route('tasks.index') }}">
                                 <span class="ml-2">タスク</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->route()->named('works.*') ? 'active fw-bold' : '' }}" href="{{ route('works.index') }}">
+                                <span class="ml-2">案件管理</span>
                             </a>
                         </li>
                         <li class="nav-item">
