@@ -15,7 +15,8 @@ class TravelExpenseController extends Controller
      */
     public function index()
     {
-        return view('calculate/expenses/index');
+        $expenses = TravelExpense::all();
+        return view('calculate/expenses/index', compact('expenses'));
     }
 
     /**

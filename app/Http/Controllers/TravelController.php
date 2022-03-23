@@ -23,9 +23,10 @@ class TravelController extends Controller
      */
     public function create(Request $request)
     {
+        $travel = new Travel();
+
         if ($request->isMethod('POST'))
         {
-            $travel = new Travel();
             if ($travel->fill($request->all())->save())
             {
                 return redirect('/trips')->with([
@@ -36,7 +37,7 @@ class TravelController extends Controller
             }
         }
 
-        return view('calculate/trips/create');
+        return view('calculate/trips/form', compact('travel'));
     }
 
     /**

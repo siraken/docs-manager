@@ -42,6 +42,7 @@ Route::middleware('login')->group(function() {
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+    Route::get('/pdf', [EstimateController::class, 'pdf']);
 
     /**
      * Pricing
@@ -49,8 +50,6 @@ Route::middleware('login')->group(function() {
     Route::get('/pricing', function () {
         return view('calculate/pricing');
     })->name('pricing.index');
-
-    Route::get('/pdf', [EstimateController::class, 'pdf']);
 
     /**
      * Estimate

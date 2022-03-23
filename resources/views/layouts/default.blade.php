@@ -78,7 +78,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->route()->named('pricing.*') ? 'active fw-bold' : '' }}" href="/pricing">
+                            <a class="nav-link {{ request()->route()->named('pricing.*') ? 'active fw-bold' : '' }}" href="{{ route('pricing.index') }}">
                                 <span class="ml-2">料金試算</span>
                             </a>
                         </li>
