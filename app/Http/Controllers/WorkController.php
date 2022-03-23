@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Work;
 use App\Models\Client;
+use Faker\Guesser\Name;
 
 class WorkController extends Controller
 {
@@ -108,12 +109,27 @@ class WorkController extends Controller
      */
     public function analysis(Request $request)
     {
+        $columns = [
+            [
+                'field' => 'payment_date',
+                'name' => '支払日',
+            ],
+            [
+                'field' => 'start_date',
+                'name' => '開始日',
+            ],
+            [
+                'field' => 'end_date',
+                'name' => '終了日',
+            ],
+        ];
         $year = $request->input('year') ?? intval(date('Y'));
         $month = $request->input('month') ?? intval(date('m'));
+        $search_column = $request->input('type') ?? $columns[0]['field'];
 
-        $works = Work::whereYear('payment_date', $year)->whereMonth('payment_date', $month)->get();
-        $total_price = Work::whereYear('payment_date', $year)->whereMonth('payment_date', $month)->sum('price');
+        $works = Work::whereYear($search_column, $year)->whereMonth($search_column, $month)->get();
+        $total_price = Work::whereYear($search_column, $year)->whereMonth($search_column, $month)->sum('price');
 
-        return view('works.analysis', compact('works', 'total_price', 'year', 'month'));
+        return view('works.analysis', compact('works', 'total_price', 'year', 'month', 'columns', 'search_column'));
     }
 }

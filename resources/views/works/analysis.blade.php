@@ -22,9 +22,20 @@ function searchQuery(name, value) {
 
 <div class="row">
     <div class="col-12">
-        <h1>分析</h1>
-        <div class="row">
+        <h1>売上分析</h1>
+        <div class="row mb-3">
             <div class="col-4">
+                <label>検索条件</label>
+                <select id="" name="year" class="form-select" onchange="searchQuery('type', this.value)">
+                @foreach ($columns as $column)
+                    <option value="{{ $column['field'] }}" {{ $column['field'] == $search_column ? 'selected' : '' }}>{{ $column['name'] }}</option>
+                @endforeach
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-8">
+                <label>日付</label>
                 <div class="input-group mb-3">
                     <select id="" name="year" class="form-select" onchange="searchQuery('year', this.value)">
                     @for ($i = 2020; $i < (intval(date('Y', strtotime('+2 years')))); $i++)
