@@ -19,16 +19,17 @@ class ClientController extends Controller
      */
     public function create(Request $request)
     {
+        $client = new Client();
+
         if ($request->isMethod('POST'))
         {
-            $client = new Client();
             if ($client->fill($request->all())->save())
             {
                 return redirect('/clients')->with('flash_message', 'Successful');
             }
         }
 
-        return view('clients/create');
+        return view('clients/form', compact('client'));
     }
 
     /**
@@ -47,7 +48,7 @@ class ClientController extends Controller
             }
         }
 
-        return view('clients/edit', compact('client'));
+        return view('clients/form', compact('client'));
     }
 
     /**
