@@ -16,28 +16,30 @@ class TaskController extends Controller
 
     public function create(Request $request)
     {
+        $task = new Task();
+
         if ($request->isMethod('POST'))
         {
-            $task = new Task();
             if ($task->fill($request->all())->save())
             {
                 return redirect('/tasks')->with('flash_message', 'Successful');
             }
         }
-        return view('tasks/create');
+        return view('tasks/form', compact('task'));
     }
 
-    public function edit(Request $request)
+    public function edit(Request $request, $id = null)
     {
+        $task = Task::find($id);
+
         if ($request->isMethod('POST'))
         {
-            $task = new Task();
             if ($task->fill($request->all())->save())
             {
                 return redirect('/tasks')->with('flash_message', 'Successful');
             }
         }
-        return view('tasks/create');
+        return view('tasks/form', compact('task'));
     }
 
     public function view($id = null)

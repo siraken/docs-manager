@@ -171,6 +171,7 @@ Route::middleware('login')->group(function() {
     Route::get('/tasks/delete/{id}', [TaskController::class, 'delete'])->name('tasks.delete');
     // POST
     Route::post('/tasks/create', [TaskController::class, 'create']);
+    Route::post('/tasks/edit/{id}', [TaskController::class, 'edit']);
 
     /**
      * Works

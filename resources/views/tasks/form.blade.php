@@ -13,11 +13,11 @@
         @csrf
         <div class="col-12">
             <label class="form-label">タイトル<span class="badge bg-danger ms-1">必須</span></label>
-            <input type="text" name="title" class="form-control" required>
+            <input type="text" name="title" class="form-control" value="{{ old('title', $task->title) }}" required>
         </div>
         <div class="col-6">
             <label class="form-label">詳細</label>
-            <textarea name="description" id="description" class="form-control" style="width: 100%; height: 480px;"></textarea>
+            <textarea name="description" id="description" class="form-control" style="width: 100%; height: 480px;">{{ old('description', $task->description) }}</textarea>
         </div>
         <div class="col-6">
             <label class="form-label">プレビュー</label>
@@ -25,10 +25,10 @@
         </div>
         <div class="col-12">
             <label class="form-label">ステータス</label>
-            <input type="text" name="status" class="form-control">
+            <input type="text" name="status" class="form-control" value="{{ old('status', $task->status) }}">
 
             <label class="form-label">取引先ID</label>
-            <input type="text" name="client_id" class="form-control">
+            <input type="text" name="client_id" class="form-control" value="{{ old('client_id', $task->client_id) }}">
         </div>
     </div>
 </form>
