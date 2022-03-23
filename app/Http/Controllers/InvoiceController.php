@@ -3,24 +3,41 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\InvoiceHeader;
+use App\Models\InvoiceDetail;
 
 class InvoiceController extends Controller
 {
+    /**
+     * Index
+     */
     public function index()
     {
-        return view('invoices/index');
+        $invoices = InvoiceHeader::all();
+        return view('invoices/index', compact('invoices'));
     }
 
-    public function create()
+    /**
+     * Create
+     */
+    public function create(Request $request)
     {
+        $invoice = new InvoiceHeader();
         return view('invoices/create');
     }
 
-    public function edit()
+    /**
+     * Edit
+     */
+    public function edit(Request $request, $id = null)
     {
+        $invoice = InvoiceHeader::find($id);
         return view('invoices/edit');
     }
 
+    /**
+     * PDF
+     */
     public function pdf()
     {
         // do nothing
