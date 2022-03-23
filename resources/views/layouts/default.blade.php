@@ -47,7 +47,7 @@
                                 ID: {{ session('user_id') }}<br>
                                 {{ session('email') }}
                             </small></li>
-                            <li><a class="dropdown-item" href="#">Settings</a></li>
+                            <li><a class="dropdown-item" href="{{ route('settings.index') }}">Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="javascript:toBeLoggedOut.submit()">Logout</a></li>
                         </ul>
@@ -63,7 +63,7 @@
                 <div class="position-sticky pt-md-5">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->route()->named('dashboard.*') ? 'active fw-bold' : '' }}" aria-current="page" href="/">
+                            <a class="nav-link {{ request()->route()->named('dashboard.*') ? 'active fw-bold' : '' }}" href="{{ route('dashboard.index') }}">
                                 <span class="ml-2">ダッシュボード</span>
                             </a>
                         </li>

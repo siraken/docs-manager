@@ -43,6 +43,9 @@ Route::middleware('login')->group(function() {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
     Route::get('/pdf', [EstimateController::class, 'pdf']);
+    Route::get('/settings', function () {
+        return view('settings/index');
+    })->name('settings.index');
 
     /**
      * Pricing
