@@ -14,17 +14,16 @@
             @csrf
 
             <label class="form-label">名前<span class="badge bg-danger ms-1">必須</span></label>
-            <input type="text" name="name" class="form-control" required>
+            <input type="text" name="name" class="form-control" value="{{ old('name', $user['name']) }}" required>
 
             <label class="form-label">ユーザー名</label>
-            <input type="text" name="username" class="form-control">
+            <input type="text" name="username" class="form-control" value="">
 
             <label class="form-label">メールアドレス<span class="badge bg-danger ms-1">必須</span></label>
-            <input type="email" name="email" class="form-control">
+            <input type="email" name="email" class="form-control" value="{{ old('email', $user['email']) }}">
 
             <label class="form-label">パスワード<span class="badge bg-danger ms-1">必須</span></label>
-            <input type="password" name="password" class="form-control">
-
+            <input type="password" name="password" class="form-control" value="">
         </div>
     </div>
 </form>

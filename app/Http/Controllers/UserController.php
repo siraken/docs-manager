@@ -24,9 +24,10 @@ class UserController extends Controller
      */
     public function create(Request $request)
     {
+        $user = new User();
+
         if ($request->isMethod('POST'))
         {
-            $user = new User();
             if ($user->fill([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -40,7 +41,7 @@ class UserController extends Controller
             }
         }
 
-        return view('users/create');
+        return view('users/form', compact('user'));
     }
 
     /**
@@ -50,6 +51,7 @@ class UserController extends Controller
     public function edit(Request $request, $id = null)
     {
         $user = User::find($id);
+
         if ($user === null) {
             abort(404, 'Not Found ;(');
         }
@@ -68,6 +70,6 @@ class UserController extends Controller
                 ]);
             }
         }
-        return view('users/edit', compact('user'));
+        return view('users/form', compact('user'));
     }
 }
