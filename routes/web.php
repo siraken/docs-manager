@@ -124,10 +124,11 @@ Route::middleware('login')->group(function() {
     // GET
     Route::get('/inquiries', [InquiryController::class, 'index'])->name('inquiries.index');
     Route::get('/inquiries/create', [InquiryController::class, 'create'])->name('inquiries.create');
+    Route::get('/inquiries/edit/{id}', [InquiryController::class, 'edit'])->name('inquiries.edit');
     Route::get('/inquiries/view/{id}', [InquiryController::class, 'view'])->name('inquiries.view');
-    Route::get('/inquiries/truncate', [InquiryController::class, 'truncate'])->name('inquiries.truncate');
     // POST
     Route::post('/inquiries/create', [InquiryController::class, 'create']);
+    Route::post('/inquiries/edit/{id}', [InquiryController::class, 'edit']);
 
     /**
      * Client

@@ -7,7 +7,6 @@
 <div class="row mb-3">
 	<div class="col-12">
 		<a href="{{ route('inquiries.create') }}" class="btn btn-light border">新規問い合わせ</a>
-		<a href="{{ route('inquiries.truncate') }}" class="btn btn-light border">Truncate</a>
 	</div>
 </div>
 

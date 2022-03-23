@@ -23,16 +23,36 @@ class InquiryController extends Controller
      */
     public function create(Request $request)
     {
+        $inquiry = new Inquiry();
+
         if ($request->isMethod('POST'))
         {
-            $inquiry = new Inquiry();
             if ($inquiry->fill($request->all())->save())
             {
                 return redirect('/inquiries')->with('flash_message', 'Successful');
             }
         }
 
-        return view('inquiries/create');
+        return view('inquiries/form', compact('inquiry'));
+    }
+
+    /**
+     * Edit
+     *
+     */
+    public function edit(Request $request, $id = null)
+    {
+        $inquiry = Inquiry::find($id);
+
+        if ($request->isMethod('POST'))
+        {
+            if ($inquiry->fill($request->all())->save())
+            {
+                return redirect('/inquiries')->with('flash_message', 'Successful');
+            }
+        }
+
+        return view('inquiries/form', compact('inquiry'));
     }
 
     /**
@@ -45,15 +65,4 @@ class InquiryController extends Controller
         return view('inquiries/view', compact('inquiry'));
     }
 
-    /**
-     * Truncate
-     *
-     */
-    public function truncate(Request $request)
-    {
-        if (Inquiry::truncate())
-        {
-            return redirect('/inquiries')->with('flash_message', 'Truncate Successful');
-        }
-    }
 }
