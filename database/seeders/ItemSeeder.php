@@ -24,7 +24,7 @@ class ItemSeeder extends Seeder
                 'name' => $faker->word(),
                 'unit' => $faker->randomElement(['個', '箱', '本']),
                 'cost' => $faker->randomNumber(),
-                'tax' => $faker->randomElement([0, 1]),
+                'tax_id' => $faker->randomElement([0, 1]),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

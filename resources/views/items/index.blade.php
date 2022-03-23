@@ -29,10 +29,10 @@
                     <td>{{ number_format($row['cost']) }}円</td>
                     <td>
                         <?php
-                            if ($row['tax'] == null || $row['tax'] == 0) {
+                            if ($row['tax_id'] == null || $row['tax_id'] == 0) {
                                 $taxType = 0;
                             } else {
-                                $taxType = $row['tax'];
+                                $taxType = $row['tax_id'];
                             }
                             switch ($taxType) {
                                 case 0:  echo     '-'; break;

@@ -13,6 +13,6 @@ class Item extends Model
         'name',
         'unit',
         'cost',
-        'tax',
+        'tax_id',
     ];
 }

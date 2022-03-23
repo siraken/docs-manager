@@ -23,9 +23,10 @@ class ItemController extends Controller
      */
     public function create(Request $request)
     {
+        $item = new Item();
+
         if ($request->isMethod('POST'))
         {
-            $item = new Item();
             if ($item->fill($request->all())->save())
             {
                 return redirect('/items')->with([
@@ -36,7 +37,7 @@ class ItemController extends Controller
             }
         }
 
-        return view('items/create');
+        return view('items/form', compact('item'));
     }
 
     /**
@@ -61,6 +62,6 @@ class ItemController extends Controller
                 ]);
             }
         }
-        return view('items/edit', compact('item'));
+        return view('items/form', compact('item'));
     }
 }

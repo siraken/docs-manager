@@ -18,7 +18,7 @@ class CreateItemsTable extends Migration
             $table->string('name');
             $table->string('unit')->nullable();
             $table->integer('cost')->nullable();
-            $table->integer('tax')->nullable();
+            $table->integer('tax_id')->nullable();
             $table->timestamps();
         });
     }
