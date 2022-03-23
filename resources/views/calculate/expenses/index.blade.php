@@ -1,11 +1,11 @@
 @extends('layouts/default')
 @section('page')
 
-<div class="row">
-  <div class="col-12">
-    <h4 class="heading">旅費精算</h4>
-    <a class="btn btn-primary" href="/expense/add/"><i class="bi bi-plus-circle-fill me-2"></i>旅費精算をする</a>
-  </div>
+<div class="row mb-3">
+	<div class="col-12">
+        <h4 class="heading">旅費精算</h4>
+		<a href="{{ route('expenses.create') }}" class="btn btn-light border">旅費精算をする</a>
+	</div>
 </div>
 
 <div class="row">

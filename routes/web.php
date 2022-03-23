@@ -157,7 +157,11 @@ Route::middleware('login')->group(function() {
     // GET
     Route::get('/expenses', [TravelExpenseController::class, 'index'])->name('expenses.index');
     Route::get('/expenses/create', [TravelExpenseController::class, 'create'])->name('expenses.create');
+    Route::get('/expenses/edit/{id}', [TravelExpenseController::class, 'edit'])->name('expenses.edit');
     Route::get('/expenses/pdf/{id}', [TravelExpenseController::class, 'pdf'])->name('expenses.pdf');
+    // POST
+    Route::post('/expenses/create', [TravelExpenseController::class, 'create']);
+    Route::post('/expenses/edit/{id}', [TravelExpenseController::class, 'edit']);
 
     /**
      * Tasks

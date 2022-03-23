@@ -20,6 +20,54 @@ class TravelExpenseController extends Controller
     }
 
     /**
+     * Create
+     */
+    public function create(Request $request)
+    {
+        $expense = new TravelExpense();
+
+        if ($request->isMethod('POST'))
+        {
+            if ($expense->fill($request->all())->save())
+            {
+                return redirect('/expenses')->with([
+                    'flash_message' => 'Successful',
+                    'flash_status' => 'success',
+                    'flash_icon' => 'check-circle-fill',
+                ]);
+            }
+        }
+
+        return view('calculate/expenses/form', compact('expense'));
+    }
+
+    /**
+     * Edit
+     */
+    public function edit(Request $request, $id = null)
+    {
+        $expense = TravelExpense::find($id);
+
+        if ($expense === null) {
+            abort(404, 'Not Found ;(');
+        }
+
+        if ($request->isMethod('POST'))
+        {
+            if ($expense->fill($request->all())->save())
+            {
+                return redirect('/expenses')->with([
+                    'flash_message' => 'Successful',
+                    'flash_status' => 'success',
+                    'flash_icon' => 'check-circle-fill',
+                ]);
+            }
+        }
+
+        return view('calculate/expenses/form', compact('expense'));
+    }
+
+    /**
      * PDF
      */
     public function pdf($id = null)
