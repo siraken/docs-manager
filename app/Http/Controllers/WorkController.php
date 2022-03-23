@@ -43,9 +43,10 @@ class WorkController extends Controller
      */
     public function create(Request $request)
     {
+        $work = new Work();
+
         if ($request->isMethod('post'))
         {
-            $work = new Work();
             $work->name = $request->name;
             $work->description = $request->description;
             $work->client_id = $request->client_id;
@@ -67,7 +68,7 @@ class WorkController extends Controller
         }
 
         $clients = Client::all();
-        return view('works.create', compact('clients'));
+        return view('works.form', compact('work', 'clients'));
     }
 
     /**
@@ -80,7 +81,6 @@ class WorkController extends Controller
 
         if ($request->isMethod('post'))
         {
-            $work = Work::find($request->id);
             $work->name = $request->name;
             $work->description = $request->description;
             $work->client_id = $request->client_id;
@@ -100,7 +100,7 @@ class WorkController extends Controller
                 ]);
             }
         }
-        return view('works.edit', compact('work', 'clients'));
+        return view('works.form', compact('work', 'clients'));
     }
 
     /**
