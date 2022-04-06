@@ -1,11 +1,8 @@
-import Vue from "vue/dist/vue.esm";
-import * as bootstrap from "bootstrap";
-
-window.Vue = Vue;
-
-window.Toast = bootstrap.Toast;
-
 window._ = require("lodash");
+
+try {
+  require("bootstrap");
+} catch (e) {}
 
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests

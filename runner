@@ -17,8 +17,17 @@ case $1 in
 "restart")
     ./vendor/bin/sail restart
 ;;
+"composer")
+    ./vendor/bin/sail composer $ARGS
+;;
 "artisan")
     ./vendor/bin/sail artisan $ARGS
+;;
+"npm")
+    ./vendor/bin/sail npm $ARGS
+;;
+"yarn")
+    ./vendor/bin/sail yarn $ARGS
 ;;
 "db:user")
     ./vendor/bin/sail artisan db:seed --class=UserSeeder
