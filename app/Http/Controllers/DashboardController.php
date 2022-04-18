@@ -13,7 +13,7 @@ class DashboardController extends Controller
         $logs = Access::orderBy('id', 'desc')->take(5)->get();
         foreach ($logs as $log) {
             $user = User::find($log->user_id);
-            $log->user_id = $user['name'];
+            $log->user_id = $user['name'] ?? 'Unknown';
         }
         return view('dashboard', compact('logs'));
     }

@@ -43,10 +43,16 @@
                             {{ session('name') }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><small class="dropdown-item disabled" >
-                                ID: {{ session('user_id') }}<br>
+                            <li>
+                                <p class="dropdown-item disabled text-center m-0">
+                                    <img src="https://www.gravatar.com/avatar/{{ md5(session('email')) }}" class="img-fluid rounded-circle" alt="profile">
+                                </p>
+                            </li>
+                            <li><small class="dropdown-item disabled text-center" >
+                                {{ session('user_id') }} : {{ session('name') }}<br>
                                 {{ session('email') }}
                             </small></li>
+                            <li class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ route('settings.index') }}">Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="javascript:toBeLoggedOut.submit()">Logout</a></li>
