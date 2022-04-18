@@ -17,6 +17,9 @@ case $1 in
 "restart")
     ./vendor/bin/sail restart
 ;;
+"sail:build")
+    ./vendor/bin/sail build --no-cache
+;;
 "composer")
     ./vendor/bin/sail composer $ARGS
 ;;
