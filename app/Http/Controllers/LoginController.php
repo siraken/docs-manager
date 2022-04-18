@@ -32,7 +32,7 @@ class LoginController extends Controller
         if ($user === null)
         {
             // アクセスログの記録
-            $access->user_id = null;
+            $access->user_id = 0;
             $access->status = 'not found [' . $request->email . ']';
             $access->access_date = date('Y-m-d H:i:s');
             $access->ip_address = $request->ip();
