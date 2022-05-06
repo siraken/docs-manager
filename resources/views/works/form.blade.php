@@ -1,11 +1,22 @@
 @extends('layouts/default')
 @section('page')
 
-<form method="post" action="" autocomplete="off" id="MainForm">
+<?php
+$checks = [
+    "ヒアリングでやることと予算感をすり合わせする",
+    "契約書・NDAを取り交わす",
+    "着手金、納品時残金で分けて支払いを受けるようにする",
+    "なるべく納期短めの案件にする",
+    "デザインはロジックで説明できるようにする",
+    "スケジュールは想定の1.5倍〜2倍で出しておく",
+];
+?>
+
+<form method="post" action="" autocomplete="off" id="MainForm" class="">
     <div class="row mb-3">
         <div class="col-12">
             <a href="{{ route('works.index') }}" class="btn btn-light border">戻る</a>
-            <button class="btn btn-light border" type="submit">保存する</button>
+            <button class="btn btn-light border" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal">保存する</button>
         </div>
     </div>
 
@@ -45,9 +56,16 @@
             <input type="date" name="payment_date" class="form-control" value="{{ old('payment_date', $work['payment_date']) }}">
 
             <label class="form-label">請求金額</label>
-            <input type="number" name="price" class="form-control" value="{{ old('price', $work['price']) }}">
+            <div class="input-group">
+                <span class="input-group-text">¥</span>
+                <input type="number" name="price" class="form-control" value="{{ old('price', $work['price']) }}">
+            </div>
         </div>
     </div>
+
+    <!-- Modal -->
+    <div id="works-modal"></div>
+
 </form>
 
 @endsection

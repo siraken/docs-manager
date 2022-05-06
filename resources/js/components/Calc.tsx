@@ -142,12 +142,31 @@ const systemOptions = [
   { text: "Enterprise - ¥580,000", value: 580000 },
 ];
 
+type websiteProps = {
+  price: number;
+};
+
+type systemProps = {
+  price: number;
+  plan: 0;
+  member: number;
+};
+
+type unitProps = {
+  day: number;
+  month: number;
+};
+
 function Calc() {
   // states
-  const [website, setWebsite] = useState({ price: 0 });
-  const [system, setSystem] = useState({ plan: 0, member: 0 });
+  const [website, setWebsite] = useState<websiteProps>({ price: 0 });
+  const [system, setSystem] = useState<systemProps>({
+    price: 0,
+    plan: 0,
+    member: 0,
+  });
 
-  const [unit, setUnit] = useState({ day: 0, month: 0 });
+  const [unit, setUnit] = useState<unitProps>({ day: 0, month: 0 });
 
   // computed
   const totalPrice = useMemo(() => system.price * 1.1, [system.price]);
@@ -167,7 +186,7 @@ function Calc() {
               value={unit.day}
               disabled={unit.month !== 0}
               onChange={(e) =>
-                setUnit({ day: e.target.value, month: unit.month })
+                setUnit({ day: Number(e.target.value), month: unit.month })
               }
             />
           </div>
@@ -182,7 +201,7 @@ function Calc() {
               value={unit.month}
               disabled={unit.day !== 0}
               onChange={(e) =>
-                setUnit({ day: unit.day, month: e.target.value })
+                setUnit({ day: unit.day, month: Number(e.target.value) })
               }
             />
           </div>

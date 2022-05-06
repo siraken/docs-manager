@@ -17,3 +17,4 @@ require("./jquery/jquery");
 
 require("./components/Example");
 require("./components/Calc");
+require("./components/WorksModal");
