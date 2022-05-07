@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
+import type { ChangeEvent } from "react";
 
 function WorksModal() {
   const checklists = [
@@ -10,28 +11,15 @@ function WorksModal() {
     "デザインはロジックで説明できるようにする",
     "スケジュールは想定の1.5倍〜2倍で出しておく",
   ];
-  const checks = document.getElementsByName(
-    "checklist[]"
-  ) as NodeListOf<HTMLInputElement>;
   const [checkedCount, setCheckedCount] = useState(0);
   const [buttonEnabled, setButtonEnabled] = useState(false);
 
-  // TODO: this does not work
-  for (let i = 0; i < checks.length; i++) {
-    checks[i].addEventListener("change", () => {
-      console.log(checkedCount);
-      if (checks[i].checked) {
-        setCheckedCount(checkedCount + 1);
-        console.log(checkedCount, checks.length);
-        if (checkedCount === checks.length) {
-          setButtonEnabled(true);
-        }
-      } else {
-        setCheckedCount(checkedCount - 1);
-        setButtonEnabled(false);
-      }
-    });
-  }
+  const checkOnChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const count = checkedCount + (e.target.checked ? 1 : -1);
+    setCheckedCount(count);
+    setButtonEnabled(count === checklists.length);
+  };
+
   return (
     <div
       className="modal fade"
@@ -58,16 +46,12 @@ function WorksModal() {
             {checklists.map((check, index) => (
               <div className="form-check" key={index}>
                 <input
-                  name="checklist[]"
                   className="form-check-input"
                   type="checkbox"
-                  value=""
-                  id={`checklist-${index}`}
+                  id={`check_${index}`}
+                  onChange={checkOnChange}
                 />
-                <label
-                  className="form-check-label"
-                  htmlFor={`checklist-${index}`}
-                >
+                <label className="form-check-label" htmlFor={`check_${index}`}>
                   {check}
                 </label>
               </div>
