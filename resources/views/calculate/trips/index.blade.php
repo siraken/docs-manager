@@ -1,7 +1,7 @@
 @extends('layouts/default')
 @section('page')
 
-<div class="row">
+<div class="row mb-3">
   <div class="col-12">
     <h4 class="heading">出張申請</h4>
     <a class="btn btn-light border" href="{{ route('trips.create') }}"><i class="bi bi-plus-circle me-2"></i>出張申請をする</a>
