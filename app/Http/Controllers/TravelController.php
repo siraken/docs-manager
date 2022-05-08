@@ -151,8 +151,6 @@ class TravelController extends Controller
                 {
                     array_shift($csvArray);
                 }
-                var_dump($csvArray);
-                exit;
 
                 $csv = $csvArray;
 

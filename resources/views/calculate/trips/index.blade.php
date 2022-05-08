@@ -30,7 +30,7 @@
                             <input type="hidden" name="header" value="0">
                             <input class="form-check-input" type="checkbox" role="switch" id="toggleCsvHeader" name="header" value="1" checked>
                             <label class="form-check-label" for="toggleCsvHeader">ヘッダーあり</label>
-                          </div>
+                        </div>
                         <button type="submit" class="btn btn-primary">Import</button>
                     </div>
                 </div>
@@ -73,12 +73,6 @@
                 <li><a class="dropdown-item" href="{{ route('trips.pdf', ['id' => $row['id']]) }}">PDF</a></li>
                 {{-- <li><a class="dropdown-item" href="{{ route('trips.view', ['id' => $row['id']]) }}">View</a></li> --}}
                 {{-- <li><a class="dropdown-item" href="{{ route('trips.edit', ['id' => $row['id']]) }}">Edit</a></li> --}}
-                <li>
-                  {{-- <?= $this->Form->postLink(__('Delete'),
-                    ['action' => 'delete', $row->id],
-                    ['class' => 'dropdown-item'],
-                    ['confirm' => __('Are you sure you want to delete # {0}?', $row->id)]
-                  ) ?></li> --}}
               </ul>
             </div>
           </td>

@@ -6,6 +6,7 @@ use App\Models\Travel;
 use Illuminate\Http\Request;
 use App\Models\TravelExpense;
 use setasign\Fpdi\Tcpdf\Fpdi;
+use SplFileObject;
 
 class TravelExpenseController extends Controller
 {
@@ -179,4 +180,86 @@ class TravelExpenseController extends Controller
         // output pdf
         $pdf->Output('biztrip_' . date('Ymd') . '.pdf');
     }
+
+    /**
+     * CSV import
+     */
+    public function csvImport(Request $request)
+    {
+        if ($request->isMethod('POST'))
+        {
+            $file = $request->file('csv');
+            $headerOn = $request->header;
+
+            if ($file->isValid())
+            {
+
+                $csv = new SplFileObject($file->getRealPath());
+                $csv->setFlags(
+                    SplFileObject::READ_CSV |
+                    SplFileObject::READ_AHEAD |
+                    SplFileObject::SKIP_EMPTY |
+                    SplFileObject::DROP_NEW_LINE
+                );
+
+                $csvArray = [];
+                foreach ($csv as $row) {
+                    $csvArray[] = $row;
+                }
+
+                if ($headerOn)
+                {
+                    array_shift($csvArray);
+                }
+
+                $csv = $csvArray;
+                // var_dump($csv);
+                // exit;
+
+                // TODO: もう少し良い感じのロジックがあれば直す
+                foreach ($csv as $row)
+                {
+                    $travelExpense = new TravelExpense();
+                    $travelExpense->rel_id = $row[1];
+                    $travelExpense->dir = $row[2];
+                    $travelExpense->purpose = $row[3];
+                    $travelExpense->apply_date = $row[4];
+                    $travelExpense->date_from = $row[5];
+                    $travelExpense->date_to = $row[6];
+                    $travelExpense->pay_date = $row[7];
+                    $travelExpense->apply_person = $row[8];
+                    $travelExpense->trans_fee = $row[9];
+                    $travelExpense->acm_fee = $row[10];
+                    $travelExpense->gas_fee = $row[11];
+                    $travelExpense->dinner_fee = $row[12];
+                    $travelExpense->lunch_fee = $row[13];
+                    $travelExpense->daily_pay = $row[14];
+                    $travelExpense->total_fee = $row[15];
+                    $travelExpense->save();
+                }
+
+                return redirect('/trips')->with([
+                    'flash_message' => 'Successful',
+                    'flash_status' => 'success',
+                    'flash_icon' => 'check-circle-fill',
+                ]);
+
+            }
+
+            return redirect('/trips')->with([
+                'flash_message' => 'Failed',
+                'flash_status' => 'danger',
+                'flash_icon' => 'times-circle-fill',
+            ]);
+
+        }
+
+        return redirect('/trips')->with([
+            'flash_message' => 'Failed',
+            'flash_status' => 'danger',
+            'flash_icon' => 'times-circle-fill',
+        ]);
+
+    }
+
 }

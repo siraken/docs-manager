@@ -171,6 +171,7 @@ Route::middleware('login')->group(function() {
     // POST
     Route::post('/expenses/create', [TravelExpenseController::class, 'create']);
     Route::post('/expenses/edit/{id}', [TravelExpenseController::class, 'edit']);
+    Route::post('/expenses/import', [TravelExpenseController::class, 'csvImport'])->name('expenses.import');
 
     /**
      * Tasks

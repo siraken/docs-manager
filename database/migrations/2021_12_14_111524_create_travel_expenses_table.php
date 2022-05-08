@@ -15,7 +15,7 @@ class CreateTravelExpensesTable extends Migration
     {
         Schema::create('travel_expenses', function (Blueprint $table) {
             $table->id();
-            $table->integer('rel_id');
+            $table->string('rel_id');
             $table->string('dir');
             $table->string('purpose');
             $table->string('apply_person');
@@ -23,13 +23,13 @@ class CreateTravelExpensesTable extends Migration
             $table->date('date_from');
             $table->date('date_to');
             $table->date('pay_date');
-            $table->integer('trans_fee');
-            $table->integer('acm_fee');
-            $table->integer('gas_fee');
-            $table->integer('dinner_fee');
-            $table->integer('lunch_fee');
-            $table->integer('daily_pay');
-            $table->integer('total_fee');
+            $table->string('trans_fee');
+            $table->string('acm_fee');
+            $table->string('gas_fee');
+            $table->string('dinner_fee');
+            $table->string('lunch_fee');
+            $table->string('daily_pay');
+            $table->string('total_fee');
             $table->timestamps();
         });
     }
