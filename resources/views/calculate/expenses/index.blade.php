@@ -4,7 +4,8 @@
 <div class="row mb-3">
 	<div class="col-12">
         <h4 class="heading">旅費精算</h4>
-		<a href="{{ route('expenses.create') }}" class="btn btn-light border">旅費精算をする</a>
+		<a class="btn btn-light border" href="{{ route('expenses.create') }}"><i class="bi bi-plus-circle me-2"></i>旅費精算をする</a>
+        <a class="btn btn-light border" href="{{ route('expenses.create') }}"><i class="bi bi-download me-2"></i>CSV取り込み</a>
 	</div>
 </div>
 
