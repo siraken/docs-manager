@@ -2,7 +2,7 @@
 @section('page')
 
 <script>
-const url = new URL(location);
+    const url = new URL(location);
 
 function searchQuery(name, value) {
     const params = new URLSearchParams(url.search);
@@ -27,9 +27,10 @@ function searchQuery(name, value) {
             <div class="col-4">
                 <label>検索条件</label>
                 <select id="" name="year" class="form-select" onchange="searchQuery('type', this.value)">
-                @foreach ($columns as $column)
-                    <option value="{{ $column['field'] }}" {{ $column['field'] == $search_column ? 'selected' : '' }}>{{ $column['name'] }}</option>
-                @endforeach
+                    @foreach ($columns as $column)
+                    <option value="{{ $column['field'] }}" {{ $column['field']==$search_column ? 'selected' : '' }}>{{
+                        $column['name'] }}</option>
+                    @endforeach
                 </select>
             </div>
         </div>
@@ -38,16 +39,16 @@ function searchQuery(name, value) {
                 <label>日付</label>
                 <div class="input-group mb-3">
                     <select id="" name="year" class="form-select" onchange="searchQuery('year', this.value)">
-                    @for ($i = 2020; $i < (intval(date('Y', strtotime('+2 years')))); $i++)
-                        <option value="{{ $i }}" {{ $i == $year ? 'selected' : '' }}>{{ $i }}年</option>
-                    @endfor
+                        @for ($i = 2020; $i < (intval(date('Y', strtotime('+2 years')))); $i++) <option value="{{ $i }}"
+                            {{ $i==$year ? 'selected' : '' }}>{{ $i }}年</option>
+                            @endfor
                     </select>
                     <select id="" name="month" class="form-select" onchange="searchQuery('month', this.value)">
-                    @for ($i = 1; $i < 13; $i++)
-                        <option value="{{ $i }}" {{ $i == $month ? 'selected' : '' }}>{{ $i }}月</option>
-                    @endfor
+                        @for ($i = 1; $i < 13; $i++) <option value="{{ $i }}" {{ $i==$month ? 'selected' : '' }}>{{ $i
+                            }}月</option>
+                            @endfor
                     </select>
-                  </div>
+                </div>
             </div>
         </div>
         <div class="table-responsive">
@@ -59,12 +60,12 @@ function searchQuery(name, value) {
                     </tr>
                 </thead>
                 <tbody>
-                @foreach ($works as $row)
+                    @foreach ($works as $row)
                     <tr>
                         <td>{{ $row['name'] }}</td>
                         <td>￥{{ number_format($row['price']) }}</td>
                     </tr>
-                @endforeach
+                    @endforeach
                 </tbody>
             </table>
             <p>Total: ￥{{ number_format($total_price) }}</p>

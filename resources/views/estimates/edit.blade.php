@@ -29,11 +29,14 @@ $items = [];
                 <select name="destination" class="form-select" id="customer">
                     <option selected disabled>選択してください</option>
                     @foreach ($clients as $client)
-                        <option value="{{ $client['id'] }}" {{ $header['destination'] === $client['id'] ? 'selected' : '' }}>{{ $client['name'] }}</option>
+                    <option value="{{ $client['id'] }}" {{ $header['destination']===$client['id'] ? 'selected' : '' }}>
+                        {{ $client['name'] }}</option>
                     @endforeach
                 </select>
-                <input type="text" name="responsible" placeholder="担当者名" class="form-control" value="{{ $header['responsible'] }}">
-                <input type="text" name="honor_title" placeholder="御中 / 様" class="form-control" value="{{ $header['honor_title'] }}">
+                <input type="text" name="responsible" placeholder="担当者名" class="form-control"
+                    value="{{ $header['responsible'] }}">
+                <input type="text" name="honor_title" placeholder="御中 / 様" class="form-control"
+                    value="{{ $header['honor_title'] }}">
             </div>
         </div>
     </div>
@@ -41,7 +44,8 @@ $items = [];
     <div class="row mb-3">
         <div class="col-md-6">
             <label class="form-label">発行日<span class="ms-1 badge bg-danger">必須</span></label>
-            <input type="date" id="issued_date" name="issued_date" class="form-control" value="{{ $header['issued_date'] }}">
+            <input type="date" id="issued_date" name="issued_date" class="form-control"
+                value="{{ $header['issued_date'] }}">
         </div>
         <div class="col-md-6">
             <label class="form-label">有効期限</label>
@@ -56,7 +60,8 @@ $items = [];
         </div>
         <div class="col-md-9">
             <label class="form-label">件名</label>
-            <input type="text" name="title" class="form-control" v-model.trim="titleCount" value="{{ $header['title'] }}">
+            <input type="text" name="title" class="form-control" v-model.trim="titleCount"
+                value="{{ $header['title'] }}">
             <small>70</small>
         </div>
     </div>
@@ -83,33 +88,43 @@ $items = [];
                             <input type="text" name="item_name[]" class="form-control" value="{{ $d['item_name'] }}">
                             <div class="items_box">
                                 <ul class="items">
-                                <?php foreach ($items as $item): ?>
-                                    <li class="items_name" data-name="<?= $item['Item']['item_name']; ?>" data-unit="<?= $item['Item']['unit']; ?>" data-cost="<?= $item['Item']['cost']; ?>" data-tax="<?= $item['Item']['tax']; ?>"><?= $item['Item']['item_name']; ?> @<?= number_format($item['Item']['cost']); ?>円</li>
-                                <?php endforeach; ?>
+                                    <?php foreach ($items as $item): ?>
+                                    <li class="items_name" data-name="<?= $item['Item']['item_name']; ?>"
+                                        data-unit="<?= $item['Item']['unit']; ?>"
+                                        data-cost="<?= $item['Item']['cost']; ?>"
+                                        data-tax="<?= $item['Item']['tax']; ?>">
+                                        <?= $item['Item']['item_name']; ?> @
+                                        <?= number_format($item['Item']['cost']); ?>円
+                                    </li>
+                                    <?php endforeach; ?>
                                 </ul>
                             </div>
                         </td>
                         <td>
-                            <input type="text" name="qty[]" id="{{"qty_".$i}}" class="form-control text-end calc" value="{{ $d['quantity'] }}">
+                            <input type="text" name="qty[]" id="{{" qty_".$i}}" class="form-control text-end calc"
+                                value="{{ $d['quantity'] }}">
                         </td>
                         <td>
-                            <input type="text" name="unit[]" class="form-control text-center" placeholder="単位" value="{{ $d['unit'] }}">
+                            <input type="text" name="unit[]" class="form-control text-center" placeholder="単位"
+                                value="{{ $d['unit'] }}">
                         </td>
                         <td>
-                            <input type="text" name="cost[]" id="{{"cost_".$i}}" class="form-control text-end calc" value="{{ $d['cost'] }}">
+                            <input type="text" name="cost[]" id="{{" cost_".$i}}" class="form-control text-end calc"
+                                value="{{ $d['cost'] }}">
                         </td>
                         <td>
-                            <select name="tax[]" id="{{"tax_".$i}}" class="form-select calc">
-                                <option value="1" {{ $d['tax_id'] === 1 ? 'selected' : '' }}>10%</option>
-                                <option value="2" {{ $d['tax_id'] === 2 ? 'selected' : '' }}>軽減8%</option>
-                                <option value="3" {{ $d['tax_id'] === 3 ? 'selected' : '' }}>8%</option>
-                                <option value="4" {{ $d['tax_id'] === 4 ? 'selected' : '' }}>5%</option>
-                                <option value="5" {{ $d['tax_id'] === 5 ? 'selected' : '' }}>対象外</option>
+                            <select name="tax[]" id="{{" tax_".$i}}" class="form-select calc">
+                                <option value="1" {{ $d['tax_id']===1 ? 'selected' : '' }}>10%</option>
+                                <option value="2" {{ $d['tax_id']===2 ? 'selected' : '' }}>軽減8%</option>
+                                <option value="3" {{ $d['tax_id']===3 ? 'selected' : '' }}>8%</option>
+                                <option value="4" {{ $d['tax_id']===4 ? 'selected' : '' }}>5%</option>
+                                <option value="5" {{ $d['tax_id']===5 ? 'selected' : '' }}>対象外</option>
                             </select>
                         </td>
                         <td>
-                            <input type="text" name="price[]" id="{{"price_".$i}}" class="form-control text-end readonly" tabindex="-1"  value="{{ $d['price'] }}" readonly>
-                            <input type="hidden" id="{{"tax_price_".$i}}" readonly>
+                            <input type="text" name="price[]" id="{{" price_".$i}}"
+                                class="form-control text-end readonly" tabindex="-1" value="{{ $d['price'] }}" readonly>
+                            <input type="hidden" id="{{" tax_price_".$i}}" readonly>
                         </td>
                     </tr>
                     @endforeach
@@ -119,18 +134,22 @@ $items = [];
                     <tr class="sum-tr">
                         <td rowspan="3" style="border: none !important; vertical-align: top;"></td>
                         <td colspan="3" rowspan="3" style="border: none !important; vertical-align: top;">
-                        <span href="#" onclick="addRow()" class="btn btn-light border" id="rowAddBtn"><i class="bi-plus-lg me-1"></i>行の追加</span>
+                            <span href="#" onclick="addRow()" class="btn btn-light border" id="rowAddBtn"><i
+                                    class="bi-plus-lg me-1"></i>行の追加</span>
                         </td>
                         <td colspan="2" style="text-align: center;">小計</td>
-                        <td><input type="text" name="subtotal" id="subtotal" class="form-control text-end readonly" value="0" readonly tabindex="-1" value=""></td>
+                        <td><input type="text" name="subtotal" id="subtotal" class="form-control text-end readonly"
+                                value="0" readonly tabindex="-1" value=""></td>
                     </tr>
                     <tr class="sum-tr">
                         <td colspan="2" style="text-align: center;">消費税</td>
-                        <td><input type="text" name="taxTotal" id="taxTotal" class="form-control text-end readonly" value="0" readonly tabindex="-1" value=""></td>
+                        <td><input type="text" name="taxTotal" id="taxTotal" class="form-control text-end readonly"
+                                value="0" readonly tabindex="-1" value=""></td>
                     </tr>
                     <tr class="sum-tr">
                         <td colspan="2" style="text-align: center;">合計</td>
-                        <td><input type="text" name="totalPrice" id="totalPrice" class="form-control text-end readonly" value="0" readonly tabindex="-1"></td>
+                        <td><input type="text" name="totalPrice" id="totalPrice" class="form-control text-end readonly"
+                                value="0" readonly tabindex="-1"></td>
                     </tr>
                 </tbody>
             </table>

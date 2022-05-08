@@ -36,17 +36,20 @@
 
         <div class="mb-1">
             <label for="apply_date">申請日</label>
-            <input type="date" id="apply_date" class="form-control" name="apply_date" value="{{ date('Y-m-d', strtotime('now')) }}">
+            <input type="date" id="apply_date" class="form-control" name="apply_date"
+                value="{{ date('Y-m-d', strtotime('now')) }}">
         </div>
 
         <div class="mb-1">
             <label for="date_from">出発日</label>
-            <input type="date" id="date_from" class="form-control" name="date_from" value="{{ date('Y-m-d', strtotime('+1 day')) }}">
+            <input type="date" id="date_from" class="form-control" name="date_from"
+                value="{{ date('Y-m-d', strtotime('+1 day')) }}">
         </div>
 
         <div class="mb-1">
             <label for="date_to">帰着日</label>
-            <input type="date" id="date_to" class="form-control" name="date_to" value="{{ date('Y-m-d', strtotime('+1 week')) }}">
+            <input type="date" id="date_to" class="form-control" name="date_to"
+                value="{{ date('Y-m-d', strtotime('+1 week')) }}">
         </div>
 
         {{-- TODO:精算日 --}}

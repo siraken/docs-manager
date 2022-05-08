@@ -4,9 +4,9 @@
 @csrf
 
 <div class="row mb-3">
-	<div class="col-12">
-		<a href="{{ route('inquiries.index') }}" class="btn btn-light border">戻る</a>
-	</div>
+    <div class="col-12">
+        <a href="{{ route('inquiries.index') }}" class="btn btn-light border">戻る</a>
+    </div>
 </div>
 
 <div class="row mb-3">

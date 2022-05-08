@@ -17,7 +17,8 @@
         </div>
         <div class="col-6">
             <label class="form-label">詳細</label>
-            <textarea name="description" id="description" class="form-control" style="width: 100%; height: 480px;">{{ old('description', $task->description) }}</textarea>
+            <textarea name="description" id="description" class="form-control"
+                style="width: 100%; height: 480px;">{{ old('description', $task->description) }}</textarea>
         </div>
         <div class="col-6">
             <label class="form-label">プレビュー</label>

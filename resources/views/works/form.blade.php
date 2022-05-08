@@ -1,22 +1,12 @@
 @extends('layouts/default')
 @section('page')
 
-<?php
-$checks = [
-    "ヒアリングでやることと予算感をすり合わせする",
-    "契約書・NDAを取り交わす",
-    "着手金、納品時残金で分けて支払いを受けるようにする",
-    "なるべく納期短めの案件にする",
-    "デザインはロジックで説明できるようにする",
-    "スケジュールは想定の1.5倍〜2倍で出しておく",
-];
-?>
-
 <form method="post" action="" autocomplete="off" id="MainForm" class="">
     <div class="row mb-3">
         <div class="col-12">
             <a href="{{ route('works.index') }}" class="btn btn-light border">戻る</a>
-            <button class="btn btn-light border" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal">保存する</button>
+            <button class="btn btn-light border" type="button" data-bs-toggle="modal"
+                data-bs-target="#exampleModal">保存する</button>
         </div>
     </div>
 
@@ -29,31 +19,34 @@ $checks = [
 
             <label class="form-label">取引先</label>
             <select id="" name="client_id" class="form-select">
-            @foreach ($clients as $client)
-                <option value="{{ $client['id'] }}" {{ $client['id'] === old('client_id', $work['client_id']) ? 'selected' : '' }}>{{ $client['name'] }}</option>
-            @endforeach
+                @foreach ($clients as $client)
+                <option value="{{ $client['id'] }}" {{ $client['id']===old('client_id', $work['client_id']) ? 'selected'
+                    : '' }}>{{ $client['name'] }}</option>
+                @endforeach
             </select>
 
             <label class="form-label">状態</label>
             <select id="" name="status" class="form-select">
-                <option value="0" {{ old('status', $work['status']) === 0 ? 'selected' : '' }}>作業中</option>
-                <option value="1" {{ old('status', $work['status']) === 1 ? 'selected' : '' }}>完了</option>
-                <option value="2" {{ old('status', $work['status']) === 2 ? 'selected' : '' }}>連絡待ち</option>
-                <option value="3" {{ old('status', $work['status']) === 3 ? 'selected' : '' }}>保留</option>
-                <option value="4" {{ old('status', $work['status']) === 4 ? 'selected' : '' }}>打診中</option>
-                <option value="5" {{ old('status', $work['status']) === 5 ? 'selected' : '' }}>メンテナンス</option>
-                <option value="6" {{ old('status', $work['status']) === 6 ? 'selected' : '' }}>キャンセル</option>
-                <option value="7" {{ old('status', $work['status']) === 7 ? 'selected' : '' }}>見積中</option>
+                <option value="0" {{ old('status', $work['status'])===0 ? 'selected' : '' }}>作業中</option>
+                <option value="1" {{ old('status', $work['status'])===1 ? 'selected' : '' }}>完了</option>
+                <option value="2" {{ old('status', $work['status'])===2 ? 'selected' : '' }}>連絡待ち</option>
+                <option value="3" {{ old('status', $work['status'])===3 ? 'selected' : '' }}>保留</option>
+                <option value="4" {{ old('status', $work['status'])===4 ? 'selected' : '' }}>打診中</option>
+                <option value="5" {{ old('status', $work['status'])===5 ? 'selected' : '' }}>メンテナンス</option>
+                <option value="6" {{ old('status', $work['status'])===6 ? 'selected' : '' }}>キャンセル</option>
+                <option value="7" {{ old('status', $work['status'])===7 ? 'selected' : '' }}>見積中</option>
             </select>
 
             <label class="form-label">開始日</label>
-            <input type="date" name="start_date" class="form-control" value="{{ old('start_date', $work['start_date']) }}">
+            <input type="date" name="start_date" class="form-control"
+                value="{{ old('start_date', $work['start_date']) }}">
 
             <label class="form-label">終了日</label>
             <input type="date" name="end_date" class="form-control" value="{{ old('end_date', $work['end_date']) }}">
 
             <label class="form-label">支払日</label>
-            <input type="date" name="payment_date" class="form-control" value="{{ old('payment_date', $work['payment_date']) }}">
+            <input type="date" name="payment_date" class="form-control"
+                value="{{ old('payment_date', $work['payment_date']) }}">
 
             <label class="form-label">請求金額</label>
             <div class="input-group">

@@ -4,10 +4,10 @@
 @csrf
 
 <div class="row mb-3">
-	<div class="col-12">
-		<a href="{{ route('estimates.create') }}" class="btn btn-light border">見積書を新しく作る</a>
-		<a href="{{ route('estimates.trash') }}" class="btn btn-light border">ごみ箱</a>
-	</div>
+    <div class="col-12">
+        <a href="{{ route('estimates.create') }}" class="btn btn-light border">見積書を新しく作る</a>
+        <a href="{{ route('estimates.trash') }}" class="btn btn-light border">ごみ箱</a>
+    </div>
 </div>
 
 <div class="row">
@@ -47,7 +47,10 @@
                                 break;
                         }
                         ?>
-                        <span class="status{{ $issued_status_class }}" onclick="slipSetter.status(this, 'issued', {{ $row['id'] }}, {{ empty($row['is_issued']) ? '0' : $row['is_issued'] }})">{!! $row['is_issued'] === 1 ? '<i class="fa fa-fw fa-check"></i>' : '' !!}{{ $issued_status }}</span>
+                        <span class="status{{ $issued_status_class }}"
+                            onclick="slipSetter.status(this, 'issued', {{ $row['id'] }}, {{ empty($row['is_issued']) ? '0' : $row['is_issued'] }})">{!!
+                            $row['is_issued'] === 1 ? '<i class="fa fa-fw fa-check"></i>' : '' !!}{{ $issued_status
+                            }}</span>
 
                         {{-- 受注状況 --}}
                         <?php
@@ -72,7 +75,10 @@
                                 break;
                         }
                         ?>
-                        <span class="status{{ $ordered_status_class }}"  onclick="slipSetter.status(this, 'ordered', {{ $row['id'] }}, {{ empty($row['is_ordered']) ? '0' : $row['is_ordered'] }})">{!! $row['is_ordered'] === 1 ? '<i class="fa fa-fw fa-check"></i>' : '' !!}{{ $ordered_status }}</span>
+                        <span class="status{{ $ordered_status_class }}"
+                            onclick="slipSetter.status(this, 'ordered', {{ $row['id'] }}, {{ empty($row['is_ordered']) ? '0' : $row['is_ordered'] }})">{!!
+                            $row['is_ordered'] === 1 ? '<i class="fa fa-fw fa-check"></i>' : '' !!}{{ $ordered_status
+                            }}</span>
                     </td>
                     {{-- 文書 --}}
                     <td>
@@ -100,17 +106,20 @@
                     {{-- アクション --}}
                     <td>
                         <div class="dropdown">
-                            <button class="btn btn-light border dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="btn btn-light border dropdown-toggle" type="button" id="dropdownMenuButton1"
+                                data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-gear-fill"></i>
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                                 @if (!empty($row->note))
                                 <li><small class="dropdown-item disabled">{{ $row->note }}</small></li>
                                 @endif
-                                <li><a class="dropdown-item" href="{{ route('estimates.pdf', ['id' => $row['id']]) }}">PDF出力</a></li>
-                                <li><a class="dropdown-item" href="{{ route('estimates.delete', ['id' => $row['id']]) }}">ごみ箱に入れる</a></li>
+                                <li><a class="dropdown-item"
+                                        href="{{ route('estimates.pdf', ['id' => $row['id']]) }}">PDF出力</a></li>
+                                <li><a class="dropdown-item"
+                                        href="{{ route('estimates.delete', ['id' => $row['id']]) }}">ごみ箱に入れる</a></li>
                             </ul>
-                          </div>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -118,7 +127,7 @@
         </table>
 
         @if (empty($estimates))
-            <p style="text-align: center;">データがありません</p>
+        <p style="text-align: center;">データがありません</p>
         @endif
     </div>
 </div>

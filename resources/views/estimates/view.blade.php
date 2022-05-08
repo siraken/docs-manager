@@ -202,57 +202,62 @@ if (!file_exists($url_files.'estimates/'.$header['Estimate']['estimate_no'].'.pd
 ?>
 
 <style>
-/* --- 情報ボックス --- */
-.info_box {
-    display: flex;
-}
+    /* --- 情報ボックス --- */
+    .info_box {
+        display: flex;
+    }
 
-/* --- メモ --- */
-.note_form {
-    width: 60%;
-    margin: 0;
-}
-.note_form_area {
-    float: right;
-}
-.form_input {
-    font-size: 16px;
-    background-color: #fff;
-    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
-    display: block;
-    color: #162533;
-    border: 1px solid #c8cfd7;
-    padding: 8px 12px;
-    width: 350px;
-    height: 105px;
-    box-sizing: border-box;
-    transition: .2s;
-}
-.form_input:focus {
-    outline: 0;
-    border-color: #56ccdb;
-}
+    /* --- メモ --- */
+    .note_form {
+        width: 60%;
+        margin: 0;
+    }
 
-/* --- 見積書情報 --- */
-.estimate_info {
-    padding: 10px;
-    margin: 10px 0;
-    width: 40%;
-    line-height: 1.8;
-}
-.estimate_info dt {
-    float: left;
-}
-.estimate_info dd {
-    margin-left: 10px;
-    padding-left: 130px;
-}
+    .note_form_area {
+        float: right;
+    }
 
-/* --- プレビュー --- */
-iframe {
-    border-radius: .4em;
-    border: solid 1px #eee;
-}
+    .form_input {
+        font-size: 16px;
+        background-color: #fff;
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+        display: block;
+        color: #162533;
+        border: 1px solid #c8cfd7;
+        padding: 8px 12px;
+        width: 350px;
+        height: 105px;
+        box-sizing: border-box;
+        transition: .2s;
+    }
+
+    .form_input:focus {
+        outline: 0;
+        border-color: #56ccdb;
+    }
+
+    /* --- 見積書情報 --- */
+    .estimate_info {
+        padding: 10px;
+        margin: 10px 0;
+        width: 40%;
+        line-height: 1.8;
+    }
+
+    .estimate_info dt {
+        float: left;
+    }
+
+    .estimate_info dd {
+        margin-left: 10px;
+        padding-left: 130px;
+    }
+
+    /* --- プレビュー --- */
+    iframe {
+        border-radius: .4em;
+        border: solid 1px #eee;
+    }
 </style>
 
 <div style="display: flex; justify-content: space-between;">
@@ -261,30 +266,47 @@ iframe {
         <a class="btn btn-primary" id="edit_button"><i class="fa fa-pencil-square-o"></i> 編集</a>
         <a class="btn btn-primary" id="copy_button"><i class="fa fa-files-o"></i> 複製</a>
         <?php if (!$header['Estimate']['cvt_flg'] == 1) { echo '<a class="btn btn-primary" id="convert_button"><i class="fa fa-refresh"></i> 変換</a>'; }; ?>
-        <a class="btn btn-primary" id="del_button"><i class="fa fa-trash-o"></i> <?= empty($header['Estimate']['del_flg']) ? '' : '完全に' ;?>削除</a>
-        <a href="../../files/estimates/<?= $header['Estimate']['estimate_no']; ?>.pdf" download class="btn btn-primary issue_pull" id="add_button"><i class="fa fa-download"></i> ダウンロード</a>
+        <a class="btn btn-primary" id="del_button"><i class="fa fa-trash-o"></i>
+            <?= empty($header['Estimate']['del_flg']) ? '' : '完全に' ;?>削除
+        </a>
+        <a href="../../files/estimates/<?= $header['Estimate']['estimate_no']; ?>.pdf" download
+            class="btn btn-primary issue_pull" id="add_button"><i class="fa fa-download"></i> ダウンロード</a>
     </div>
 </div>
 
 <div class="info_box">
     <dl class="estimate_info">
         <dt>見積番号</dt>
-        <dd><?= $header['Estimate']['estimate_no'];?><?= empty($header['Estimate']['del_flg']) ? '' : '（削除済み）';?></dd>
+        <dd>
+            <?= $header['Estimate']['estimate_no'];?>
+            <?= empty($header['Estimate']['del_flg']) ? '' : '（削除済み）';?>
+        </dd>
         <dt>取引先</dt>
-        <dd><?= empty($header['Estimate']['responsible']) ? $header['Estimate']['destination'].' '.$header['Estimate']['honor_title'] : $header['Estimate']['destination'].' '.$header['Estimate']['responsible'].' '.$header['Estimate']['honor_title']; ?></dd>
+        <dd>
+            <?= empty($header['Estimate']['responsible']) ? $header['Estimate']['destination'].' '.$header['Estimate']['honor_title'] : $header['Estimate']['destination'].' '.$header['Estimate']['responsible'].' '.$header['Estimate']['honor_title']; ?>
+        </dd>
         <dt>件名</dt>
-        <dd><?= !empty($header['Estimate']['title']) ? $header['Estimate']['title'] : '-' ; ?></dd>
+        <dd>
+            <?= !empty($header['Estimate']['title']) ? $header['Estimate']['title'] : '-' ; ?>
+        </dd>
         <dt>見積金額</dt>
-        <dd><?= number_format($header['Estimate']['price']); ?>円</dd>
+        <dd>
+            <?= number_format($header['Estimate']['price']); ?>円
+        </dd>
         <dt>発行日</dt>
-        <dd><?= date('Y/m/d', strtotime($header['Estimate']['issued_date'])); ?></dd>
+        <dd>
+            <?= date('Y/m/d', strtotime($header['Estimate']['issued_date'])); ?>
+        </dd>
         <dt>有効期限</dt>
-        <dd><?= !empty($header['Estimate']['exp_date']) ? date('Y/m/d', strtotime($header['Estimate']['exp_date'])) : '-';?></dd>
+        <dd>
+            <?= !empty($header['Estimate']['exp_date']) ? date('Y/m/d', strtotime($header['Estimate']['exp_date'])) : '-';?>
+        </dd>
     </dl>
     <div class="note_form">
         <div class="note_form_area">
             <form method="post">
-                <textarea class="form_input" placeholder="社内メモ" name="note" id="noteBox" spellcheck="false"><?= $header['Estimate']['note']; ?></textarea>
+                <textarea class="form_input" placeholder="社内メモ" name="note" id="noteBox"
+                    spellcheck="false"><?= $header['Estimate']['note']; ?></textarea>
                 <button type="submit" class="btn btn-primary" id="saveNote" style="margin: 3px 0;">メモを保存</button>
             </form>
         </div>
@@ -292,10 +314,11 @@ iframe {
 </div>
 
 <!-- --- --- 見積書プレビュー --- --- -->
-<iframe id="pdfFrame" src="../../files/estimates/<?= $header['Estimate']['estimate_no']; ?>.pdf" frameborder="0" width="100%" height="100%" toolbar="1"></iframe>
+<iframe id="pdfFrame" src="../../files/estimates/<?= $header['Estimate']['estimate_no']; ?>.pdf" frameborder="0"
+    width="100%" height="100%" toolbar="1"></iframe>
 
 <script>
-$(function(){
+    $(function(){
 
     $('#edit_button').on('click', function(event) {
         location.href="../edit/<?= $header['Estimate']['estimate_no'];?>";

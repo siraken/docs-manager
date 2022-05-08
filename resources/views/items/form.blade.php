@@ -28,7 +28,8 @@
             <label class="form-label">税率</label>
             {{ old('tax_id', $item->tax_id) }}
             <select class="form-select" name="tax_id">
-                <option value="0" {{ (old('tax_id', $item->tax_id) == "0") || (old('tax_id', $item->tax_id) == null) ? "selected" : "" }} disabled>選択してください</option>
+                <option value="0" {{ (old('tax_id', $item->tax_id) == "0") || (old('tax_id', $item->tax_id) == null) ?
+                    "selected" : "" }} disabled>選択してください</option>
                 <option value="1" {{ old('tax_id', $item->tax_id) == "1" ? "selected" : "" }}>10%</option>
                 <option value="2" {{ old('tax_id', $item->tax_id) == "2" ? "selected" : "" }}>軽減8%</option>
                 <option value="3" {{ old('tax_id', $item->tax_id) == "3" ? "selected" : "" }}>8%</option>

@@ -14,7 +14,8 @@
         <div class="col-12">
             <div class="mb-3">
                 <label for="formTitleInput" class="form-label">取引先名</label>
-                <input type="text" class="form-control" id="formTitleInput" name="name" placeholder="取引先名" value="{{ old('name', $client->name) }}" required>
+                <input type="text" class="form-control" id="formTitleInput" name="name" placeholder="取引先名"
+                    value="{{ old('name', $client->name) }}" required>
             </div>
         </div>
     </div>
