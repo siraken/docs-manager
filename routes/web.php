@@ -15,6 +15,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\WorkController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SpreadSheetController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +40,9 @@ Route::post('/login', [LoginController::class, 'auth'])->name('loginAuth');
  * To be authenticated is required
  */
 Route::middleware('login')->group(function() {
+
+    // spreadsheet test
+    Route::get('/sheet', [SpreadSheetController::class, 'store']);
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
