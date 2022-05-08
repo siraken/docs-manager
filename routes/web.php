@@ -157,6 +157,8 @@ Route::middleware('login')->group(function() {
     Route::get('/trips/pdf/{id}', [TravelController::class, 'pdf'])->name('trips.pdf');
     // POST
     Route::post('/trips/create', [TravelController::class, 'create']);
+    Route::post('/trips/import', [TravelController::class, 'csvImport'])->name('trips.import');
+
 
     /**
      * Expense

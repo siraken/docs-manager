@@ -5,7 +5,39 @@
   <div class="col-12">
     <h4 class="heading">出張申請</h4>
     <a class="btn btn-light border" href="{{ route('trips.create') }}"><i class="bi bi-plus-circle me-2"></i>出張申請をする</a>
-    <a class="btn btn-light border" href="{{ route('trips.create') }}"><i class="bi bi-download me-2"></i>CSV取り込み</a>
+    {{-- CSVモーダル開く --}}
+    <button type="button" class="btn btn-light border" data-bs-toggle="modal" data-bs-target="#csvImportModal">
+        <i class="bi bi-download me-2"></i>CSV取り込み
+    </button>
+    {{-- CSV取り込みモーダル --}}
+    <div class="modal fade" id="csvImportModal" tabindex="-1" aria-labelledby="csvImportModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form action="{{ route('trips.import') }}" method="post" enctype="multipart/form-data">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="csvImportModalLabel">CSV取り込み</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        @csrf
+                        <div class="form-group">
+                            <label for="csvFormFile" class="form-label">CSVを選択してください</label>
+                            <input id="csvFormFile" name="csv" class="form-control" type="file" accept=".csv" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="header" value="0">
+                            <input class="form-check-input" type="checkbox" role="switch" id="toggleCsvHeader" name="header" value="1" checked>
+                            <label class="form-check-label" for="toggleCsvHeader">ヘッダーあり</label>
+                          </div>
+                        <button type="submit" class="btn btn-primary">Import</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
   </div>
 </div>
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Travel;
 use setasign\Fpdi\Tcpdf\Fpdi;
+use SplFileObject;
 
 class TravelController extends Controller
 {
@@ -117,6 +118,80 @@ class TravelController extends Controller
 
         // output pdf
         $pdf->Output(date('Y-m-d') . '.pdf');
+
+    }
+
+    /**
+     * CSV import
+     */
+    public function csvImport(Request $request)
+    {
+        if ($request->isMethod('POST'))
+        {
+            $file = $request->file('csv');
+            $headerOn = $request->header;
+
+            if ($file->isValid())
+            {
+
+                $csv = new SplFileObject($file->getRealPath());
+                $csv->setFlags(
+                    SplFileObject::READ_CSV |
+                    SplFileObject::READ_AHEAD |
+                    SplFileObject::SKIP_EMPTY |
+                    SplFileObject::DROP_NEW_LINE
+                );
+
+                $csvArray = [];
+                foreach ($csv as $row) {
+                    $csvArray[] = $row;
+                }
+
+                if ($headerOn)
+                {
+                    array_shift($csvArray);
+                }
+                var_dump($csvArray);
+                exit;
+
+                $csv = $csvArray;
+
+                // TODO: もう少し良い感じのロジックがあれば直す
+                foreach ($csv as $row)
+                {
+                    $travel = new Travel();
+                    $travel->rel_id = $row[1];
+                    $travel->dir = $row[2];
+                    $travel->purpose = $row[3];
+                    $travel->price = $row[4];
+                    $travel->date_from = $row[5];
+                    $travel->date_to = $row[6];
+                    $travel->apply_date = $row[7];
+                    $travel->apply_person = $row[8];
+                    $travel->save();
+                }
+
+                return redirect('/trips')->with([
+                    'flash_message' => 'Successful',
+                    'flash_status' => 'success',
+                    'flash_icon' => 'check-circle-fill',
+                ]);
+
+            }
+
+            return redirect('/trips')->with([
+                'flash_message' => 'Failed',
+                'flash_status' => 'danger',
+                'flash_icon' => 'times-circle-fill',
+            ]);
+
+        }
+
+        return redirect('/trips')->with([
+            'flash_message' => 'Failed',
+            'flash_status' => 'danger',
+            'flash_icon' => 'times-circle-fill',
+        ]);
 
     }
 }
