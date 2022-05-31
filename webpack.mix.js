@@ -17,3 +17,10 @@ mix
   .sass("resources/sass/app.scss", "public/css")
   .sourceMaps(true, "inline-source-map")
   .version();
+
+mix.browserSync({
+  proxy: {
+    target: "laravel.test",
+  },
+  files: ["resources/views/**/*.blade.php", "public/js/**/*.js"],
+});
