@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Access;
+use Illuminate\Support\Facades\Mail;
 
 class LoginController extends Controller
 {
@@ -55,12 +56,31 @@ class LoginController extends Controller
                 'email' => $user->email
             ]);
 
-            // アクセスログの記録
+            // Log an access log
             $access->user_id = $user->id;
             $access->status = 'logged in';
             $access->access_date = date('Y-m-d H:i:s');
             $access->ip_address = $request->ip();
             $access->save();
+
+            // Send email to user
+            Mail::send(
+                [
+                    'text' => 'emails.login'
+                ],
+                [
+                    'datetime' => date('Y-m-d H:i:s'),
+                    'name' => $user->name,
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->header('User-Agent'),
+                ],
+                function ($message) use ($user) {
+                    $message
+                        ->from('system@novalumo.llc', 'Novalumo Docs Manager')
+                        ->to($user->email, $user->name)
+                        ->subject('ログイン通知');
+                }
+            );
 
             return redirect('/')->with([
                 'flash_message' => 'Logged in as ' . $user->name,
