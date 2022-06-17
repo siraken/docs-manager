@@ -40,6 +40,14 @@ case $1 in
     ./vendor/bin/sail artisan migrate
     ./vendor/bin/sail artisan db:seed
 ;;
+"prod:pull")
+    git fetch
+    git reset --hard origin/main
+;;
+"prod:update")
+    composer update
+    yarn prod
+;;
 *)
     echo Unexpected command.
 ;;
