@@ -64,23 +64,7 @@ class LoginController extends Controller
             $access->save();
 
             // Send email to user
-            Mail::send(
-                [
-                    'text' => 'emails.login'
-                ],
-                [
-                    'datetime' => date('Y-m-d H:i:s'),
-                    'name' => $user->name,
-                    'ip' => $request->ip(),
-                    'user_agent' => $request->header('User-Agent'),
-                ],
-                function ($message) use ($user) {
-                    $message
-                        ->from('system@novalumo.llc', 'Novalumo Docs Manager')
-                        ->to($user->email, $user->name)
-                        ->subject('ログイン通知');
-                }
-            );
+            $this->send_email($request, $user);
 
             return redirect('/')->with([
                 'flash_message' => 'Logged in as ' . $user->name,
@@ -127,5 +111,29 @@ class LoginController extends Controller
             'flash_status' => 'success',
             'flash_icon' => 'check-circle-fill',
         ]);
+    }
+
+    private function send_email($request, $user)
+    {
+        if (env('APP_ENV') === 'production')
+        {
+            Mail::send(
+                [
+                    'text' => 'emails.login'
+                ],
+                [
+                    'datetime' => date('Y-m-d H:i:s'),
+                    'name' => $user->name,
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->header('User-Agent'),
+                ],
+                function ($message) use ($user) {
+                    $message
+                        ->from('system@novalumo.llc', 'Novalumo Docs Manager')
+                        ->to($user->email, $user->name)
+                        ->subject('ログイン通知');
+                }
+            );
+        }
     }
 }
