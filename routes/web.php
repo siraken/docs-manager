@@ -37,6 +37,17 @@ Route::get('/login', function() {
 Route::post('/login', [LoginController::class, 'auth'])->name('loginAuth');
 
 /**
+ * To be not authenticated is required to access
+ */
+Route::get('/downloader', function() {
+    // Get files on uploads directory
+    $files = array_diff(scandir(storage_path('app/public/uploads/')), array('.', '..'));
+    $files = array_values($files);
+
+    return view('files.index', compact('files'));
+})->name('files.index');
+
+/**
  * To be authenticated is required
  */
 Route::middleware('login')->group(function() {
@@ -215,4 +226,38 @@ Route::middleware('login')->group(function() {
     // GET
     // Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
     Route::get('/logs/access', [LogController::class, 'access'])->name('logs.access');
+
+    /**
+     * Upload and download
+     */
+    // Route::get('/downloader', function() {
+    //     // Get files on uploads directory
+    //     $files = array_diff(scandir(storage_path('app/public/uploads/')), array('.', '..'));
+    //     $files = array_values($files);
+
+    //     return view('files.index', compact('files'));
+    // })->name('files.index');
+    Route::get('/downloader/{file}', function($file) {
+        return response()->download(storage_path('app/public/uploads/' . $file));
+    })->name('files.download');
+    Route::post('/uploader', function() {
+        $sender_name = $_POST['name'];
+        $sender_email = $_POST['email'];
+        $sender_file = $_FILES['file'];
+
+        // Save file on storage folder
+        $file_name = $sender_name . "_" . $sender_file['name'];
+        $file_tmp_name = $sender_file['tmp_name'];
+        $file_path = storage_path('app/public/uploads/' . $file_name);
+
+        move_uploaded_file($file_tmp_name, $file_path);
+
+        // Redirect if success with success message
+        return redirect()->route('files.index')->with('success', 'File uploaded successfully!');
+
+    })->name('files.upload');
+    Route::delete('/downloader/delete/{file}', function($file) {
+        unlink(storage_path('app/public/uploads/' . $file));
+        return redirect()->route('files.index');
+    })->name('files.delete');
 });

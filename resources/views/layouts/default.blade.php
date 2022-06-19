@@ -166,6 +166,12 @@
                                 <span class="ml-2">セキュリティ</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->route()->named('files.*') ? 'active fw-bold' : '' }}"
+                                href="{{ route('files.index') }}">
+                                <span class="ml-2">ファイル管理</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </nav>
