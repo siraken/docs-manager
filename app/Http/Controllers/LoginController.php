@@ -149,27 +149,27 @@ class LoginController extends Controller
         if ($user !== null) {
 
             // JSON
-            return response()->json([
-                'status' => 'success',
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                ],
-            ]);
+            // return response()->json([
+            //     'status' => 'success',
+            //     'user' => [
+            //         'id' => $user->id,
+            //         'name' => $user->name,
+            //         'email' => $user->email,
+            //     ],
+            // ]);
 
             // セッション
-            // session([
-            //     'user_id' => $user->id,
-            //     'name'  => $user->name,
-            //     'email' => $user->email
-            // ]);
+            session([
+                'user_id' => $user->id,
+                'name'  => $user->name,
+                'email' => $user->email
+            ]);
 
-            // return redirect('/')->with([
-            //     'flash_message' => 'Logged in with NFC.',
-            //     'flash_status' => 'success',
-            //     'flash_icon' => 'check-circle-fill',
-            // ]);
+            return redirect('/')->with([
+                'flash_message' => 'Logged in with NFC.',
+                'flash_status' => 'success',
+                'flash_icon' => 'check-circle-fill',
+            ]);
         } else {
             return redirect('/login')->with([
                 'flash_message' => 'Failed to login.',

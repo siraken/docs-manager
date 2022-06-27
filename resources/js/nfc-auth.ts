@@ -50,7 +50,7 @@ window.addEventListener("load", () => {
           tagDataTextarea.textContent += `> Serial Number: ${serialNumber}`;
 
           axios
-            .post("/login-nfc", {
+            .post("/docs-manager/login-nfc", {
               serialNumber: serialNumber,
               pin: pinInput.value,
             })
