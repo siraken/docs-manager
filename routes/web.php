@@ -36,6 +36,8 @@ Route::get('/login', function() {
 })->name('login');
 Route::post('/login', [LoginController::class, 'auth'])->name('loginAuth');
 
+Route::post('/login-nfc', [LoginController::class, 'auth_with_nfc'])->name('login-nfc');
+
 /**
  * To be not authenticated is required to access
  */

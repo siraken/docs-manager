@@ -136,4 +136,36 @@ class LoginController extends Controller
             );
         }
     }
+
+    public function auth_with_nfc(Request $request)
+    {
+        // Get info
+        $serial = $request->serialNumber;
+        $pin = $request->pin;
+
+        // Find user
+        $user = User::where('nfc_serial_number', $serial)->where('nfc_pin', $pin)->first();
+
+        if ($user !== null) {
+            // セッション
+            session([
+                'user_id' => $user->id,
+                'name'  => $user->name,
+                'email' => $user->email
+            ]);
+
+            return redirect('/')->with([
+                'flash_message' => 'Logged in with NFC.',
+                'flash_status' => 'success',
+                'flash_icon' => 'check-circle-fill',
+            ]);
+        } else {
+            return redirect('/login')->with([
+                'flash_message' => 'Failed to login.',
+                'flash_status' => 'danger',
+                'flash_icon' => 'times-circle',
+            ]);
+        }
+
+    }
 }
