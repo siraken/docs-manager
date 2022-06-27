@@ -1,37 +1,49 @@
 import axios from "axios";
 
 window.addEventListener("load", () => {
-  if ("NDEFReader" in window) {
-    // Create a button to sign in with NFC
-    const signInButton = document.createElement("button");
-    signInButton.textContent = "Sign in with NFC";
-    signInButton.style.display = "block";
-    signInButton.style.zIndex = "10";
-    signInButton.style.position = "fixed";
-    signInButton.style.bottom = "20px";
-    document.body.appendChild(signInButton);
+  // For debugging on PC
+  // (window as any).NDEFReader = "";
+
+  if ("NDEFReader" in window && window.location.href.match(/login/)) {
+    // Create a box
+    const signInWithNFC = document.createElement("div");
+    signInWithNFC.className = "box";
+    signInWithNFC.id = "signInWithNFC";
+    signInWithNFC.style.display = "flex";
+    signInWithNFC.style.flexDirection = "column";
+    signInWithNFC.style.alignItems = "center";
+    signInWithNFC.style.justifyContent = "center";
+    signInWithNFC.style.gap = "0.25rem";
+    signInWithNFC.style.padding = "10px";
+    signInWithNFC.style.position = "fixed";
+    signInWithNFC.style.top = "0";
+    signInWithNFC.style.right = "0";
+    signInWithNFC.style.backgroundColor = "white";
+    signInWithNFC.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.5)";
+    document.body.appendChild(signInWithNFC);
 
     // Create a textarea to display the NFC tag data
     const tagDataTextarea = document.createElement("textarea");
+    tagDataTextarea.classList.add("form-control");
     tagDataTextarea.setAttribute("readonly", "readonly");
-    tagDataTextarea.setAttribute("rows", "10");
+    tagDataTextarea.setAttribute("rows", "2");
     tagDataTextarea.style.display = "block";
-    tagDataTextarea.style.zIndex = "10";
-    tagDataTextarea.style.position = "fixed";
-    tagDataTextarea.style.bottom = "100px";
-    tagDataTextarea.style.left = "20px";
-    document.body.appendChild(tagDataTextarea);
+    document.getElementById("signInWithNFC")?.appendChild(tagDataTextarea);
 
-    // input for asking PIN
+    // Create a input to enter the PIN code
     const pinInput = document.createElement("input");
+    pinInput.classList.add("form-control");
     pinInput.setAttribute("type", "password");
     pinInput.setAttribute("placeholder", "PIN");
     pinInput.style.display = "block";
-    pinInput.style.zIndex = "10";
-    pinInput.style.position = "fixed";
-    pinInput.style.bottom = "200px";
-    pinInput.style.left = "20px";
-    document.body.appendChild(pinInput);
+    document.getElementById("signInWithNFC")?.appendChild(pinInput);
+
+    // Create a button to sign in with NFC
+    const signInButton = document.createElement("button");
+    signInButton.textContent = "Sign in with NFC";
+    signInButton.classList.add("btn", "btn-primary");
+    signInButton.style.display = "block";
+    document.getElementById("signInWithNFC")?.appendChild(signInButton);
 
     const reader = new NDEFReader();
 

@@ -40,6 +40,7 @@
         "highlight": "^0.2.4",
         "jquery": "^3.6.0",
         "jquery-ui": "^1.13.1",
+        "lit": "^2.2.6",
         "marked": "^4.0.12",
         "react-router-dom": "^6.3.0"
     }
