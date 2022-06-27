@@ -60,7 +60,7 @@ window.addEventListener("load", () => {
       try {
         const reader = new NDEFReader();
         await reader.scan();
-        tagDataTextarea.textContent = "scan started";
+        tagDataTextarea.textContent = "Scanning...";
 
         reader.addEventListener("error", () => {
           console.log("Error");
@@ -74,11 +74,11 @@ window.addEventListener("load", () => {
               serialNumber: serialNumber,
               pin: pinInput.value,
             })
-            .then(function (response) {
+            .then((response) => {
               // alert(response.data.user.name);
               window.location.href = "/docs-manager/";
             })
-            .catch(function (error) {
+            .catch((error) => {
               alert(error);
             });
 

@@ -69,6 +69,38 @@ class UserController extends Controller
                     'flash_icon' => 'check-circle-fill',
                 ]);
             }
+
+            if (!empty($request->nfc_serial_number))
+            {
+                $user->nfc_serial_number = Hash::make($request->nfc_serial_number);
+                $user->nfc_pin = Hash::make($request->nfc_pin);
+
+                $user->save();
+            }
+        }
+        return view('users/form', compact('user'));
+    }
+
+    public function register_nfc_info(Request $request, $id = null)
+    {
+        $user = User::find($id);
+
+        if ($user === null) {
+            abort(404, 'Not Found ;(');
+        }
+
+        if ($request->isMethod('POST'))
+        {
+            $user->nfc_serial_number = Hash::make($request->serial_number);
+            $user->nfc_pin = Hash::make($request->pin);
+
+            if ($user->save()) {
+                return redirect('/users')->with([
+                    'flash_message' => 'Successful',
+                    'flash_status' => 'success',
+                    'flash_icon' => 'check-circle-fill',
+                ]);
+            }
         }
         return view('users/form', compact('user'));
     }
