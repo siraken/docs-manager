@@ -2,7 +2,7 @@ import axios from "axios";
 
 window.addEventListener("load", () => {
   // For debugging on PC
-  // (window as any).NDEFReader = "";
+  (window as any).NDEFReader = "";
 
   if ("NDEFReader" in window && window.location.href.match(/login/)) {
     // Create a box
@@ -14,13 +14,21 @@ window.addEventListener("load", () => {
     signInWithNFC.style.alignItems = "center";
     signInWithNFC.style.justifyContent = "center";
     signInWithNFC.style.gap = "0.25rem";
-    signInWithNFC.style.padding = "10px";
+    signInWithNFC.style.padding = "0.5rem";
     signInWithNFC.style.position = "fixed";
     signInWithNFC.style.top = "0";
     signInWithNFC.style.right = "0";
     signInWithNFC.style.backgroundColor = "white";
-    signInWithNFC.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.5)";
-    document.body.appendChild(signInWithNFC);
+    signInWithNFC.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
+
+    // Create a text
+    const signInWithNFCText = document.createElement("div");
+    signInWithNFCText.className = "text";
+    signInWithNFCText.innerHTML = "Sign in with NFC";
+    signInWithNFCText.style.fontSize = "1.25rem";
+    // signInWithNFCText.style.fontWeight = "bold";
+    signInWithNFCText.style.textAlign = "center";
+    signInWithNFC.appendChild(signInWithNFCText);
 
     // Create a textarea to display the NFC tag data
     const tagDataTextarea = document.createElement("textarea");
@@ -28,7 +36,7 @@ window.addEventListener("load", () => {
     tagDataTextarea.setAttribute("readonly", "readonly");
     tagDataTextarea.setAttribute("rows", "2");
     tagDataTextarea.style.display = "block";
-    document.getElementById("signInWithNFC")?.appendChild(tagDataTextarea);
+    signInWithNFC.appendChild(tagDataTextarea);
 
     // Create a input to enter the PIN code
     const pinInput = document.createElement("input");
@@ -36,14 +44,16 @@ window.addEventListener("load", () => {
     pinInput.setAttribute("type", "password");
     pinInput.setAttribute("placeholder", "PIN");
     pinInput.style.display = "block";
-    document.getElementById("signInWithNFC")?.appendChild(pinInput);
+    signInWithNFC.appendChild(pinInput);
 
-    // Create a button to sign in with NFC
+    // Create a button to scan and sign in
     const signInButton = document.createElement("button");
-    signInButton.textContent = "Sign in with NFC";
+    signInButton.textContent = "Scan and Sign In";
     signInButton.classList.add("btn", "btn-primary");
     signInButton.style.display = "block";
-    document.getElementById("signInWithNFC")?.appendChild(signInButton);
+    signInWithNFC.appendChild(signInButton);
+
+    document.body.appendChild(signInWithNFC);
 
     const reader = new NDEFReader();
 
