@@ -20,15 +20,15 @@ window.addEventListener("load", () => {
     signInWithNFC.style.right = "0";
     signInWithNFC.style.backgroundColor = "white";
     signInWithNFC.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
-    document.body.appendChild(signInWithNFC);
 
     // Create a text
     const signInWithNFCText = document.createElement("div");
     signInWithNFCText.className = "text";
     signInWithNFCText.innerHTML = "Sign in with NFC";
     signInWithNFCText.style.fontSize = "1.25rem";
+    // signInWithNFCText.style.fontWeight = "bold";
     signInWithNFCText.style.textAlign = "center";
-    document.getElementById("signInWithNFC")?.appendChild(signInWithNFCText);
+    signInWithNFC.appendChild(signInWithNFCText);
 
     // Create a textarea to display the NFC tag data
     const tagDataTextarea = document.createElement("textarea");
@@ -36,7 +36,7 @@ window.addEventListener("load", () => {
     tagDataTextarea.setAttribute("readonly", "readonly");
     tagDataTextarea.setAttribute("rows", "2");
     tagDataTextarea.style.display = "block";
-    document.getElementById("signInWithNFC")?.appendChild(tagDataTextarea);
+    signInWithNFC.appendChild(tagDataTextarea);
 
     // Create a input to enter the PIN code
     const pinInput = document.createElement("input");
@@ -44,16 +44,16 @@ window.addEventListener("load", () => {
     pinInput.setAttribute("type", "password");
     pinInput.setAttribute("placeholder", "PIN");
     pinInput.style.display = "block";
-    document.getElementById("signInWithNFC")?.appendChild(pinInput);
+    signInWithNFC.appendChild(pinInput);
 
     // Create a button to scan and sign in
     const signInButton = document.createElement("button");
     signInButton.textContent = "Scan and Sign In";
     signInButton.classList.add("btn", "btn-primary");
     signInButton.style.display = "block";
-    document.getElementById("signInWithNFC")?.appendChild(signInButton);
+    signInWithNFC.appendChild(signInButton);
 
-    const reader = new NDEFReader();
+    document.body.appendChild(signInWithNFC);
 
     signInButton.addEventListener("click", async () => {
       tagDataTextarea.textContent = await "clicked read button";
