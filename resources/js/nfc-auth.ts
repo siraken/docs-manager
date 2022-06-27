@@ -55,7 +55,7 @@ window.addEventListener("load", () => {
               pin: pinInput.value,
             })
             .then(function (response) {
-              console.log(response.data.user.name);
+              alert(response.data.user.name);
             })
             .catch(function (error) {
               alert(error);
