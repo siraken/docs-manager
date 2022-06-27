@@ -2,7 +2,7 @@ import axios from "axios";
 
 window.addEventListener("load", () => {
   // For debugging on PC
-  (window as any).NDEFReader = "";
+  // (window as any).NDEFReader = "";
 
   if ("NDEFReader" in window && window.location.href.match(/login/)) {
     // Create a box
