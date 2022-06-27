@@ -55,7 +55,8 @@ window.addEventListener("load", () => {
               pin: pinInput.value,
             })
             .then(function (response) {
-              alert(response.data.user.name);
+              // alert(response.data.user.name);
+              window.location.href = "/docs-manager/";
             })
             .catch(function (error) {
               alert(error);
