@@ -179,4 +179,48 @@ class LoginController extends Controller
         }
 
     }
+
+    public function auth_with_metamask(Request $request)
+    {
+        // Get info
+        // TODO: More secure way to get info
+        // * Currently, this method can be used if one knows the address of the user through API.
+        $address = $request->address;
+
+        // Find user
+        $user = User::where('wallet_address', $address)->first();
+
+        if ($user !== null) {
+
+            // JSON
+            // return response()->json([
+            //     'status' => 'success',
+            //     'user' => [
+            //         'id' => $user->id,
+            //         'name' => $user->name,
+            //         'email' => $user->email,
+            //     ],
+            // ]);
+
+            // セッション
+            session([
+                'user_id' => $user->id,
+                'name'  => $user->name,
+                'email' => $user->email
+            ]);
+
+            return redirect('/')->with([
+                'flash_message' => 'Logged in with Metamask.',
+                'flash_status' => 'success',
+                'flash_icon' => 'check-circle-fill',
+            ]);
+        } else {
+            return redirect('/login')->with([
+                'flash_message' => 'Failed to login.',
+                'flash_status' => 'danger',
+                'flash_icon' => 'times-circle',
+            ]);
+        }
+
+    }
 }

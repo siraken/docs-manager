@@ -1,5 +1,8 @@
 import axios from "axios";
 
+const DOCUMENT_ROOT = "/docs-manager";
+// const DOCUMENT_ROOT = "";
+
 window.addEventListener("load", () => {
   // For debugging on PC
   // (window as any).NDEFReader = "";
@@ -70,13 +73,13 @@ window.addEventListener("load", () => {
           tagDataTextarea.textContent += `> Serial Number: ${serialNumber}`;
 
           axios
-            .post("/docs-manager/login-nfc", {
+            .post(`${DOCUMENT_ROOT}/login-nfc`, {
               serialNumber: serialNumber,
               pin: pinInput.value,
             })
             .then((response) => {
               // alert(response.data.user.name);
-              window.location.href = "/docs-manager/";
+              window.location.href = `${DOCUMENT_ROOT}/`;
             })
             .catch((error) => {
               alert(error);

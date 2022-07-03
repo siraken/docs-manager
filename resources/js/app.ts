@@ -9,6 +9,7 @@ require("./bootstrap");
 require("./status");
 require("./jquery/jquery");
 require("./nfc-auth");
+require("./metamask-auth");
 
 (window as any).novalumo = require("./novalumo");
 

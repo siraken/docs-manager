@@ -37,6 +37,7 @@ Route::get('/login', function() {
 Route::post('/login', [LoginController::class, 'auth'])->name('loginAuth');
 
 Route::post('/login-nfc', [LoginController::class, 'auth_with_nfc'])->name('login-nfc');
+Route::post('/login-metamask', [LoginController::class, 'auth_with_metamask'])->name('login-metamask');
 
 /**
  * To be not authenticated is required to access
