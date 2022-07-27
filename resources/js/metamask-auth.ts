@@ -1,17 +1,35 @@
 import axios from "axios";
 
+const Chains = {
+  1: "Mainnet",
+  3: "Ropsten",
+  4: "Rinkeby",
+  42: "Kovan",
+  1337: "Geth Private Chain (default)",
+  61: "Ethereum Classic Mainnet",
+  62: "Morden",
+};
+
 const DOCUMENT_ROOT =
   process.env.MIX_APP_ENV === "local" ? "" : "/docs-manager";
 
 window.addEventListener("load", async () => {
   if ("ethereum" in window && window.location.href.match(/login/)) {
     if (confirm("Are you sure you want to sign in with MetaMask?")) {
-      let address = "";
+      let address: string = "";
       try {
         address = await window.ethereum
           .request({ method: "eth_requestAccounts" })
-          .then((data: any) => {
-            return data[0];
+          .then((accounts: any) => {
+            if (accounts.length > 0) {
+              if (window.ethereum.chainId !== "0x1") {
+                alert("Please switch to the main network.");
+              } else {
+                return accounts[0];
+              }
+            } else {
+              console.error("Not logged in");
+            }
           })
           .catch((error: Error) => {
             console.error("Error!");
