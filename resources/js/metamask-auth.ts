@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// const DOCUMENT_ROOT = "/docs-manager";
-const DOCUMENT_ROOT = "";
+const DOCUMENT_ROOT =
+  process.env.MIX_APP_ENV === "local" ? "" : "/docs-manager";
 
 window.addEventListener("load", async () => {
   if ("ethereum" in window && window.location.href.match(/login/)) {
