@@ -31,6 +31,9 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'nfc_serial_number',
+        'wallet_address',
+        'nfc_pin',
     ];
 
     /**
