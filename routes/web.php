@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AcademyController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EstimateController;
 use App\Http\Controllers\InvoiceController;
@@ -50,6 +51,8 @@ Route::get('/downloader', function() {
 
     return view('files.index', compact('files'));
 })->name('files.index');
+
+Route::post('/lumo-academy/register', [AcademyController::class, 'register'])->name('academy.register');
 
 /**
  * To be authenticated is required
@@ -264,6 +267,11 @@ Route::middleware('login')->group(function() {
         unlink(storage_path('app/public/uploads/' . $file));
         return redirect()->route('files.index');
     })->name('files.delete');
+
+    /**
+     * Lumo Academy
+     */
+    Route::get('/lumo-academy/', [AcademyController::class, 'index'])->name('academy.index');
 
     /**
      * freee Basic API
