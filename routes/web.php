@@ -15,6 +15,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\WorkController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\freeeController;
 use App\Http\Controllers\SpreadSheetController;
 
 /*
@@ -263,4 +264,15 @@ Route::middleware('login')->group(function() {
         unlink(storage_path('app/public/uploads/' . $file));
         return redirect()->route('files.index');
     })->name('files.delete');
+
+    /**
+     * freee Basic API
+     */
+    Route::get('/freee/by-code/{code}', [freeeController::class, 'getAccessTokenByAuthCode'])->name('freee.getTokenByCode');
+    Route::get('/freee/token/{refresh_token}', [freeeController::class, 'getTokenByRefreshToken'])->name('freee.getTokenByRefreshToken');
+    Route::get('/freee/companies/', [freeeController::class, 'getCompanies'])->name('freee.getCompanies');
+    Route::get('/freee/walletables/', [freeeController::class, 'getWalletables'])->name('freee.getWalletables');
+    Route::get('/freee/partners/', [freeeController::class, 'getPartners'])->name('freee.getPartners');
+    Route::get('/freee/quotations/', [freeeController::class, 'getQuotations'])->name('freee.getQuotations');
+    Route::get('/freee/invoices/', [freeeController::class, 'getInvoices'])->name('freee.getInvoices');
 });
