@@ -3,7 +3,7 @@
 
 <div class="row">
     <div class="col-12">
-        <a href="{{ route('works.index') }}" class="btn btn-light border">
+        <a href="{{ route('projects.index') }}" class="btn btn-secondary">
             戻る
         </a>
     </div>

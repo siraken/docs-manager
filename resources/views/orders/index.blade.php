@@ -5,8 +5,8 @@
 
 <div class="row mb-3">
     <div class="col-12">
-        <a href="{{ route('orders.create') }}" class="btn btn-light border">発注書を新しく作る</a>
-        <a href="{{ route('orders.trash') }}" class="btn btn-light border">ごみ箱</a>
+        <a href="{{ route('orders.create') }}" class="btn btn-secondary">発注書を新しく作る</a>
+        <a href="{{ route('orders.trash') }}" class="btn btn-secondary">ごみ箱</a>
     </div>
 </div>
 
@@ -106,7 +106,7 @@
                     {{-- アクション --}}
                     <td>
                         <div class="dropdown">
-                            <button class="btn btn-light border dropdown-toggle" type="button" id="dropdownMenuButton1"
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-gear-fill"></i>
                             </button>

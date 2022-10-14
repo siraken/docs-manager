@@ -9,7 +9,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LogController;
-use App\Http\Controllers\WorkController;
+use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\freeeController;
 use App\Http\Controllers\SpreadSheetController;
@@ -51,13 +51,6 @@ Route::middleware('login')->group(function () {
     Route::get('/settings', function () {
         return view('settings/index');
     })->name('settings.index');
-
-    /**
-     * Pricing
-     */
-    Route::get('/pricing', function () {
-        return view('calculate/pricing');
-    })->name('pricing.index');
 
     /**
      * Order
@@ -115,16 +108,16 @@ Route::middleware('login')->group(function () {
         });
 
     /**
-     * Works
+     * Projects
      */
-    Route::prefix('works')
-        ->controller(WorkController::class)
+    Route::prefix('projects')
+        ->controller(ProjectController::class)
         ->group(function () {
             // GET
-            Route::get('/', 'index')->name('works.index');
-            Route::get('/analysis', 'analysis')->name('works.analysis');
-            Route::get('/create', 'create')->name('works.create');
-            Route::get('/edit/{id}', 'edit')->name('works.edit');
+            Route::get('/', 'index')->name('projects.index');
+            Route::get('/analysis', 'analysis')->name('projects.analysis');
+            Route::get('/create', 'create')->name('projects.create');
+            Route::get('/edit/{id}', 'edit')->name('projects.edit');
             // POST
             Route::post('/create', 'create');
             Route::post('/edit/{id}', 'edit');

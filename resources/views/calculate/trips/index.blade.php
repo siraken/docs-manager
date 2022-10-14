@@ -4,13 +4,10 @@
 <div class="row mb-3">
     <div class="col-12">
         <h4 class="heading">出張申請</h4>
-        <a class="btn btn-light border" href="{{ route('trips.create') }}"><i
-                class="bi bi-plus-circle me-2"></i>出張申請をする</a>
-        {{-- CSVモーダル開く --}}
-        <button type="button" class="btn btn-light border" data-bs-toggle="modal" data-bs-target="#csvImportModal">
-            <i class="bi bi-download me-2"></i>CSV取り込み
+        <a class="btn btn-secondary" href="{{ route('trips.create') }}">出張申請をする</a>
+        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#csvImportModal">
+            CSV取り込み
         </button>
-        {{-- CSV取り込みモーダル --}}
         <div class="modal fade" id="csvImportModal" tabindex="-1" aria-labelledby="csvImportModalLabel"
             aria-hidden="true">
             <div class="modal-dialog">
@@ -35,7 +32,7 @@
                                     name="header" value="1" checked>
                                 <label class="form-check-label" for="toggleCsvHeader">ヘッダーあり</label>
                             </div>
-                            <button type="submit" class="btn btn-primary">Import</button>
+                            <button type="submit" class="btn btn-secondary">Import</button>
                         </div>
                     </div>
                 </form>
@@ -63,7 +60,7 @@
                 @foreach ($trips as $row)
                 <tr>
                     <td class="align-middle">
-                        <?= date('Y/m/d', strtotime($row->apply_date)) ?>
+                        <?= $row->apply_date ?>
                     </td>
                     <td class="align-middle">
                         <?= ($row->dir) ?>
@@ -72,14 +69,14 @@
                         <?= mb_strimwidth($row->purpose, 0, 30, "...") ?>
                     </td>
                     <td class="align-middle" class="hide-on-small-only">
-                        <?= date('Y/m/d', strtotime($row->date_from)) ?>
+                        <?= $row->date_from ?>
                     </td>
                     <td class="align-middle">
                         <?= ($row->apply_person) ?>
                     </td>
                     <td>
                         <div class="dropdown">
-                            <button class="btn btn-light border dropdown-toggle" type="button" id="dropdownMenuButton1"
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-gear-fill"></i>
                             </button>

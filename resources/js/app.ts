@@ -21,4 +21,4 @@ require("./metamask-auth");
 
 require("./components/Example");
 require("./components/Calc");
-require("./components/WorksModal");
+require("./components/ProjectsModal");

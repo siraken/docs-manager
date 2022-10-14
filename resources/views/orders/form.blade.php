@@ -16,8 +16,8 @@ $items = [];
     {{-- control --}}
     <div class="row mb-3">
         <div class="col-12">
-            <a href="{{ route('orders.index') }}" class="btn btn-light border">戻る</a>
-            <button type="submit" class="btn btn-light border">保存する</button>
+            <a href="{{ route('orders.index') }}" class="btn btn-secondary">戻る</a>
+            <button type="submit" class="btn btn-secondary">保存する</button>
         </div>
     </div>
     {{-- 取引先 --}}
@@ -123,7 +123,7 @@ $items = [];
                     <tr class="sum-tr">
                         <td rowspan="3" style="border: none !important; vertical-align: top;"></td>
                         <td colspan="3" rowspan="3" style="border: none !important; vertical-align: top;">
-                            <span href="#" onclick="addRow()" class="btn btn-light border" id="rowAddBtn"><i
+                            <span href="#" onclick="addRow()" class="btn btn-secondary" id="rowAddBtn"><i
                                     class="bi-plus-lg me-1"></i>行の追加</span>
                         </td>
                         <td colspan="2" style="text-align: center;">小計</td>

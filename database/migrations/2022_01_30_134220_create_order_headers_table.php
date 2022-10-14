@@ -15,7 +15,7 @@ class CreateOrderHeadersTable extends Migration
     {
         Schema::create('order_headers', function (Blueprint $table) {
             $table->id();
-            $table->integer('destination');
+            $table->string('customer_name')->nullable();
             $table->string('responsible')->nullable();
             $table->string('honor_title')->nullable();
             $table->date('issued_date');

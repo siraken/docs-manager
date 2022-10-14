@@ -23,7 +23,6 @@ class LoginController extends Controller
 
         // ユーザーが存在しない場合
         if ($user === null) {
-
             return redirect('/login')->with([
                 'flash_message' => 'The user does not exist.',
                 'flash_status' => 'danger',

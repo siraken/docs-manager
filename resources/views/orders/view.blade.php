@@ -256,13 +256,13 @@ iframe {
 </style>
 
 <div style="display: flex; justify-content: space-between;">
-    <a href="<?= $url_self;?>" class="btn btn-primary"><i class="fa fa-reply"></i> 戻る</a>
+    <a href="<?= $url_self;?>" class="btn btn-secondary"><i class="fa fa-reply"></i> 戻る</a>
     <div>
-        <a class="btn btn-primary" id="edit_button"><i class="fa fa-pencil-square-o"></i> 編集</a>
-        <a class="btn btn-primary" id="copy_button"><i class="fa fa-files-o"></i> 複製</a>
-        <?php if (!$header['Estimate']['cvt_flg'] == 1) { echo '<a class="btn btn-primary" id="convert_button"><i class="fa fa-refresh"></i> 変換</a>'; }; ?>
-        <a class="btn btn-primary" id="del_button"><i class="fa fa-trash-o"></i> <?= empty($header['Estimate']['del_flg']) ? '' : '完全に' ;?>削除</a>
-        <a href="../../files/estimates/<?= $header['Estimate']['estimate_no']; ?>.pdf" download class="btn btn-primary issue_pull" id="add_button"><i class="fa fa-download"></i> ダウンロード</a>
+        <a class="btn btn-secondary" id="edit_button"><i class="fa fa-pencil-square-o"></i> 編集</a>
+        <a class="btn btn-secondary" id="copy_button"><i class="fa fa-files-o"></i> 複製</a>
+        <?php if (!$header['Estimate']['cvt_flg'] == 1) { echo '<a class="btn btn-secondary" id="convert_button"><i class="fa fa-refresh"></i> 変換</a>'; }; ?>
+        <a class="btn btn-secondary" id="del_button"><i class="fa fa-trash-o"></i> <?= empty($header['Estimate']['del_flg']) ? '' : '完全に' ;?>削除</a>
+        <a href="../../files/estimates/<?= $header['Estimate']['estimate_no']; ?>.pdf" download class="btn btn-secondary issue_pull" id="add_button"><i class="fa fa-download"></i> ダウンロード</a>
     </div>
 </div>
 
@@ -285,7 +285,7 @@ iframe {
         <div class="note_form_area">
             <form method="post">
                 <textarea class="form_input" placeholder="社内メモ" name="note" id="noteBox" spellcheck="false"><?= $header['Estimate']['note']; ?></textarea>
-                <button type="submit" class="btn btn-primary" id="saveNote" style="margin: 3px 0;">メモを保存</button>
+                <button type="submit" class="btn btn-secondary" id="saveNote" style="margin: 3px 0;">メモを保存</button>
             </form>
         </div>
     </div>

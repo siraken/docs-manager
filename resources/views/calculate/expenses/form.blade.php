@@ -64,7 +64,7 @@
 
 <div class="row mb-3">
     <div class="col-12">
-        <button class="btn btn-light border" type="submit">保存する</button>
+        <button class="btn btn-secondary" type="submit">保存する</button>
     </div>
 </div>
 

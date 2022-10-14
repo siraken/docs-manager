@@ -5,7 +5,7 @@
 
 <div class="row mb-3">
     <div class="col-12">
-        <a href="{{ route('orders.index') }}" class="btn btn-light border">戻る</a>
+        <a href="{{ route('orders.index') }}" class="btn btn-secondary">戻る</a>
         <a href="{{ route('orders.index') }}" class="btn btn-danger border">ごみ箱を空にする</a>
     </div>
 </div>
@@ -106,7 +106,7 @@
                     {{-- アクション --}}
                     <td>
                         <div class="dropdown">
-                            <button class="btn btn-light border dropdown-toggle" type="button" id="dropdownMenuButton1"
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-gear-fill"></i>
                             </button>

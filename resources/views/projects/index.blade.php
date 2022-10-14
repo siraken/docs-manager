@@ -3,12 +3,8 @@
 
 <div class="row">
     <div class="col-12">
-        <a href="{{ route('works.create') }}" class="btn btn-light border">
-            <i class="bi-plus-circle me-2"></i>新規案件
-        </a>
-        <a href="{{ route('works.analysis') }}" class="btn btn-light border">
-            <i class="bi-plus-circle me-2"></i>分析
-        </a>
+        <a href="{{ route('projects.create') }}" class="btn btn-secondary">新規案件</a>
+        <a href="{{ route('projects.analysis') }}" class="btn btn-secondary">分析</a>
     </div>
 </div>
 
@@ -28,9 +24,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($works as $row)
+                    @foreach ($projects as $row)
                     <tr>
-                        <td><a href="{{ route('works.edit', ['id' => $row['id']]) }}">{{ $row['name'] }}</a></td>
+                        <td><a href="{{ route('projects.edit', ['id' => $row['id']]) }}">{{ $row['name'] }}</a></td>
                         <td>{{ $row['client_id'] }}</td>
                         <td>{{ $row['status'] }}</td>
                         <td>{{ date('Y/m/d', strtotime($row['start_date'])) }}</td>

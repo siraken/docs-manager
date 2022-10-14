@@ -18,7 +18,7 @@
                 <label for="file">ファイルを選択してください</label>
                 <input type="file" id="file" class="form-control" name="file">
             </div>
-            <button type="submit" class="btn btn-primary">アップロード</button>
+            <button type="submit" class="btn btn-secondary">アップロード</button>
         </form>
     </div>
 </div>
@@ -43,7 +43,7 @@
                         {{-- <td>{{ $files[$i] }}</td> --}}
                         {{-- <td>{{ $files[$i] }}</td> --}}
                         <td>
-                            <a href="{{ route('files.download', ['file' => $files[$i]]) }}" class="btn btn-primary">
+                            <a href="{{ route('files.download', ['file' => $files[$i]]) }}" class="btn btn-secondary">
                                 ダウンロード
                             </a>
                             <form action="{{ route('files.delete', ['file' => $files[$i]]) }}" method="POST"

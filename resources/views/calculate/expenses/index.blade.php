@@ -4,13 +4,10 @@
 <div class="row mb-3">
     <div class="col-12">
         <h4 class="heading">旅費精算</h4>
-        <a class="btn btn-light border" href="{{ route('expenses.create') }}"><i
-                class="bi bi-plus-circle me-2"></i>旅費精算をする</a>
-        {{-- CSVモーダル開く --}}
-        <button type="button" class="btn btn-light border" data-bs-toggle="modal" data-bs-target="#csvImportModal">
-            <i class="bi bi-download me-2"></i>CSV取り込み
+        <a class="btn btn-secondary" href="{{ route('expenses.create') }}">旅費精算をする</a>
+        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#csvImportModal">
+            CSV取り込み
         </button>
-        {{-- CSV取り込みモーダル --}}
         <div class="modal fade" id="csvImportModal" tabindex="-1" aria-labelledby="csvImportModalLabel"
             aria-hidden="true">
             <div class="modal-dialog">
@@ -35,7 +32,7 @@
                                     name="header" value="1" checked>
                                 <label class="form-check-label" for="toggleCsvHeader">ヘッダーあり</label>
                             </div>
-                            <button type="submit" class="btn btn-primary">取り込み</button>
+                            <button type="submit" class="btn btn-secondary">取り込み</button>
                         </div>
                     </div>
                 </form>
@@ -67,7 +64,7 @@
                     <td class="align-middle">{{ $expense->pay_date }}</td>
                     <td class="align-middle">{{ $expense->apply_person }}</td>
                     <td class="align-middle">
-                        <a class="btn btn-light border" href="{{ route('expenses.pdf', $expense->id) }}"><i
+                        <a class="btn btn-secondary" href="{{ route('expenses.pdf', $expense->id) }}"><i
                                 class="bi bi-eye me-2"></i>PDF</a>
                     </td>
                 </tr>

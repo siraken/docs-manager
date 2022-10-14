@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import type { ChangeEvent } from "react";
 
-function WorksModal() {
+function ProjectsModal() {
   const checklists = [
     "ヒアリングでやることと予算感をすり合わせする",
     "契約書・NDAを取り交わす",
@@ -61,7 +61,7 @@ function WorksModal() {
             <button
               type="submit"
               id="submit_button"
-              className={`btn btn-primary ${buttonEnabled ? "" : "disabled"}`}
+              className={`btn btn-secondary ${buttonEnabled ? "" : "disabled"}`}
               data-bs-dismiss="modal"
             >
               確認しました
@@ -73,8 +73,8 @@ function WorksModal() {
   );
 }
 
-export default WorksModal;
+export default ProjectsModal;
 
-if (document.getElementById("works-modal")) {
-  ReactDOM.render(<WorksModal />, document.getElementById("works-modal"));
+if (document.getElementById("projects-modal")) {
+  ReactDOM.render(<ProjectsModal />, document.getElementById("projects-modal"));
 }

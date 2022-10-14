@@ -4,8 +4,8 @@
 <form method="post" action="" autocomplete="off" id="MainForm">
     <div class="row mb-3">
         <div class="col-12">
-            <a href="{{ route('users.index') }}" class="btn btn-light border">戻る</a>
-            <button class="btn btn-light border" type="submit">保存する</button>
+            <a href="{{ route('users.index') }}" class="btn btn-secondary">戻る</a>
+            <button class="btn btn-secondary" type="submit">保存する</button>
         </div>
     </div>
 
@@ -27,7 +27,7 @@
 
             <label class="form-label">NFC Card</label>
             <div class="input-group">
-                <button type="button" class="btn btn-primary"
+                <button type="button" class="btn btn-secondary"
                     onclick="novalumo.setNfcNumber(document.getElementById('nfc_number'))">Scan</button>
                 <input type="password" name="nfc_serial_number" id="nfc_number" class="form-control"
                     value="{{ old('nfc_serial_number', $user['nfc_serial_number']) }}">
