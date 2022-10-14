@@ -14,11 +14,8 @@ case $1 in
 "down")
     ./vendor/bin/sail down
 ;;
-"restart")
-    ./vendor/bin/sail restart
-;;
-"sail:build")
-    ./vendor/bin/sail build --no-cache
+"build")
+    ./vendor/bin/sail build $ARGS
 ;;
 "composer")
     ./vendor/bin/sail composer $ARGS
@@ -47,6 +44,14 @@ case $1 in
 "prod:update")
     composer update
     yarn prod
+;;
+"composer:init")
+    docker run --rm \
+        -u "$(id -u):$(id -g)" \
+        -v $(pwd):/var/www/html \
+        -w /var/www/html \
+        laravelsail/php74-composer:latest \
+        composer install --ignore-platform-reqs
 ;;
 *)
     echo Unexpected command.

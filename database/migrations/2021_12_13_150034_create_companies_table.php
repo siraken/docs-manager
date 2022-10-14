@@ -26,8 +26,6 @@ class CreateCompaniesTable extends Migration
             $table->string('tel_no');
             $table->string('fax_no');
             $table->string('responsible');
-            $table->string('estimate_remarks');
-            $table->string('invoice_remarks');
             $table->string('bank1');
             $table->string('bank2');
             $table->string('bank3');

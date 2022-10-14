@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Work;
-use App\Models\Client;
 use Faker\Guesser\Name;
 
 class WorkController extends Controller
@@ -16,10 +15,9 @@ class WorkController extends Controller
     {
         $works = Work::all();
         foreach ($works as $work) {
-            $client = Client::find($work->client_id);
-            $work->client_id = $client['name'];
-            switch($work->status)
-            {
+            // FIXME:
+            $work->client_id = "あいうえお";
+            switch ($work->status) {
                 case $work->status === 0:
                     $work->status = '未着手';
                     break;
@@ -45,8 +43,7 @@ class WorkController extends Controller
     {
         $work = new Work();
 
-        if ($request->isMethod('post'))
-        {
+        if ($request->isMethod('post')) {
             $work->name = $request->name;
             $work->description = $request->description;
             $work->client_id = $request->client_id;
@@ -57,8 +54,7 @@ class WorkController extends Controller
             $work->price = $request->price;
             $work->status = $request->status;
 
-            if ($work->save())
-            {
+            if ($work->save()) {
                 return redirect('/works')->with([
                     'flash_message' => 'Successful',
                     'flash_status' => 'success',
@@ -67,8 +63,7 @@ class WorkController extends Controller
             }
         }
 
-        $clients = Client::all();
-        return view('works.form', compact('work', 'clients'));
+        return view('works.form', compact('work'));
     }
 
     /**
@@ -77,10 +72,8 @@ class WorkController extends Controller
     public function edit(Request $request)
     {
         $work = Work::find($request->id);
-        $clients = Client::all();
 
-        if ($request->isMethod('post'))
-        {
+        if ($request->isMethod('post')) {
             $work->name = $request->name;
             $work->description = $request->description;
             $work->client_id = $request->client_id;
@@ -91,8 +84,7 @@ class WorkController extends Controller
             $work->price = $request->price;
             $work->status = $request->status;
 
-            if ($work->save())
-            {
+            if ($work->save()) {
                 return redirect('/works')->with([
                     'flash_message' => 'Successful',
                     'flash_status' => 'success',
@@ -100,7 +92,7 @@ class WorkController extends Controller
                 ]);
             }
         }
-        return view('works.form', compact('work', 'clients'));
+        return view('works.form', compact('work'));
     }
 
     /**

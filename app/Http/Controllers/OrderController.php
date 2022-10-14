@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Client;
 use App\Models\OrderHeader;
 use App\Models\OrderDetail;
 use App\Lib\Common;
@@ -39,13 +38,11 @@ class OrderController extends Controller
             'o.is_deleted',
             'o.is_converted',
             'o.note',
-            'c.name as destination'
         ];
         $orders = OrderHeader::select($select)
-        ->from('order_headers as o')
-        ->join('clients as c', 'o.destination', '=', 'c.id')
-        ->where('o.is_deleted', '!=', '1')
-        ->get();
+            ->from('order_headers as o')
+            ->where('o.is_deleted', '!=', '1')
+            ->get();
         // ->toSql();
         // echo($orders);
         // exit;
@@ -75,10 +72,10 @@ class OrderController extends Controller
             'c.name as destination'
         ];
         $orders = OrderHeader::select($select)
-        ->from('order_headers as o')
-        ->join('clients as c', 'o.destination', '=', 'c.id')
-        ->where('o.is_deleted', '=', '1')
-        ->get();
+            ->from('order_headers as o')
+            ->join('clients as c', 'o.destination', '=', 'c.id')
+            ->where('o.is_deleted', '=', '1')
+            ->get();
         return view('orders/trash', compact('orders'));
     }
 
@@ -87,10 +84,8 @@ class OrderController extends Controller
      */
     public function create(Request $request)
     {
-        $clients = Client::all();
 
-        if ($request->isMethod('POST'))
-        {
+        if ($request->isMethod('POST')) {
             $slip_header = [];
             $slip_body = [];
             $req = $request->all();
@@ -149,8 +144,7 @@ class OrderController extends Controller
                 $OrderDetail->create($body);
             }
 
-            if ($isSuccess)
-            {
+            if ($isSuccess) {
                 return redirect('/orders')->with([
                     'flash_message' => 'Successful',
                     'flash_status' => 'success',
@@ -162,9 +156,8 @@ class OrderController extends Controller
                 //     'flash_icon' => 'x-circle-fill',
                 // ]);
             }
-
         }
-        return view('orders/create', compact('clients'));
+        return view('orders/form');
     }
 
     /**
@@ -172,8 +165,7 @@ class OrderController extends Controller
      */
     public function edit(Request $request, $id)
     {
-        if ($request->isMethod('POST'))
-        {
+        if ($request->isMethod('POST')) {
             $slip_header = [];
             $slip_body = [];
             $req = $request->all();
@@ -237,21 +229,18 @@ class OrderController extends Controller
                 $OrderDetail->create($body);
             }
 
-            if ($isSuccess)
-            {
+            if ($isSuccess) {
                 return redirect('/orders')->with([
                     'flash_message' => 'Successful',
                     'flash_status' => 'success',
                     'flash_icon' => 'check-circle-fill',
                 ]);
             }
-
         }
 
-        $clients = Client::all();
         $header = OrderHeader::find($id);
         $details = OrderDetail::where('slip_id', $id)->get();
-        return view('orders/edit', compact('clients', 'header', 'details'));
+        return view('orders/form', compact('clients', 'header', 'details'));
     }
 
     /**
@@ -262,7 +251,6 @@ class OrderController extends Controller
         // データ取得
         $header = OrderHeader::find($id);
         $details = OrderDetail::where('slip_id', $id)->get();
-        $client = Client::where('id', $header['destination'])->first();
 
         // 呼び出し
         $pdf = new Fpdi();
@@ -288,7 +276,7 @@ class OrderController extends Controller
 
         // 宛先
         $pdf->SetFontSize(11);
-        $pdf->Text(18.5, 31, $client['name'].' '.$header['responsible'].' '.$header['honor_title']);
+        $pdf->Text(18.5, 31, $header['client'] . ' ' . $header['responsible'] . ' ' . $header['honor_title']);
         $pdf->SetFontSize(9.5);
         $pdf->Text(18.5, 45, '下記の通り発注致します。');
 
@@ -366,9 +354,9 @@ class OrderController extends Controller
         $pdf->SetFillColor(0, 0, 0);
         $pdf->SetTextColor(255, 255, 255);
         $pdf->MultiCell($Common->calcPer($maxWidth, 52), $pdf->getLastH(), '詳細', 0, 'L', true, 1, 21, $detail_header_y, false, 0, false, true, 0, 'M', false);
-        $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), '数量', 0, 'R', true, 1, (21+$Common->calcPer($maxWidth, 52)), $detail_header_y, false, 0, false, true, 0, 'M', false);
-        $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), '単価', 0, 'R', true, 1, (21+$Common->calcPer($maxWidth, 52)+$Common->calcPer($maxWidth, 16)), $detail_header_y, false, 0, false, true, 0, 'M', false);
-        $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), '金額', 0, 'R', true, 0, (21+$Common->calcPer($maxWidth, 52)+$Common->calcPer($maxWidth, 16)+$Common->calcPer($maxWidth, 16)), $detail_header_y, false, 0, false, true, 0, 'M', false);
+        $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), '数量', 0, 'R', true, 1, (21 + $Common->calcPer($maxWidth, 52)), $detail_header_y, false, 0, false, true, 0, 'M', false);
+        $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), '単価', 0, 'R', true, 1, (21 + $Common->calcPer($maxWidth, 52) + $Common->calcPer($maxWidth, 16)), $detail_header_y, false, 0, false, true, 0, 'M', false);
+        $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), '金額', 0, 'R', true, 0, (21 + $Common->calcPer($maxWidth, 52) + $Common->calcPer($maxWidth, 16) + $Common->calcPer($maxWidth, 16)), $detail_header_y, false, 0, false, true, 0, 'M', false);
         $pdf->SetTextColor(0, 0, 0);
         $pdf->SetFontSize(9);
 
@@ -390,11 +378,11 @@ class OrderController extends Controller
             // 詳細
             $pdf->MultiCell($Common->calcPer($maxWidth, 52), $pdf->getLastH(), $d['item_name'], 0, 'L', true, 1, 21, $detail_y, false, 0, false, true, 0, 'M', false);
             // 数量・単位
-            $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), $d['quantity'] !== NULL ? number_format($d['quantity']).$d['unit'] : '', 0, 'R', true, 1, (21+$Common->calcPer($maxWidth, 52)), $detail_y, false, 0, false, true, 0, 'M', false);
+            $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), $d['quantity'] !== NULL ? number_format($d['quantity']) . $d['unit'] : '', 0, 'R', true, 1, (21 + $Common->calcPer($maxWidth, 52)), $detail_y, false, 0, false, true, 0, 'M', false);
             // 単価
-            $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), $d['cost'] !== NULL ? number_format($d['cost']) : '', 0, 'R', true, 1, (21+$Common->calcPer($maxWidth, 52)+$Common->calcPer($maxWidth, 16)), $detail_y, false, 0, false, true, 0, 'M', false);
+            $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), $d['cost'] !== NULL ? number_format($d['cost']) : '', 0, 'R', true, 1, (21 + $Common->calcPer($maxWidth, 52) + $Common->calcPer($maxWidth, 16)), $detail_y, false, 0, false, true, 0, 'M', false);
             // 金額
-            $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), $d['price'] !== NULL ? number_format($d['price']) : '', 0, 'R', true, 0, (21+$Common->calcPer($maxWidth, 52)+$Common->calcPer($maxWidth, 16)+$Common->calcPer($maxWidth, 16)), $detail_y, false, 0, false, true, 0, 'M', false);
+            $pdf->MultiCell($Common->calcPer($maxWidth, 16), $pdf->getLastH(), $d['price'] !== NULL ? number_format($d['price']) : '', 0, 'R', true, 0, (21 + $Common->calcPer($maxWidth, 52) + $Common->calcPer($maxWidth, 16) + $Common->calcPer($maxWidth, 16)), $detail_y, false, 0, false, true, 0, 'M', false);
 
             // 改行
             $detail_y += $CellHeight;
@@ -419,7 +407,7 @@ class OrderController extends Controller
         $detailColumns = array_keys(json_decode(json_encode($details[0]), true));
         $csv_header = array_merge($headerColumns, $detailColumns);
 
-        $filename = './'.$header['order_no'].'.csv';
+        $filename = './' . $header['order_no'] . '.csv';
 
         // ファイルを開く
         $fp = fopen($filename, 'w');
@@ -433,7 +421,7 @@ class OrderController extends Controller
 
         // HTTPヘッダ
         header("Content-Type: application/octet-stream");
-        header('Content-Length: '.filesize($filename));
+        header('Content-Length: ' . filesize($filename));
         header('Content-Disposition: attachment; filename=test.csv');
         readfile($filename);
         unlink($filename);
@@ -447,8 +435,7 @@ class OrderController extends Controller
         $order = OrderHeader::find($id);
         $order->is_deleted = 1;
 
-        if ($order->save())
-        {
+        if ($order->save()) {
             return redirect('/orders')->with([
                 'flash_message' => 'Successful',
                 'flash_status' => 'success',
@@ -465,8 +452,7 @@ class OrderController extends Controller
         $order = OrderHeader::find($id);
         $order->is_deleted = 0;
 
-        if ($order->save())
-        {
+        if ($order->save()) {
             return redirect('/orders')->with([
                 'flash_message' => 'Successful',
                 'flash_status' => 'success',
@@ -484,7 +470,7 @@ class OrderController extends Controller
         $data = json_decode($json);
         $Order = OrderHeader::find($data->id);
 
-        switch($data->type) {
+        switch ($data->type) {
             case 'issued':
                 $Order->is_issued = $data->currentStatus === 0 ? 1 : 0;
                 break;
@@ -505,7 +491,8 @@ class OrderController extends Controller
                 }
                 $Order->is_ordered = $is_ordered;
                 break;
-            default: return false;
+            default:
+                return false;
         }
 
         if ($Order->save()) {

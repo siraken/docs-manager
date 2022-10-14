@@ -18,12 +18,7 @@
             <input type="text" name="name" class="form-control" value="{{ old('name', $work['name']) }}" required>
 
             <label class="form-label">取引先</label>
-            <select id="" name="client_id" class="form-select">
-                @foreach ($clients as $client)
-                <option value="{{ $client['id'] }}" {{ $client['id']===old('client_id', $work['client_id']) ? 'selected'
-                    : '' }}>{{ $client['name'] }}</option>
-                @endforeach
-            </select>
+            <input type="text" name="client_id" class="form-control" value="{{ old('client_id', $work['client_id']) }}" required>
 
             <label class="form-label">状態</label>
             <select id="" name="status" class="form-select">

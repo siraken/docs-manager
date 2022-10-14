@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use App\Models\Access;
 use Illuminate\Support\Facades\Mail;
 
 class LoginController extends Controller
@@ -15,29 +14,15 @@ class LoginController extends Controller
      */
     public function auth(Request $request)
     {
-        $access = new Access();
 
-        // return response('This website is not working.', 500)
-        //     ->header('Content-Type', 'text/plain');
-
-        $access->timestamps = false;
-
-        if (User::all()->count() === 0)
-        {
+        if (User::all()->count() === 0) {
             return redirect('/users/create');
         }
 
         $user = User::where('email', $request->email)->first();
 
         // ユーザーが存在しない場合
-        if ($user === null)
-        {
-            // アクセスログの記録
-            $access->user_id = 0;
-            $access->status = 'not found [' . $request->email . ']';
-            $access->access_date = date('Y-m-d H:i:s');
-            $access->ip_address = $request->ip();
-            $access->save();
+        if ($user === null) {
 
             return redirect('/login')->with([
                 'flash_message' => 'The user does not exist.',
@@ -47,21 +32,13 @@ class LoginController extends Controller
         }
 
         // パスワードの一致確認
-        if (Hash::check($request->password, $user->password))
-        {
+        if (Hash::check($request->password, $user->password)) {
             // セッション
             session([
                 'user_id' => $user->id,
                 'name'  => $user->name,
                 'email' => $user->email
             ]);
-
-            // Log an access log
-            $access->user_id = $user->id;
-            $access->status = 'logged in';
-            $access->access_date = date('Y-m-d H:i:s');
-            $access->ip_address = $request->ip();
-            $access->save();
 
             // Send email to user
             $this->send_email($request, $user);
@@ -71,15 +48,7 @@ class LoginController extends Controller
                 'flash_status' => 'success',
                 'flash_icon' => 'check-circle-fill',
             ]);
-        }
-        else
-        {
-            // アクセスログの記録
-            $access->user_id = $user->id;
-            $access->status = 'wrong password [' . $request->email . ':' . $request->password . ']';
-            $access->access_date = date('Y-m-d H:i:s');
-            $access->ip_address = $request->ip();
-            $access->save();
+        } else {
 
             return redirect('/login')->with([
                 'flash_message' => 'Failed to login.',
@@ -94,15 +63,6 @@ class LoginController extends Controller
      */
     public function destroy(Request $request)
     {
-        // アクセスログの記録
-        $access = new Access();
-        $access->timestamps = false;
-        $access->user_id = session('user_id');
-        $access->status = 'logged out';
-        $access->access_date = date('Y-m-d H:i:s');
-        $access->ip_address = $request->ip();
-        $access->save();
-
         // セッションを破棄
         session()->flush();
 
@@ -115,8 +75,7 @@ class LoginController extends Controller
 
     private function send_email($request, $user)
     {
-        if (env('APP_ENV') === 'production')
-        {
+        if (env('APP_ENV') === 'production') {
             Mail::send(
                 [
                     'text' => 'emails.login'
@@ -177,7 +136,6 @@ class LoginController extends Controller
                 'flash_icon' => 'times-circle',
             ]);
         }
-
     }
 
     public function auth_with_metamask(Request $request)
@@ -221,6 +179,5 @@ class LoginController extends Controller
                 'flash_icon' => 'times-circle',
             ]);
         }
-
     }
 }
