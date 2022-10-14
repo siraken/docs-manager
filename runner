@@ -1,49 +1,59 @@
 #!/bin/bash
 set -Ceux
 
+FILENAME=$0
 ARGS=${@:2}
+
+DC="docker compose"
+SAIL="./vendor/bin/sail"
+SSH_NAME="novalumo-bitnami"
 
 case $1 in
 "init")
     cp ./env.example .env
-    ./vendor/bin/sail up
+    $SAIL up
 ;;
 "up")
-    ./vendor/bin/sail up
+    $SAIL up
 ;;
 "down")
-    ./vendor/bin/sail down
+    $SAIL down
 ;;
 "build")
-    ./vendor/bin/sail build $ARGS
+    $SAIL build $ARGS
 ;;
 "composer")
-    ./vendor/bin/sail composer $ARGS
+    $SAIL composer $ARGS
 ;;
 "artisan")
-    ./vendor/bin/sail artisan $ARGS
+    $SAIL artisan $ARGS
+;;
+"npx")
+    $SAIL npx $ARGS
 ;;
 "npm")
-    ./vendor/bin/sail npm $ARGS
+    $SAIL npm $ARGS
 ;;
 "yarn")
-    ./vendor/bin/sail yarn $ARGS
+    $SAIL yarn $ARGS
 ;;
-"db:user")
-    ./vendor/bin/sail artisan db:seed --class=UserSeeder
+"test")
+    $FILENAME test:php
+    $FILENAME test:js
+;;
+"test:php")
+    $SAIL test ${ARGS}
+;;
+"test:js")
+    $FILENAME yarn test
 ;;
 "db:reset")
-    ./vendor/bin/sail artisan migrate:reset
-    ./vendor/bin/sail artisan migrate
-    ./vendor/bin/sail artisan db:seed
+    $SAIL artisan migrate:reset
+    $SAIL artisan migrate
+    $SAIL artisan db:seed
 ;;
-"prod:pull")
-    git fetch
-    git reset --hard origin/main
-;;
-"prod:update")
-    composer update
-    yarn prod
+"prod:migrate")
+    ssh $SSH_NAME "cd ~/repos/docs-manager/ && php artisan migrate:fresh"
 ;;
 "composer:init")
     docker run --rm \
