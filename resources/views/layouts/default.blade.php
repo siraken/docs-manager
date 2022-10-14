@@ -37,16 +37,13 @@
     {{-- navigation --}}
     <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom px-1 py-3">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">管理ツール</a>
+            <a class="navbar-brand" href="{{ route('dashboard.index') }}">Console</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                 aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <form class="d-flex">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                </form>
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
@@ -82,12 +79,6 @@
             <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse border-end">
                 <div class="position-sticky pt-md-5">
                     <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->route()->named('dashboard.*') ? 'active fw-bold' : '' }}"
-                                href="{{ route('dashboard.index') }}">
-                                <span class="ml-2">ダッシュボード</span>
-                            </a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link {{ request()->route()->named('trips.*') ? 'active fw-bold' : '' }}"
                                 href="{{ route('trips.index') }}">
