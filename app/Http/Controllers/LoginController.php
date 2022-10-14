@@ -10,6 +10,14 @@ use Illuminate\Support\Facades\Mail;
 class LoginController extends Controller
 {
     /**
+     * ログイン画面
+     */
+    public function index()
+    {
+        return view('login');
+    }
+
+    /**
      * ログイン認証
      */
     public function auth(Request $request)

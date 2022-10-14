@@ -42,7 +42,7 @@ window.addEventListener("load", async () => {
       if (address) {
         console.info("Authenticating with address:", address);
         axios
-          .post(`${DOCUMENT_ROOT}/login-metamask`, {
+          .post(`${DOCUMENT_ROOT}/login/login-metamask`, {
             address: address,
           })
           .then((response) => {
