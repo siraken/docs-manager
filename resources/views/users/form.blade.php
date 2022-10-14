@@ -13,28 +13,45 @@
         <div class="col-6">
             @csrf
 
-            <label class="form-label">名前<span class="badge bg-danger ms-1">必須</span></label>
-            <input type="text" name="name" class="form-control" value="{{ old('name', $user['name']) }}" required>
-
-            <label class="form-label">ユーザー名</label>
-            <input type="text" name="username" class="form-control" value="">
-
-            <label class="form-label">メールアドレス<span class="badge bg-danger ms-1">必須</span></label>
-            <input type="email" name="email" class="form-control" value="{{ old('email', $user['email']) }}">
-
-            <label class="form-label">パスワード<span class="badge bg-danger ms-1">必須</span></label>
-            <input type="password" name="password" class="form-control" value="">
-
-            <label class="form-label">NFC Card</label>
-            <div class="input-group">
-                <button type="button" class="btn btn-secondary"
-                    onclick="novalumo.setNfcNumber(document.getElementById('nfc_number'))">Scan</button>
-                <input type="password" name="nfc_serial_number" id="nfc_number" class="form-control"
-                    value="{{ old('nfc_serial_number', $user['nfc_serial_number']) }}">
+            <div class="mb-3">
+                <label class="form-label">名前<span class="badge bg-danger ms-1">必須</span></label>
+                <input type="text" name="name" class="form-control" value="{{ old('name', $user['name']) }}" required>
             </div>
 
-            <label class="form-label">NFC PIN</label>
-            <input type="password" name="nfc_pin" class="form-control" value="{{ old('nfc_pin', $user['nfc_pin']) }}">
+            <div class="mb-3">
+                <label class="form-label">メールアドレス<span class="badge bg-danger ms-1">必須</span></label>
+                <input type="email" name="email" class="form-control" value="{{ old('email', $user['email']) }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">パスワード<span class="badge bg-danger ms-1">必須</span></label>
+                <input type="password" name="password" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">NFC Card</label>
+                <div class="input-group">
+                    <button type="button" class="btn btn-secondary"
+                        onclick="novalumo.setNfcNumber(document.getElementById('nfc_number'))">Scan</button>
+                    <input type="password" name="nfc_serial_number" id="nfc_number" class="form-control"
+                        value="{{ old('nfc_serial_number', $user['nfc_serial_number']) }}">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">NFC PIN</label>
+                <input type="password" name="nfc_pin" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">ウォレットアドレス</label>
+                <div class="input-group">
+                    <button type="button" class="btn btn-secondary"
+                    onclick="alert('TODO')">Scan</button>
+                    <input type="text" name="wallet_address" class="form-control" value="{{ $user['wallet_address'] }}" placeholder="0x...">
+                </div>
+            </div>
+
         </div>
     </div>
 </form>

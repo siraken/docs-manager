@@ -26,13 +26,12 @@ class UserController extends Controller
     {
         $user = new User();
 
-        if ($request->isMethod('POST'))
-        {
+        if ($request->isMethod('POST')) {
             if ($user->fill([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => Hash::make($request->password)])->save())
-            {
+                'password' => Hash::make($request->password)
+            ])->save()) {
                 return redirect('/users')->with([
                     'flash_message' => 'Successful',
                     'flash_status' => 'success',
@@ -50,19 +49,26 @@ class UserController extends Controller
      */
     public function edit(Request $request, $id = null)
     {
-        $user = User::find($id);
+        $user = User::find($id)->makeVisible(['password', 'nfc_serial_number', 'nfc_pin']);
+
+        // ddd($user->toArray());
 
         if ($user === null) {
             abort(404, 'Not Found ;(');
         }
 
-        if ($request->isMethod('POST'))
-        {
-            if ($user->fill([
+        if ($request->isMethod('POST')) {
+            $user = $user->fill([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => Hash::make($request->password)])->save())
-            {
+                'password' => empty($request->password) ? $user->password : Hash::make($request->password),
+                'nfc_serial_number' => $request->nfc_serial_number,
+                // 'nfc_pin' => empty($request->nfc_pin) ? $user->nfc_pin : Hash::make($request->nfc_pin),
+                'nfc_pin' => empty($request->nfc_pin) ? $user->nfc_pin : $request->nfc_pin,
+                'wallet_address' => $request->wallet_address,
+            ]);
+
+            if ($user->save()) {
                 return redirect('/users')->with([
                     'flash_message' => 'Successful',
                     'flash_status' => 'success',
@@ -70,8 +76,7 @@ class UserController extends Controller
                 ]);
             }
 
-            if (!empty($request->nfc_serial_number))
-            {
+            if (!empty($request->nfc_serial_number)) {
                 $user->nfc_serial_number = Hash::make($request->nfc_serial_number);
                 $user->nfc_pin = Hash::make($request->nfc_pin);
 
@@ -89,8 +94,7 @@ class UserController extends Controller
             abort(404, 'Not Found ;(');
         }
 
-        if ($request->isMethod('POST'))
-        {
+        if ($request->isMethod('POST')) {
             $user->nfc_serial_number = Hash::make($request->serial_number);
             $user->nfc_pin = Hash::make($request->pin);
 
