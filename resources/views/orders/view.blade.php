@@ -39,8 +39,8 @@ if (!file_exists($url_files.'estimates/'.$header['Estimate']['estimate_no'].'.pd
 
     // 宛先
     $pdf->SetFont($bold_font, '', 14);
-    $line_width = $pdf->GetStringWidth( htmlspecialchars( empty($header['Estimate']['responsible']) ? $header['Estimate']['destination'].' '.$header['Estimate']['honor_title'] : $header['Estimate']['destination'].' '.$header['Estimate']['responsible'].' '.$header['Estimate']['honor_title'] ), $default_font, '', 14 );
-    $pdf->Text(12, 49.8, htmlspecialchars( empty($header['Estimate']['responsible']) ? $header['Estimate']['destination'].' '.$header['Estimate']['honor_title'] : $header['Estimate']['destination'].' '.$header['Estimate']['responsible'].' '.$header['Estimate']['honor_title'] ) );
+    $line_width = $pdf->GetStringWidth( htmlspecialchars( empty($header['Estimate']['responsible']) ? $header['Estimate']['customer_id'].' '.$header['Estimate']['honor_title'] : $header['Estimate']['customer_id'].' '.$header['Estimate']['responsible'].' '.$header['Estimate']['honor_title'] ), $default_font, '', 14 );
+    $pdf->Text(12, 49.8, htmlspecialchars( empty($header['Estimate']['responsible']) ? $header['Estimate']['customer_id'].' '.$header['Estimate']['honor_title'] : $header['Estimate']['customer_id'].' '.$header['Estimate']['responsible'].' '.$header['Estimate']['honor_title'] ) );
     $pdf->Line(13, 55.8, (13 + $line_width), 55.8, $line_style);
     $pdf->SetFont($default_font, '', 12);
     $pdf->Text(12, 57, $header['Estimate']['title']);
@@ -271,7 +271,7 @@ iframe {
         <dt>見積番号</dt>
         <dd><?= $header['Estimate']['estimate_no'];?><?= empty($header['Estimate']['del_flg']) ? '' : '（削除済み）';?></dd>
         <dt>取引先</dt>
-        <dd><?= empty($header['Estimate']['responsible']) ? $header['Estimate']['destination'].' '.$header['Estimate']['honor_title'] : $header['Estimate']['destination'].' '.$header['Estimate']['responsible'].' '.$header['Estimate']['honor_title']; ?></dd>
+        <dd><?= empty($header['Estimate']['responsible']) ? $header['Estimate']['customer_id'].' '.$header['Estimate']['honor_title'] : $header['Estimate']['customer_id'].' '.$header['Estimate']['responsible'].' '.$header['Estimate']['honor_title']; ?></dd>
         <dt>件名</dt>
         <dd><?= !empty($header['Estimate']['title']) ? $header['Estimate']['title'] : '-' ; ?></dd>
         <dt>見積金額</dt>

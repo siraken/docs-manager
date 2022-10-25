@@ -13,6 +13,9 @@ $items = [];
 </style>
 
 <form method="post" action="" autocomplete="off">
+    @csrf
+    {{-- 登録情報 --}}
+    <input type="hidden" name="reg_uid" value="{{ '' }}">
     {{-- control --}}
     <div class="row mb-3">
         <div class="col-12">
@@ -27,7 +30,12 @@ $items = [];
         </div>
         <div class="col-12">
             <div class="input-group">
-                <input type="text" name="destination" placeholder="社名" class="form-control">
+                <select name="customer_id" id="" class="form-select">
+                    <option value="">選択してください</option>
+                    @foreach ($customers as $customer)
+                        <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                    @endforeach
+                </select>
                 <input type="text" name="responsible" placeholder="担当者名" class="form-control">
                 <input type="text" name="honor_title" placeholder="御中 / 様" class="form-control" value="御中">
             </div>
@@ -79,15 +87,15 @@ $items = [];
                             <input type="text" name="item_name[]" class="form-control">
                             <div class="items_box">
                                 <ul class="items">
-                                    <?php foreach ($items as $item): ?>
-                                    <li class="items_name" data-name="<?= $item['Item']['item_name']; ?>"
-                                        data-unit="<?= $item['Item']['unit']; ?>"
-                                        data-cost="<?= $item['Item']['cost']; ?>"
-                                        data-tax="<?= $item['Item']['tax']; ?>">
-                                        <?= $item['Item']['item_name']; ?> @
-                                        <?= number_format($item['Item']['cost']); ?>円
+                                    @foreach ($items as $item)
+                                    <li class="items_name" data-name="{{ $item['Item']['item_name'] }}"
+                                        data-unit="{{ $item['Item']['unit'] }}"
+                                        data-cost="{{ $item['Item']['cost'] }}"
+                                        data-tax="{{ $item['Item']['tax'] }}">
+                                        {{ $item['Item']['item_name'] }} @
+                                        {{ number_format($item['Item']['cost']) }}円
                                     </li>
-                                    <?php endforeach; ?>
+                                    @endforeach
                                 </ul>
                             </div>
                         </td>
@@ -121,8 +129,8 @@ $items = [];
                 {{-- 計算結果 --}}
                 <tbody>
                     <tr class="sum-tr">
-                        <td rowspan="3" style="border: none !important; vertical-align: top;"></td>
-                        <td colspan="3" rowspan="3" style="border: none !important; vertical-align: top;">
+                        <td rowspan="3" style="background: inherit; border: none !important; vertical-align: top;"></td>
+                        <td colspan="3" rowspan="3" style="background: inherit; border: none !important; vertical-align: top;">
                             <span href="#" onclick="addRow()" class="btn btn-secondary" id="rowAddBtn"><i
                                     class="bi-plus-lg me-1"></i>行の追加</span>
                         </td>
@@ -152,10 +160,6 @@ $items = [];
             <small>1000</small>
         </div>
     </div>
-
-    {{-- 登録情報 --}}
-    <input type="hidden" name="reg_uid" value="{{ '' }}">
-    @csrf
 </form>
 
 @endsection

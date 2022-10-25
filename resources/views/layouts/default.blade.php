@@ -104,6 +104,12 @@
                                     <span class="ml-2">User Management</span>
                                 </a>
                             </li>
+                            <li>
+                                <a class="dropdown-item {{ request()->route()->named('customers.*') ? 'active' : '' }}"
+                                    href="{{ route('customers.index') }}">
+                                    <span class="ml-2">Customer Management</span>
+                                </a>
+                            </li>
                             <li><a class="dropdown-item" href="{{ route('settings.index') }}">Settings</a></li>
                             <li>
                                 <hr class="dropdown-divider">

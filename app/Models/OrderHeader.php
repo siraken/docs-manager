@@ -10,7 +10,7 @@ class OrderHeader extends Model
     use HasFactory;
 
     protected $fillable = [
-        'destination',
+        'customer_id',
         'responsible',
         'honor_title',
         'issued_date',

@@ -5,4 +5,4 @@ IPアドレス：{{ $ip }}
 ユーザーエージェント：{{ $user_agent }}
 
 --
-Novalumo Docs Manager
+Novalumo Console

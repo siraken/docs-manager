@@ -9,6 +9,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LogController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\freeeController;
@@ -119,6 +120,21 @@ Route::middleware('login')->group(function () {
             Route::get('/analysis', 'analysis')->name('projects.analysis');
             Route::get('/create', 'create')->name('projects.create');
             Route::get('/edit/{id}', 'edit')->name('projects.edit');
+            // POST
+            Route::post('/create', 'create');
+            Route::post('/edit/{id}', 'edit');
+        });
+
+    /**
+     * Customer
+     */
+    Route::prefix('customers')
+        ->controller(CustomerController::class)
+        ->group(function () {
+            // GET
+            Route::get('/', 'index')->name('customers.index');
+            Route::get('/create', 'create')->name('customers.create');
+            Route::get('/edit/{id}', 'edit')->name('customers.edit');
             // POST
             Route::post('/create', 'create');
             Route::post('/edit/{id}', 'edit');

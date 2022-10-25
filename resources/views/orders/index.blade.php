@@ -24,7 +24,7 @@
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($orders as $row): ?>
+                @foreach ($orders as $row)
                 <tr>
                     {{-- ステータス --}}
                     <td>
@@ -84,9 +84,9 @@
                     <td>
                         <a href="{{ route('orders.edit', ['id' => $row['id']]) }}">
                             @if (!empty($row['title']))
-                            {{ $row['title'] }}（{{ $row['destination'] }}）
+                            {{ $row['title'] }}
                             @else
-                            {{ $row['destination'] }}
+                            {{ $row['customer_id'] }}
                             @endif
                         </a><br>
                         <small style="color: #777;">#{{ $row['order_no'] }}</small>
@@ -122,7 +122,7 @@
                         </div>
                     </td>
                 </tr>
-                <?php endforeach; ?>
+                @endforeach
             </tbody>
         </table>
 

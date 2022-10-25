@@ -84,9 +84,9 @@
                     <td>
                         <a href="{{ route('orders.edit', ['id' => $row['id']]) }}">
                             @if (!empty($row['title']))
-                            {{ $row['title'] }}（{{ $row['destination'] }}）
+                            {{ $row['title'] }}（{{ $row['customer_id'] }}）
                             @else
-                            {{ $row['destination'] }}
+                            {{ $row['customer_id'] }}
                             @endif
                         </a><br>
                         <small style="color: #777;">#{{ $row['order_no'] }}</small>

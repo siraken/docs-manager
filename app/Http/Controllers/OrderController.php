@@ -6,13 +6,11 @@ use Illuminate\Http\Request;
 use App\Models\OrderHeader;
 use App\Models\OrderDetail;
 use App\Lib\Common;
+use App\Models\Customer;
 use setasign\Fpdi\Tcpdf\Fpdi;
 
 class OrderController extends Controller
 {
-    /**
-     * constructor
-     */
     public function __construct()
     {
         mb_internal_encoding('UTF-8');
@@ -43,9 +41,6 @@ class OrderController extends Controller
             ->from('order_headers as o')
             ->where('o.is_deleted', '!=', '1')
             ->get();
-        // ->toSql();
-        // echo($orders);
-        // exit;
         return view('orders/index', compact('orders'));
     }
 
@@ -69,11 +64,11 @@ class OrderController extends Controller
             'o.is_deleted',
             'o.is_converted',
             'o.note',
-            'c.name as destination'
+            'c.name as customer_id'
         ];
         $orders = OrderHeader::select($select)
             ->from('order_headers as o')
-            ->join('clients as c', 'o.destination', '=', 'c.id')
+            ->join('clients as c', 'o.customer_id', '=', 'c.id')
             ->where('o.is_deleted', '=', '1')
             ->get();
         return view('orders/trash', compact('orders'));
@@ -85,6 +80,8 @@ class OrderController extends Controller
     public function create(Request $request)
     {
 
+        $customers = Customer::all();
+
         if ($request->isMethod('POST')) {
             $slip_header = [];
             $slip_body = [];
@@ -92,7 +89,7 @@ class OrderController extends Controller
 
             // ヘッダー部分
             $slip_header = [
-                "destination" => $req['destination'],
+                "customer_id" => $req['customer_id'],
                 "responsible" => $req['responsible'],
                 "honor_title" => $req['honor_title'],
                 "issued_date" => $req['issued_date'],
@@ -157,7 +154,7 @@ class OrderController extends Controller
                 // ]);
             }
         }
-        return view('orders/form');
+        return view('orders/form', compact('customers'));
     }
 
     /**
@@ -165,6 +162,9 @@ class OrderController extends Controller
      */
     public function edit(Request $request, $id)
     {
+
+        $customers = Customer::all();
+
         if ($request->isMethod('POST')) {
             $slip_header = [];
             $slip_body = [];
@@ -176,7 +176,7 @@ class OrderController extends Controller
 
             // ヘッダー部分
             $slip_header = [
-                "destination" => $req['destination'],
+                "customer_id" => $req['customer_id'],
                 "responsible" => $req['responsible'],
                 "honor_title" => $req['honor_title'],
                 "issued_date" => $req['issued_date'],
@@ -240,7 +240,7 @@ class OrderController extends Controller
 
         $header = OrderHeader::find($id);
         $details = OrderDetail::where('slip_id', $id)->get();
-        return view('orders/form', compact('clients', 'header', 'details'));
+        return view('orders/form', compact('customers', 'header', 'details'));
     }
 
     /**
@@ -251,6 +251,7 @@ class OrderController extends Controller
         // データ取得
         $header = OrderHeader::find($id);
         $details = OrderDetail::where('slip_id', $id)->get();
+        $customer = Customer::find($header->customer_id);
 
         // 呼び出し
         $pdf = new Fpdi();
@@ -276,7 +277,7 @@ class OrderController extends Controller
 
         // 宛先
         $pdf->SetFontSize(11);
-        $pdf->Text(18.5, 31, $header['client'] . ' ' . $header['responsible'] . ' ' . $header['honor_title']);
+        $pdf->Text(18.5, 31, $customer->name . ' ' . $header['responsible'] . ' ' . $header['honor_title']);
         $pdf->SetFontSize(9.5);
         $pdf->Text(18.5, 45, '下記の通り発注致します。');
 
@@ -302,12 +303,12 @@ class OrderController extends Controller
         $pdf->Cell(1, 0, $header['order_no'], 0, 0, 'R');
 
         // ロゴと印鑑
-        // TODO: destinationが自社宛の場合は印字しない
+        // TODO: customer_idが自社宛の場合は印字しない
         $pdf->Image(resource_path('img/Logo.png'), 126, 80, 45);
         $pdf->Image(resource_path('img/CompanyStamp.png'), 135, 48, 23);
 
         // 自社情報
-        // TODO: destinationが自社宛の場合は印字しない
+        // TODO: customer_idが自社宛の場合は印字しない
         // TODO: 自社設定をマスタから取ってくる
         $pdf->SetFontSize(9.5);
         $pdf->Text(121, 47, 'Novalumo合同会社');
@@ -323,8 +324,8 @@ class OrderController extends Controller
         $pdf->Cell(20, 0, number_format($header['subtotal_price']), 0, 0, 'R');
         $pdf->Line(120, 168.25, 192, 168.25);
         // 消費税
-        $pdf->Text(130, 170.5, '消費税');
-        $pdf->SetXY(170, 170.5);
+        $pdf->Text(130, 170.75, '消費税');
+        $pdf->SetXY(170, 170.75);
         $pdf->Cell(20, 0, number_format($header['tax_price']), 0, 0, 'R');
         $pdf->Line(120, 177.25, 192, 177.25);
         // 合計金額
