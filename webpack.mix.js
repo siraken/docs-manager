@@ -12,7 +12,7 @@ const mix = require("laravel-mix");
  */
 
 mix
-  .ts("resources/js/app.ts", "public/js")
+  .ts("resources/ts/app.tsx", "public/js")
   .react()
   .sass("resources/sass/app.scss", "public/css")
   .sourceMaps(true, "inline-source-map")

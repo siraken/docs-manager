@@ -126,6 +126,7 @@
         <div class="row">
             <main class="col-12 py-5">
                 @yield('page')
+                <div id="app"></div>
             </main>
         </div>
     </div>

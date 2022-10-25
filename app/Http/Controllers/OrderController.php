@@ -68,7 +68,7 @@ class OrderController extends Controller
         ];
         $orders = OrderHeader::select($select)
             ->from('order_headers as o')
-            ->join('clients as c', 'o.customer_id', '=', 'c.id')
+            ->join('customers as c', 'o.customer_id', '=', 'c.id')
             ->where('o.is_deleted', '=', '1')
             ->get();
         return view('orders/trash', compact('orders'));

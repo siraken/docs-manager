@@ -16,6 +16,7 @@
         "@popperjs/core": "^2.10.2",
         "@types/bcrypt": "^5.0.0",
         "@types/jquery": "^3.5.14",
+        "@types/marked": "^4.0.7",
         "@types/node": "^18.0.0",
         "@types/react": "^18.0.8",
         "@types/react-dom": "^18.0.3",
@@ -48,6 +49,6 @@
         "jquery-ui": "^1.13.1",
         "lit": "^2.2.6",
         "marked": "^4.0.12",
-        "react-router-dom": "^6.3.0"
+        "react-router-dom": "^6.4.2"
     }
 }

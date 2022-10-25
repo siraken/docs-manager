@@ -8,7 +8,7 @@ $(() => {
   let rowNumber = $(".main_tbody").children().length;
 
   // 行追加
-  function addCustomRow(num) {
+  function addCustomRow(num: number) {
     rowNumber++;
     $(".main_tbody").append(`
         <tr class="sortable-tr">
@@ -106,12 +106,12 @@ $(() => {
   }
 
   // セルの横幅を固定したままSortable
-  function fixPlaceHolderWidth(event, ui) {
+  function fixPlaceHolderWidth(this: HTMLElement, event: any, ui: any) {
     ui.find(".action-cell").css("border", "none");
 
-    ui.children().each(() => {
-      $(this).width($(this).width());
-    });
+    // ui.children().each(() => {
+    //   $(this).width($(this).width());
+    // });
     return ui;
   }
 
@@ -121,7 +121,7 @@ $(() => {
   });
 
   // 行を削除
-  $(".document-table").on("click", ".delete-row-button", (event) => {
+  $(".document-table").on("click", ".delete-row-button", (event: any) => {
     if (1 < $(".main_tbody").children().length) {
       $(event.target.closest("tr")).remove();
       calcAll();
@@ -131,11 +131,11 @@ $(() => {
   // 行並べ替え
   $("#sortable").sortable({
     items: "tr.sortable-tr",
-    start: (event, ui) => {
+    start: (event: any, ui: any) => {
       ui.placeholder.height(ui.helper.outerHeight());
     },
     helper: fixPlaceHolderWidth,
-    update: (event, ui) => {
+    update: (event: any, ui: any) => {
       // console.log($("#sortable").sortable("toArray"));
     },
   });
@@ -147,7 +147,7 @@ $(() => {
   });
 
   // windowオブジェクトに行追加処理を追加
-  window.addRow = () => {
+  (window as any).addRow = () => {
     addCustomRow(rowNumber);
   };
 
