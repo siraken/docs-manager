@@ -6,6 +6,9 @@
         <div class="col-12">
             <a href="{{ route('users.index') }}" class="btn btn-secondary">戻る</a>
             <button class="btn btn-secondary" type="submit">保存する</button>
+            <a href="{{ route('users.2fa', ["id" => $user->id]) }}" class="btn btn-secondary {{
+                $user->isSet2FA() ? "" : ""
+            }}">2FA</a>
         </div>
     </div>
 

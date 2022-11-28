@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use PHPGangsta_GoogleAuthenticator;
 
 class UserController extends Controller
 {
@@ -107,5 +108,17 @@ class UserController extends Controller
             }
         }
         return view('users/form', compact('user'));
+    }
+
+    // TODO: 実装
+    public function register_2fa_auth($id)
+    {
+        $user = User::find($id);
+        $ga = new PHPGangsta_GoogleAuthenticator;
+
+        $secret = "";
+        $qrCodeUrl = "";
+
+        return view('users/2fa', compact('user', 'qrCodeUrl'));
     }
 }

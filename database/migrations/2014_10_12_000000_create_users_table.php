@@ -19,6 +19,7 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('two_factor_secret_code')->nullable()->unique();
             $table->string('nfc_serial_number')->nullable()->unique();
             $table->string('wallet_address')->nullable()->unique();
             $table->string('nfc_pin')->nullable()->unique();

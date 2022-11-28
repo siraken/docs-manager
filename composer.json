@@ -15,6 +15,7 @@
         "laravel/tinker": "^2.5",
         "laravel/ui": "^3.4",
         "michelf/php-markdown": "^1.9",
+        "phpgangsta/googleauthenticator": "dev-master",
         "setasign/fpdi": "^2.3",
         "setasign/fpdi-tcpdf": "^2.3",
         "tecnickcom/tcpdf": "^6.4"

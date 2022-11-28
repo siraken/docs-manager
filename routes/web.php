@@ -150,9 +150,11 @@ Route::middleware('login')->group(function () {
             Route::get('/', 'index')->name('users.index');
             Route::get('/create', 'create')->name('users.create');
             Route::get('/edit/{id}', 'edit')->name('users.edit');
+            Route::get('/2fa/{id}', 'register_2fa_auth')->name('users.2fa');
             // POST
             Route::post('/create', 'create');
             Route::post('/edit/{id}', 'edit');
+            Route::post('/2fa/{id}', 'register_2fa_auth');
         });
 
     /**

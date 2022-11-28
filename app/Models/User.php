@@ -16,6 +16,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'two_factor_secret_code',
         'nfc_serial_number',
         'nfc_pin',
         'wallet_address',
@@ -41,4 +42,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function isSet2FA()
+    {
+        return $this->two_factor_secret_code !== null;
+    }
 }
