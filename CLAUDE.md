@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 9 + Blade + Bootstrap 5 のサーバーサイドレンダリング構成で、一部に React/TypeScript を後付けしている。UI・コード内コメントは日本語。
+Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 10 + Blade + Bootstrap 5 のサーバーサイドレンダリング構成で、一部に React/TypeScript を後付けしている。UI・コード内コメントは日本語。
 
-**Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げている途中**（1 メジャー = 1 PR）。現在 9。
+**Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げている途中**（1 メジャー = 1 PR）。現在 10。
 
 ## 開発環境 (nix flake)
 
@@ -16,12 +16,12 @@ Novalumo 社内向けの業務管理ツール（発注書・出張申請・出�
 | --- | --- | --- |
 | php | 8.1.19 | `nixpkgs-2211` |
 | composer | 2.5.4 | `nixpkgs-2211` (php81 用) |
-| node | 16.19.1 | `nixpkgs-2211` |
-| yarn | 1.22.19 | `nixpkgs-2211` |
+| node | 22.23.2 | `nixpkgs` (unstable) |
+| pnpm | 11.22.0 | `nixpkgs` (unstable) |
 
-**なぜ nixpkgs input が 2 つあるか**: `nixpkgs-unstable` には php82 以降しか無く、`php81` は EOL 扱いで評価が throw される。Laravel 9 の要件は PHP 8.0.2+ なので、`nixpkgs-2211` (nixos-22.11) を別 input として pin して php81 を引いている。**単一 nixpkgs にまとめようとすると PHP 8.1 が失われる**ので注意。Node 16 も同じ input から取っている。
+**なぜ nixpkgs input が 2 つあるか**: `nixpkgs-unstable` には php82 以降しか無く、`php81` は EOL 扱いで評価が throw される。Laravel 10 の要件は PHP 8.1+ なので、`nixpkgs-2211` (nixos-22.11) を別 input として pin して php81 を引いている。**この input は PHP 専用**で、Node と pnpm は unstable 側から取る。
 
-Laravel 10 以降は PHP 8.1+ / 8.2+ が要件になり、Node も 18+ が要るため、アップグレードのたびにこの input を張り替える。
+Node 22 なのは、pnpm 11 が Node 22.13+ を、Vite 5 が Node 18+ を要求するため（`nodejs_18` / `nodejs_20` は unstable では EOL 扱いで引けない）。Laravel 11 以降は PHP 8.2+ が要件になるので、その時点で `nixpkgs-2211` は不要になり unstable の php82 以降に一本化できる。
 
 devShell が担うのはホスト側ツールチェーンのみ。**アプリの実行と MySQL は従来通り Sail (Docker)**。`shellHook` で `vendor/bin` と `node_modules/.bin` に PATH を通してある。
 
@@ -56,18 +56,20 @@ vendor が無い状態からの初回セットアップは `./runner composer:in
 ./vendor/bin/phpunit --testsuite Unit   # sail 無しの場合
 ```
 
-`phpunit.xml` で `DB_CONNECTION=sqlite` / `DB_DATABASE=:memory:` を指定しているため、テストは MySQL を必要とせず Sail を起動しなくても回る。DB を使うテストは `RefreshDatabase` を付ける。
+**PHPUnit 10**。`phpunit.xml` で `DB_CONNECTION=sqlite` / `DB_DATABASE=:memory:` を指定しているため、テストは MySQL を必要とせず Sail を起動しなくても回る。DB を使うテストは `RefreshDatabase` を付ける。設定は PHPUnit 10 スキーマ（`<coverage>` ではなく `<source>`）に移行済み。
 
 **sqlite と MySQL の型差異に注意**: sqlite (PDO) は integer カラムを文字列で返す。`$header->total_price` は `'1100'` であって `1100` ではないため、テストで数値比較する際は `(int)` にキャストする。この差異は `ProjectController::index()` の挙動まで変える（後述）。
 
 ### フロントエンドビルド
 
-**Vite**（Laravel 9.19+ の推奨。Laravel Mix から移行済み）。パッケージマネージャは **yarn**（`yarn.lock` のみ存在）。
+**Vite 5**（Laravel Mix から移行済み）。パッケージマネージャは **pnpm**（`pnpm-lock.yaml`）。
 
 ```bash
-./runner yarn dev      # 開発サーバ (HMR)
-./runner yarn build    # 本番ビルド
+./runner pnpm dev      # 開発サーバ (HMR)
+./runner pnpm build    # 本番ビルド
 ```
+
+**pnpm 10 以降は依存パッケージの postinstall を既定でブロックする**（サプライチェーン対策）。許可は `pnpm-workspace.yaml` の `allowBuilds` に書く。値はリストではなく「パッケージ名 → bool」のマップである点に注意。設定を足すときは `pnpm approve-builds <pkg> '!<pkg>'` を使うと正しい書式で書き込まれる。現在は Vite の中核である `esbuild` のみ許可している。
 
 エントリは `vite.config.js` の `input` に定義（`resources/sass/app.scss` と `resources/ts/app.tsx`）。出力は `public/build/`（gitignore 済み）で、`manifest.json` を Blade の `@vite` が読む。
 
@@ -80,7 +82,7 @@ Vite は ESM 前提なので `require()` は使えない。`jquery-ui` は `wind
 
 ## PHP バージョンの注意
 
-**PHP 8.1**（`composer.json` は `^8.0.2`、`docker-compose.yml` は `docker/8.1` を参照、nix devShell も 8.1.19）。`docker/7.4` `docker/8.0` のイメージ定義は残っているが未使用。
+**PHP 8.1**（`composer.json` は `^8.1`、`docker-compose.yml` は `docker/8.1` を参照、nix devShell も 8.1.19）。`docker/7.4` `docker/8.0` のイメージ定義は残っているが未使用。Laravel 11 では PHP 8.2+ が要件になる。
 
 PHP 8.1 で **PDO SQLite が integer / float を native type で返すようになった**（7.4 までは文字列）。テストは sqlite、本番は MySQL なので、型に依存するコードは両者で挙動が変わりうる。実際 `ProjectController::index()` のステータス表示はこの影響を受けている（後述）。
 

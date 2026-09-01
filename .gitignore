@@ -17,3 +17,4 @@ yarn-error.log
 /resources/json/credentials.json
 *.pem
 /public/build
+.phpunit.cache
