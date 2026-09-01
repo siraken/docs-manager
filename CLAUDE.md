@@ -6,6 +6,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 8 + Blade + Bootstrap 5 のサーバーサイドレンダリング構成で、一部に React/TypeScript を後付けしている。UI・コード内コメントは日本語。
 
+## 開発環境 (nix flake)
+
+`flake.nix` + `.envrc` (`use flake`) で、Sail と同じバージョンのツールがホストに入る。direnv 済みならディレクトリに入るだけ、そうでなければ `nix develop`。
+
+| ツール | バージョン | 由来 |
+| --- | --- | --- |
+| php | 7.4.33 | `nixpkgs-2205` |
+| composer | 2.3.5 | `nixpkgs-2205` (php74 用) |
+| node | 16.17.1 | `nixpkgs-2205` |
+| yarn | 1.22.18 | `nixpkgs-2205` |
+
+**なぜ nixpkgs input が 2 つあるか**: `php74` は nixpkgs 22.11 で削除されており（"php74 has been dropped due to the lack of maintanence from upstream"）、`nixpkgs-unstable` には php82 以降しか無い。本番・Sail・CI が PHP 7.4 なので、`nixpkgs-2205` (nixos-22.05) を別 input として pin している。**単一 nixpkgs にまとめようとすると PHP 7.4 が失われる**ので注意。Node 16 も同様の理由（`bcrypt` のネイティブビルドと、deploy.yml が想定する 16.x）で同じ input から取っている。
+
+devShell が担うのはホスト側ツールチェーンのみ。**アプリの実行と MySQL は従来通り Sail (Docker)**。`shellHook` で `vendor/bin` と `node_modules/.bin` に PATH を通してある。
+
+php74 はデフォルトで `gd` / `pdo_mysql` / `pdo_sqlite` / `mbstring` / `iconv` / `curl` / `zip` / `bcmath` / `exif` が有効で、`composer check-platform-reqs` は全項目 success。TCPDF の PDF 生成・freee API の cURL・CI と同じ sqlite テストまで追加設定なしで動く。
+
+この devShell がある場合、Docker 越しに composer を回す `./runner composer:init` は不要で、`composer install` を直接叩ける。
+
 ## 開発コマンド
 
 すべて Laravel Sail (Docker) 前提。`./runner` がラッパー。
