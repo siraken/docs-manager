@@ -52,7 +52,9 @@ vendor が無い状態からの初回セットアップは `./runner composer:in
 ./vendor/bin/phpunit --testsuite Unit   # sail 無しの場合
 ```
 
-`phpunit.xml` は DB 接続の指定がコメントアウトされているため、既定では `.env` の接続先（ローカルでは MySQL）に繋がる。sqlite で回したい場合は `DB_CONNECTION=sqlite DB_DATABASE=database/database.sqlite` を env で渡す（削除前の CI はそうしていた）。DB を触るテストを書く場合は接続先に注意。
+`phpunit.xml` で `DB_CONNECTION=sqlite` / `DB_DATABASE=:memory:` を指定しているため、テストは MySQL を必要とせず Sail を起動しなくても回る。DB を使うテストは `RefreshDatabase` を付ける。
+
+**sqlite と MySQL の型差異に注意**: sqlite (PDO) は integer カラムを文字列で返す。`$header->total_price` は `'1100'` であって `1100` ではないため、テストで数値比較する際は `(int)` にキャストする。この差異は `ProjectController::index()` の挙動まで変える（後述）。
 
 ### フロントエンドビルド
 
@@ -68,6 +70,22 @@ Laravel Mix (webpack)。パッケージマネージャは **yarn**（`yarn.lock`
 ## PHP バージョンの注意
 
 `composer.json` は `^7.3|^8.0` だが、実際に動いているのは **PHP 7.4**（`docker-compose.yml` が `docker/7.4` を参照。削除前の CI も `php-version: "7.4"` だった）。`docker/8.0` `docker/8.1` のイメージ定義はあるが未使用。PHP 8 専用構文は使わないこと。
+
+## 既知の不具合（アップグレード前から壊れている）
+
+リグレッションテスト追加時に判明したもの。**Laravel のバージョンを上げて壊れたのではなく、元から壊れている**。該当テストは `markTestIncomplete()` で理由付きで残してあるので、直したら外すこと。
+
+- **発注書の編集が保存できない**: `OrderController::edit()` は `$req['is_issued']` / `is_ordered` / `is_deleted` / `is_converted` を参照するが、`resources/views/orders/form.blade.php` に対応する入力が一切ない。POST すると `Undefined index` で 500 になる
+- **`OrderController::view()` が存在しない**: ルート `orders.view` (`/orders/view/{id}`) は登録されているのにメソッドが無く 500。一覧にリンクが無いため UI からは到達しない
+- **顧客の編集が保存されない**: `CustomerController::edit()` に `isMethod('post')` の分岐が無く、POST しても常に view を返すだけ
+- **案件のステータス表示が壊れている**: `ProjectController::index()` が `switch ($project->status) { case $project->status === 0: ... }` と書かれている（`switch (true)` の誤用）。sqlite では status 1・2 が「未知」になる。値の型が変わる MySQL では結果が変わりうる
+- **明細のない発注書は CSV 出力できない**: `OrderController::csv()` が `$details[0]` を無条件に参照する
+- **`OrderController::csv()` はカレントディレクトリにファイルを書く**: `'./' . $order_no . '.csv'` を作って `readfile()` 後に `unlink()` する。`order_no` は検証されていない
+
+### テストしにくい箇所
+
+- `OrderController::setStatus()` は `file_get_contents("php://input")` を直接読むため、Laravel のテストからは検証できない
+- `OrderController::csv()` は Laravel の Response ではなく素の `header()` + `readfile()` で出力するため、テスト実行中は "headers already sent" になる。PDF (`$pdf->Output()`) は出力バッファで捕捉できる
 
 ## アーキテクチャ上の重要な癖
 
