@@ -195,10 +195,13 @@ class MasterDataTest extends TestCase
         // ProjectController::index() は
         //   switch ($project->status) { case $project->status === 0: ... }
         // と書かれており、case に真偽値が並んでいる (switch (true) の誤用)。
-        // さらに sqlite は integer カラムを string で返すため、
-        // '1' == false / '2' == false がいずれも偽になり 1 と 2 が default に落ちる。
-        // 結果として status 1・2 が「未知」と表示される。
-        // DB ドライバで値の型が変わると結果も変わりうる点に注意。
+        // status = 0 のとき最初の case (0 == true) が偽、次の case (0 == false) が
+        // 真になるため、「未着手」ではなく「進行中」と表示される。
+        //
+        // なおこの結果は値の型に依存する。PHP 8.1 で PDO SQLite が integer を
+        // native type で返すようになったため、PHP 7.4 時代 (string が返り
+        // status 1・2 が「未知」になっていた) とは挙動が変わっている。
+        // MySQL は元から integer を返すので、この結果が本番の挙動に近い。
         // 修正するまでの現状の挙動として固定しておく。
         foreach ([0, 1, 2] as $status) {
             $p = new Project();
@@ -211,8 +214,9 @@ class MasterDataTest extends TestCase
         $response->assertOk();
 
         $projects = $response->viewData('projects')->keyBy('name');
-        $this->assertSame('未着手', $projects['案件0']->status);
-        $this->assertSame('未知', $projects['案件1']->status);
-        $this->assertSame('未知', $projects['案件2']->status);
+        // 0 は「未着手」であるべきだが「進行中」になる (これがバグ)
+        $this->assertSame('進行中', $projects['案件0']->status);
+        $this->assertSame('進行中', $projects['案件1']->status);
+        $this->assertSame('完了', $projects['案件2']->status);
     }
 }

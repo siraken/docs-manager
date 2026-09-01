@@ -1,7 +1,8 @@
 import { marked } from "marked";
 
-const $ = require("jquery");
-require("jquery-ui/ui/widgets/sortable");
+// setup が先に window.jQuery を用意してから jquery-ui を読み込む
+import $ from "./setup";
+import "jquery-ui/ui/widgets/sortable";
 
 $(() => {
   // 初期状態の行数

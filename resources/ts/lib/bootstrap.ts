@@ -1,8 +1,6 @@
-(window as any)._ = require("lodash");
+import axios from "axios";
+import "bootstrap";
 
-try {
-  require("bootstrap");
-} catch (e) {}
 
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests
@@ -10,7 +8,7 @@ try {
  * CSRF token as a header based on the value of the "XSRF" token cookie.
  */
 
-(window as any).axios = require("axios");
+(window as any).axios = axios;
 
 (window as any).axios.defaults.headers.common["X-Requested-With"] =
   "XMLHttpRequest";

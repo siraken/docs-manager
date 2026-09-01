@@ -4,18 +4,18 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import DashboardPage from "./pages/Dashboard";
 import LoginPage from "./pages/Login";
 
-require("./lib/bootstrap");
+import "./lib/bootstrap";
+import "./lib/jquery/jquery";
+import "./lib/nfc-auth";
+import "./lib/metamask-auth";
+import * as novalumo from "./lib/novalumo";
 
-//  require("./status");
-require("./lib/jquery/jquery");
-require("./lib/nfc-auth");
-require("./lib/metamask-auth");
+import "./components/Example";
+import "./components/Calc";
+import "./components/ProjectsModal";
 
-(window as any).novalumo = require("./lib/novalumo");
-
-require("./components/Example");
-require("./components/Calc");
-require("./components/ProjectsModal");
+// Blade の inline スクリプトから window.novalumo として呼ばれる
+(window as any).novalumo = novalumo;
 
 const App = () => (
   <BrowserRouter>
