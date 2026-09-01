@@ -8,8 +8,8 @@
     # PHP 7.4 と Node 16 を同時に含む最後の nixpkgs リリース。
     # php74 は 22.11 で削除されており ("php74 has been dropped due to the lack of
     # maintanence from upstream")、nixpkgs-unstable には php82 以降しか無い。
-    # docker-compose.yml (docker/7.4) と deploy.yml が PHP 7.4 なので、
-    # 本番と同じバージョンを使うにはここから引く必要がある。
+    # docker-compose.yml (docker/7.4) が PHP 7.4 なので、本番と同じ
+    # バージョンを使うにはここから引く必要がある。
     nixpkgs-2205.url = "github:NixOS/nixpkgs/nixos-22.05";
   };
 
@@ -37,8 +37,8 @@
           php = legacy.php74;
 
           # package.json の bcrypt は node-gyp を伴うネイティブモジュールで、
-          # Node 17 以降向けの prebuilt が存在しない。deploy.yml の
-          # Node.js ジョブ (コメントアウト済み) も 16.x を想定している。
+          # Node 17 以降向けの prebuilt が存在しない。削除前の CI の
+          # Node.js ジョブ (コメントアウト済み) も 16.x を想定していた。
           nodejs = legacy.nodejs-16_x;
         in
         {

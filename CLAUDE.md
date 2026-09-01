@@ -17,11 +17,11 @@ Novalumo 社内向けの業務管理ツール（発注書・出張申請・出�
 | node | 16.17.1 | `nixpkgs-2205` |
 | yarn | 1.22.18 | `nixpkgs-2205` |
 
-**なぜ nixpkgs input が 2 つあるか**: `php74` は nixpkgs 22.11 で削除されており（"php74 has been dropped due to the lack of maintanence from upstream"）、`nixpkgs-unstable` には php82 以降しか無い。本番・Sail・CI が PHP 7.4 なので、`nixpkgs-2205` (nixos-22.05) を別 input として pin している。**単一 nixpkgs にまとめようとすると PHP 7.4 が失われる**ので注意。Node 16 も同様の理由（`bcrypt` のネイティブビルドと、deploy.yml が想定する 16.x）で同じ input から取っている。
+**なぜ nixpkgs input が 2 つあるか**: `php74` は nixpkgs 22.11 で削除されており（"php74 has been dropped due to the lack of maintanence from upstream"）、`nixpkgs-unstable` には php82 以降しか無い。本番・Sail が PHP 7.4 なので、`nixpkgs-2205` (nixos-22.05) を別 input として pin している。**単一 nixpkgs にまとめようとすると PHP 7.4 が失われる**ので注意。Node 16 も同様の理由（`bcrypt` のネイティブビルド、および削除前の CI が想定していた 16.x）で同じ input から取っている。
 
 devShell が担うのはホスト側ツールチェーンのみ。**アプリの実行と MySQL は従来通り Sail (Docker)**。`shellHook` で `vendor/bin` と `node_modules/.bin` に PATH を通してある。
 
-php74 はデフォルトで `gd` / `pdo_mysql` / `pdo_sqlite` / `mbstring` / `iconv` / `curl` / `zip` / `bcmath` / `exif` が有効で、`composer check-platform-reqs` は全項目 success。TCPDF の PDF 生成・freee API の cURL・CI と同じ sqlite テストまで追加設定なしで動く。
+php74 はデフォルトで `gd` / `pdo_mysql` / `pdo_sqlite` / `mbstring` / `iconv` / `curl` / `zip` / `bcmath` / `exif` が有効で、`composer check-platform-reqs` は全項目 success。TCPDF の PDF 生成・freee API の cURL・sqlite でのテストまで追加設定なしで動く。
 
 この devShell がある場合、Docker 越しに composer を回す `./runner composer:init` は不要で、`composer install` を直接叩ける。
 
@@ -52,7 +52,7 @@ vendor が無い状態からの初回セットアップは `./runner composer:in
 ./vendor/bin/phpunit --testsuite Unit   # sail 無しの場合
 ```
 
-CI は `DB_CONNECTION=sqlite` を env で渡している（`phpunit.xml` 内の該当行はコメントアウト済み）。ローカルでは MySQL に接続するため、DB を触るテストを書く場合は接続先に注意。
+`phpunit.xml` は DB 接続の指定がコメントアウトされているため、既定では `.env` の接続先（ローカルでは MySQL）に繋がる。sqlite で回したい場合は `DB_CONNECTION=sqlite DB_DATABASE=database/database.sqlite` を env で渡す（削除前の CI はそうしていた）。DB を触るテストを書く場合は接続先に注意。
 
 ### フロントエンドビルド
 
@@ -60,14 +60,14 @@ Laravel Mix (webpack)。パッケージマネージャは **yarn**（`yarn.lock`
 
 ```bash
 ./runner yarn watch    # 開発時
-./runner yarn prod     # 本番ビルド（デプロイでも実行される）
+./runner yarn prod     # 本番ビルド
 ```
 
 `resources/ts/app.tsx` → `public/js/app.js`、`resources/sass/app.scss` → `public/css/app.css`。`mix.version()` 有効なので `public/mix-manifest.json` も更新される。
 
 ## PHP バージョンの注意
 
-`composer.json` は `^7.3|^8.0` だが、実際に動いているのは **PHP 7.4**（`docker-compose.yml` は `docker/7.4`、CI も `php-version: "7.4"`）。`docker/8.0` `docker/8.1` のイメージ定義はあるが未使用。PHP 8 専用構文は使わないこと。
+`composer.json` は `^7.3|^8.0` だが、実際に動いているのは **PHP 7.4**（`docker-compose.yml` が `docker/7.4` を参照。削除前の CI も `php-version: "7.4"` だった）。`docker/8.0` `docker/8.1` のイメージ定義はあるが未使用。PHP 8 専用構文は使わないこと。
 
 ## アーキテクチャ上の重要な癖
 
@@ -141,15 +141,15 @@ Laravel の `SoftDeletes` は使わず、`order_headers.is_deleted` (integer) �
 - **Inertia は未使用**: `inertiajs/inertia-laravel` と `HandleInertiaRequests`（web ミドルウェアに登録済み）は入っているが、ルートビュー `app.blade.php` が存在せず Inertia レスポンスを返す箇所も無い
 - React 17（`ReactDOM.render`）。`@types/react` は 18 系で型がずれることがある
 
-## デプロイ
+## デプロイ / CI
 
-`.github/workflows/deploy.yml`: `main` への push で PHPUnit（sqlite）→ SSH でサーバに接続し `git fetch origin main && git reset --hard origin/main` → `yarn install && yarn prod`。
+**現在 CI・デプロイのワークフローは無い**。`.github/workflows/deploy.yml` は、デプロイ先サーバーが廃止され `main` への push のたびに SSH 接続で失敗する状態になっていたため一旦削除した。同ファイルに同居していた `php-tests`（PHPUnit）ジョブも同時に失われている。
 
-注意点:
+作り直す場合、旧ワークフローが抱えていた問題を引き継がないよう注意する。
 
-- デプロイスクリプトは **`composer install` を実行しない**。PHP 依存を追加した場合はサーバ側で手動対応が必要
-- **マイグレーションも自動実行されない**。`./runner prod:migrate` は `migrate:fresh`（＝全テーブル削除）なので本番では絶対に使わないこと
-- Node.js のテストジョブはコメントアウトされている（jest のテストファイル自体が未作成）
+- 旧デプロイは SSH 先で `git reset --hard origin/main` → `yarn install && yarn prod` を実行するだけで、**`composer install` を実行しなかった**
+- **マイグレーションも自動実行されなかった**。`./runner prod:migrate` は `migrate:fresh`（＝全テーブル削除）なので本番では絶対に使わないこと
+- Node.js のテストジョブはコメントアウトされていた（jest のテストファイル自体が未作成）
 
 ## コーディング規約
 
