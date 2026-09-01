@@ -39,13 +39,9 @@ case $1 in
 ;;
 "test")
     $FILENAME test:php
-    $FILENAME test:js
 ;;
 "test:php")
     $SAIL test ${ARGS}
-;;
-"test:js")
-    $FILENAME yarn test
 ;;
 "db:reset")
     $SAIL artisan migrate:reset
