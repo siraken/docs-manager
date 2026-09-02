@@ -89,7 +89,10 @@ Blade 側は `layouts/default.blade.php` と `layouts/auth.blade.php` で
 
 **テストでは `withoutVite()` が必須**。`tests/TestCase.php` の `setUp()` で呼んでいる。これがないと `@vite` がビルド成果物を探しに行き、テスト前に `yarn build` が必要になる。
 
-Vite は ESM 前提なので `require()` は使えない。`jquery-ui` は `window.jQuery` を参照するため、`resources/ts/lib/jquery/setup.ts` で先にグローバルを用意してから読み込んでいる（import は宣言順に評価される性質を利用）。
+Vite は ESM 前提なので `require()` は使えない。`jquery-ui` まわりに 2 つ落とし穴がある。
+
+1. **`window.jQuery` が必要**: `resources/ts/lib/jquery/setup.ts` で先にグローバルを用意してから読み込んでいる（import は宣言順に評価される性質を利用）
+2. **AMD の依存が自動解決されない**: `jquery-ui` の各モジュールは `define([...])` で依存を宣言しており、Vite はこれを辿ってくれない。`sortable` は `mouse` を、`mouse` は `widget` を必要とするため、`jquery.ts` で依存する順に明示して import している。**これを省くと `$.ui.mouse` が undefined になり、sortable の初期化で例外が出て `jquery.ts` 全体の処理が止まる**（金額計算・行追加・行削除がまとめて動かなくなる）
 
 ## PHP バージョンの注意
 

@@ -100,17 +100,17 @@ $items = [];
                             </div>
                         </td>
                         <td>
-                            <input type="text" name="qty[]" id="{{" qty_".$i}}" class="form-control text-end calc">
+                            <input type="text" name="qty[]" id="{{ 'qty_'.$i }}" class="form-control text-end calc">
                         </td>
                         <td>
                             <input type="text" name="unit[]" class="form-control text-center" placeholder="単位" value="">
                         </td>
                         <td>
-                            <input type="text" name="cost[]" id="{{" cost_".$i}}" class="form-control text-end calc"
+                            <input type="text" name="cost[]" id="{{ 'cost_'.$i }}" class="form-control text-end calc"
                                 value="">
                         </td>
                         <td>
-                            <select name="tax[]" id="{{" tax_".$i}}" class="form-select calc">
+                            <select name="tax[]" id="{{ 'tax_'.$i }}" class="form-select calc">
                                 <option value="1">10%</option>
                                 <option value="2">軽減8%</option>
                                 <option value="3">8%</option>
@@ -119,9 +119,9 @@ $items = [];
                             </select>
                         </td>
                         <td>
-                            <input type="text" name="price[]" id="{{" price_".$i}}"
+                            <input type="text" name="price[]" id="{{ 'price_'.$i }}"
                                 class="form-control text-end readonly" tabindex="-1" readonly>
-                            <input type="hidden" id="{{" tax_price_".$i}}" readonly>
+                            <input type="hidden" id="{{ 'tax_price_'.$i }}" readonly>
                         </td>
                         </tr>
                         @endfor
