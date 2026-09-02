@@ -105,7 +105,8 @@ PHP 8.1 で **PDO SQLite が integer / float を native type で返すように�
 
 Laravel 11 で導入された skeleton に合わせてある。**`app/Http/Kernel.php` や `app/Console/Kernel.php` は存在しない。**
 
-- **ミドルウェアの登録は `bootstrap/app.php`**。`withMiddleware()` の中で、web グループへの `AddResponseHeaders` の append と、`login` エイリアス (`LoginMiddleware`) の登録を行う
+- **ミドルウェアの登録は `bootstrap/app.php`**。`withMiddleware()` の中で、web グループへの `AddResponseHeaders` の append、`login` エイリアス (`LoginMiddleware`) の登録、api の `throttleApi()` を行う
+- **`throttleApi()` を外さないこと**。Laravel 11 以降、api グループの既定は `SubstituteBindings` だけで `throttle:api` はオプトインに変わった。旧 `app/Http/Kernel.php` では有効だったので明示的に復元してある。参照される `api` リミッター (60/min) は `AppServiceProvider::boot()` にある
 - **ルーティングも `bootstrap/app.php`** の `withRouting(web:, api:, commands:)`。旧 `RouteServiceProvider` は無い
 - **例外ハンドリングは `withExceptions()`**。旧 `app/Exceptions/Handler.php` は無い
 - **サービスプロバイダの登録は `bootstrap/providers.php`**。`config/app.php` に `providers` 配列は無い。現在は `AppServiceProvider` だけで、api の RateLimiter 定義もここに置いている

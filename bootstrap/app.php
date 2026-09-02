@@ -18,6 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
             AddResponseHeaders::class,
         ]);
 
+        // Laravel 11 以降、api グループの既定は SubstituteBindings だけで
+        // throttle はオプトインになった。旧 app/Http/Kernel.php では
+        // 'throttle:api' が有効だったので、明示的に復元しておく。
+        // 参照する 'api' リミッター (60/min) は AppServiceProvider で定義している。
+        $middleware->throttleApi();
+
         // このアプリは Illuminate\Auth を使わず素のセッションで認証している。
         // 認証が必要なルートは Route::middleware('login') で囲う。
         $middleware->alias([
