@@ -27,7 +27,7 @@ Node 22 なのは、pnpm 11 が Node 22.13+ を、Vite 6 が Node 18+ を要求�
 
 devShell が担うのはホスト側ツールチェーンのみ。**アプリの実行と MySQL は従来通り Sail (Docker)**。`shellHook` で `vendor/bin` と `node_modules/.bin` に PATH を通してある。
 
-php81 はデフォルトで `gd` / `pdo_mysql` / `pdo_sqlite` / `mbstring` / `iconv` / `curl` / `zip` / `bcmath` / `exif` が有効で、追加設定なしで TCPDF の PDF 生成・freee API の cURL・sqlite でのテストまで動く。
+php83 はデフォルトで `gd` / `pdo_mysql` / `pdo_sqlite` / `mbstring` / `iconv` / `curl` / `zip` / `bcmath` / `exif` が有効で、追加設定なしで TCPDF の PDF 生成・freee API の cURL・sqlite でのテストまで動く。
 
 この devShell がある場合、Docker 越しに composer を回す `./runner composer:init` は不要で、`composer install` を直接叩ける。
 
@@ -36,17 +36,21 @@ php81 はデフォルトで `gd` / `pdo_mysql` / `pdo_sqlite` / `mbstring` / `ic
 すべて Laravel Sail (Docker) 前提。`./runner` がラッパー。
 
 ```bash
-./runner init          # .env 作成 + sail up
+./runner init          # .env 作成 + sail up  ※現在は壊れている（後述）
 ./runner up            # sail up
 ./runner down
+./runner build         # sail build
 ./runner artisan <cmd> # sail artisan
 ./runner composer <cmd>
-./runner yarn <cmd>
+./runner pnpm <cmd>    # sail pnpm
+./runner npx <cmd>     # sail npx
 ./runner db:reset      # migrate:reset → migrate → db:seed
-./runner test          # PHP + JS 両方
-./runner test:php      # sail test (PHPUnit)
-./runner test:js       # yarn test (jest)
+./runner test          # test:php を呼ぶだけ（JS のテストは無い）
+./runner test:php      # sail test (Pest)
+./runner prod:migrate  # 絶対に使わないこと（「デプロイ / CI」を参照）
 ```
+
+**`yarn` / `test:js` のサブコマンドは無い**。パッケージマネージャは pnpm で、jest のテストファイルも存在しない。
 
 vendor が無い状態からの初回セットアップは `./runner composer:init`（ホストの Docker で `composer install --ignore-platform-reqs`）。
 
@@ -67,7 +71,9 @@ vendor が無い状態からの初回セットアップは `./runner composer:in
 
 `uses(TestCase::class)->in('Feature')` と `uses(RefreshDatabase::class)->in('Feature')` も `tests/Pest.php` で設定している。Unit テストはフレームワークを起動しない素の PHPUnit TestCase で動く。
 
-**PHPUnit 10**。`phpunit.xml` で `DB_CONNECTION=sqlite` / `DB_DATABASE=:memory:` を指定しているため、テストは MySQL を必要とせず Sail を起動しなくても回る。DB を使うテストは `RefreshDatabase` を付ける。設定は PHPUnit 10 スキーマ（`<coverage>` ではなく `<source>`）に移行済み。
+**PHPUnit 12**（12.5.33）。`phpunit.xml` で `DB_CONNECTION=sqlite` / `DB_DATABASE=:memory:` を指定しているため、テストは MySQL を必要とせず Sail を起動しなくても回る。DB を使うテストは `RefreshDatabase` を付ける。設定は PHPUnit 10 で入った形式（`<coverage>` ではなく `<source>`）のままで 12 でもそのまま通る。
+
+`phpunit.xml` の `xsi:noNamespaceSchemaLocation` は `10.5` を指したままだが、**PHPUnit 12 はこれを警告しない**（スキーマの参照先はエディタ向けで、PHPUnit 自身は使わない）。動かないわけではないので、慌てて直さなくてよい。
 
 **sqlite と MySQL の型差異に注意**: sqlite (PDO) は integer カラムを文字列で返す。`$header->total_price` は `'1100'` であって `1100` ではないため、テストで数値比較する際は `(int)` にキャストする。この差異は `ProjectController::index()` の挙動まで変える（後述）。
 
@@ -91,7 +97,7 @@ vendor が無い状態からの初回セットアップは `./runner composer:in
 Blade 側は `layouts/default.blade.php` と `layouts/auth.blade.php` で
 `@viteReactRefresh` → `@vite([...])` の順に書く（React Refresh は `@vite` より前でないと動かない）。
 
-**テストでは `withoutVite()` が必須**。`tests/TestCase.php` の `setUp()` で呼んでいる。これがないと `@vite` がビルド成果物を探しに行き、テスト前に `yarn build` が必要になる。
+**テストでは `withoutVite()` が必須**。`tests/TestCase.php` の `setUp()` で呼んでいる。これがないと `@vite` がビルド成果物を探しに行き、テスト前に `pnpm build` が必要になる。
 
 Vite は ESM 前提なので `require()` は使えない。`jquery-ui` まわりに 2 つ落とし穴がある。
 
@@ -137,7 +143,7 @@ php -S 127.0.0.1:8123 -t public <ルーターPHP>   # DB_CONNECTION / DB_DATABAS
 
 **PHP 8.3**（`composer.json` は `^8.3`、nix devShell は 8.3.33）。
 
-Sail のイメージは **`vendor/laravel/sail/runtimes/8.2` を直接参照**している（PHP 8.3 に揃えるなら `8.3` に変えるだけでよい）。以前はリポジトリ内の `docker/{7.4,8.0,8.1}` に Sail のコピーを抱えていたが、Ubuntu 21.10（EOL）ベースで独自カスタマイズも無かったため、Laravel 11 化の際に削除して公式の runtime に委譲した。PHP を上げるときは `docker-compose.yml` の `context` と `image` のバージョンを変えるだけでよい（vendor 内には 8.0〜8.5 が揃っている）。
+Sail のイメージは **`vendor/laravel/sail/runtimes/8.3` を直接参照**している（`docker-compose.yml` の `context` と `image` がどちらも 8.3）。以前はリポジトリ内の `docker/{7.4,8.0,8.1}` に Sail のコピーを抱えていたが、Ubuntu 21.10（EOL）ベースで独自カスタマイズも無かったため、Laravel 11 化の際に削除して公式の runtime に委譲した。PHP を上げるときは `docker-compose.yml` の `context` と `image` のバージョンを変えるだけでよい（vendor 内には 8.0〜8.5 が揃っている）。
 
 `vendor/` は gitignore されているので、`sail up` の前に `composer install` が必要。
 
@@ -206,6 +212,11 @@ Tailwind 移行時にブラウザで触って追加で判明したもの。
 - **ユーザーの新規登録画面が 500**: `users/form.blade.php` の 2FA リンクが `route('users.2fa', ['id' => $user->id])` を呼ぶが、`UserController::create()` は未保存の `new User()` を渡すため `id` が null で `Missing required parameter` になる。編集画面 (`/users/edit/{id}`) は動く
 - **ダッシュボードが二重に描画される**: `layouts/default.blade.php` の `<div id="app">` に react-router の `<App />` がマウントされ、`/` のとき `pages/Dashboard.tsx` が Blade 版のすぐ下にもう 1 つ描画される。この React 版は `href` に `{{ route(...) }}` という Blade の文字列がそのまま入っていた名残で、実質使われていない
 - **`orders/view.blade.php` は CakePHP のまま**: `$this->Html->url()` / `WWW_ROOT` / `APP` を使っており Laravel では 1 行目で落ちる。`OrderController::view()` が無いのでそもそも到達しない。**Bootstrap のクラスが残っている唯一のファイル**で、Tailwind 移行の対象外にしてある
+
+`runner` スクリプトにあるもの。
+
+- **`./runner init` が動かない**: 1 行目の `cp ./env.example .env` が参照するファイル名が違う（実際は `.env.example`）。`runner` は `set -Ceux` なのでここで即座に終了し、`sail up` まで到達しない。手で `cp .env.example .env` すればよい
+- **`./runner composer:init` の Docker イメージが古い**: `laravelsail/php74-composer:latest` を使う。`--ignore-platform-reqs` 付きなので動きはするが、PHP 7.4 の composer で 8.3 前提の依存を解決することになる。**devShell があるならこれは不要**で、`composer install` を直接叩けばよい
 
 ### テストしにくい箇所
 
