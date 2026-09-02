@@ -1,0 +1,71 @@
+/* 発注書の明細テーブル。jquery-ui の sortable で行を並べ替えるため、
+   行の枠線・ドラッグ中の見た目・削除ボタンのホバー表示だけをここで持つ。
+   セル内の input / select の見た目は Blade 側のユーティリティで指定する。 */
+.document-table {
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+}
+
+.document-table tr:not(.sum-tr) {
+    cursor: move;
+}
+
+.document-table th,
+.document-table td {
+    border: 1px solid var(--color-slate-200);
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.document-table th {
+    text-align: center;
+    background: var(--color-slate-100);
+    color: var(--color-slate-600);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
+
+.document-table td:not(.action-cell) {
+    background: #fff;
+}
+
+/* 合計行は表の枠外に見せる */
+.document-table .sum-cell {
+    background: transparent;
+    border: none;
+    vertical-align: top;
+}
+
+.document-table .action-cell {
+    text-align: center;
+    border: none;
+    background-color: transparent;
+}
+
+.document-table .action-cell:hover .delete-row-button {
+    opacity: 1;
+}
+
+.document-table .delete-row-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: var(--radius-md);
+    color: var(--color-slate-400);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.1s, color 0.1s, background-color 0.1s;
+}
+
+.document-table .delete-row-button:hover {
+    color: var(--color-red-600);
+    background-color: var(--color-red-50);
+}
+
+.document-table .item-cell {
+    position: relative;
+}

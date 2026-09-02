@@ -1,65 +1,64 @@
 @extends('layouts/default')
 @section('page')
 
-<div class="row mb-3">
-    <div class="col-12">
-        {{-- File uploader --}}
-        <form action="{{ route('files.upload') }}" method="POST" enctype="multipart/form-data">
+<x-page-header title="ファイル">
+    <x-slot:description>ファイルをアップロードして共有します。</x-slot:description>
+</x-page-header>
+
+<div class="mb-6 max-w-2xl">
+    <x-card>
+        <form action="{{ route('files.upload') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
             @csrf
-            <div class="form-group mb-1">
-                <label for="mame">お名前</label>
-                <input type="text" id="name" class="form-control" name="name">
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <x-label for="name">お名前</x-label>
+                    <x-input id="name" name="name" />
+                </div>
+                <div>
+                    <x-label for="email">メールアドレス</x-label>
+                    <x-input type="email" id="email" name="email" />
+                </div>
             </div>
-            <div class="form-group mb-1">
-                <label for="email">メールアドレス</label>
-                <input type="email" id="email" class="form-control" name="email">
+
+            <div>
+                <x-label for="file">ファイルを選択してください</x-label>
+                <x-input type="file" id="file" name="file" />
             </div>
-            <div class="form-group mb-2">
-                <label for="file">ファイルを選択してください</label>
-                <input type="file" id="file" class="form-control" name="file">
-            </div>
-            <button type="submit" class="btn btn-secondary">アップロード</button>
+
+            <x-button type="submit" variant="primary" icon="upload">アップロード</x-button>
         </form>
-    </div>
+    </x-card>
 </div>
 
-{{-- Session only --}}
+{{-- ログイン中のみ一覧を出す --}}
 @if (session('email'))
-<div class="row">
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table align-middle">
-                <thead>
-                    <tr>
-                        <th>ファイル名</th>
-                        {{-- <th>メールアドレス</th> --}}
-                        {{-- <th>アップロード日</th> --}}
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for ($i = 0; $i < count($files); $i++) <tr>
-                        <td>{{ $files[$i] }}</td>
-                        {{-- <td>{{ $files[$i] }}</td> --}}
-                        {{-- <td>{{ $files[$i] }}</td> --}}
-                        <td>
-                            <a href="{{ route('files.download', ['file' => $files[$i]]) }}" class="btn btn-secondary">
-                                ダウンロード
-                            </a>
-                            <form action="{{ route('files.delete', ['file' => $files[$i]]) }}" method="POST"
-                                style="display: inline-block;">
+    @if (count($files) === 0)
+        <x-empty-state>アップロードされたファイルはありません</x-empty-state>
+    @else
+        <x-table>
+            <x-slot:head>
+                <th class="px-4 py-3">ファイル名</th>
+                <th class="px-4 py-3"><span class="sr-only">操作</span></th>
+            </x-slot:head>
+
+            @foreach ($files as $file)
+                <tr class="transition hover:bg-slate-50">
+                    <td class="px-4 py-3 align-middle font-medium break-all text-slate-900">{{ $file }}</td>
+                    <td class="px-4 py-3 text-right align-middle">
+                        <div class="flex justify-end gap-2">
+                            <x-button :href="route('files.download', ['file' => $file])" size="sm" icon="download">ダウンロード</x-button>
+                            <form action="{{ route('files.delete', ['file' => $file]) }}" method="POST" class="inline-block">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger">削除</button>
+                                <x-button type="submit" size="sm" variant="danger" icon="trash">削除</x-button>
                             </form>
-                        </td>
-                        </tr>
-                        @endfor
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+                        </div>
+                    </td>
+                </tr>
+            @endforeach
+        </x-table>
+    @endif
 @endif
 
 @endsection

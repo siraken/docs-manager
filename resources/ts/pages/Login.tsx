@@ -2,98 +2,62 @@ import * as React from "react";
 
 const LoginPage = () => {
   return (
-    <>
-      {/* <style>
-    .bd-placeholder-img {
-        font-size: 1.125rem;
-        text-anchor: middle;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        user-select: none;
-    }
+    <main className="mx-auto w-full max-w-sm">
+      <div className="mb-6 flex flex-col items-center gap-3">
+        <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-600 text-lg font-bold text-white">
+          N
+        </span>
+        <h1 className="text-lg font-semibold tracking-tight text-slate-900">
+          Novalumo Console
+        </h1>
+      </div>
 
-    @media (min-width: 768px) {
-        .bd-placeholder-img-lg {
-            font-size: 3.5rem;
-        }
-    }
-
-    html,
-    body {
-        height: 100%;
-    }
-
-    body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding-top: 40px;
-        padding-bottom: 40px;
-        background-color: #f5f5f5;
-    }
-
-    .form-signin {
-        width: 100%;
-        max-width: 330px;
-        padding: 15px;
-        margin: auto;
-    }
-
-    .form-signin .checkbox {
-        font-weight: 400;
-    }
-
-    .form-signin .form-floating:focus-within {
-        z-index: 2;
-    }
-
-    .form-signin input[type="email"] {
-        margin-bottom: -1px;
-        border-bottom-right-radius: 0;
-        border-bottom-left-radius: 0;
-    }
-
-    .form-signin input[type="password"] {
-        margin-bottom: 10px;
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
-    }
-</style> */}
-      <main className="form-signin">
-        <form method="post">
-          @csrf
-          <h1 className="h3 mb-3 fw-normal">Sign In</h1>
-          <div className="form-floating">
+      <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <form method="post" className="space-y-4">
+          <div>
+            <label
+              htmlFor="email"
+              className="mb-1.5 block text-sm font-medium text-slate-700"
+            >
+              メールアドレス
+            </label>
             <input
               type="email"
+              id="email"
               name="email"
-              className="form-control"
-              id="floatingInput"
+              autoComplete="username"
               placeholder="name@example.com"
+              className="block w-full rounded-lg border-0 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-brand-600"
             />
-            <label htmlFor="floatingInput">Email address</label>
           </div>
-          <div className="form-floating">
+
+          <div>
+            <label
+              htmlFor="password"
+              className="mb-1.5 block text-sm font-medium text-slate-700"
+            >
+              パスワード
+            </label>
             <input
               type="password"
+              id="password"
               name="password"
-              className="form-control"
-              id="floatingPassword"
-              placeholder="Password"
+              autoComplete="current-password"
+              className="block w-full rounded-lg border-0 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-brand-600"
             />
-            <label htmlFor="floatingPassword">Password</label>
           </div>
-          <label>
-            <input type="checkbox" value="remember-me" /> Remember me
-          </label>
-          <button className="w-100 btn btn-lg btn-secondary" type="submit">
-            Sign In
+
+          <button
+            type="submit"
+            className="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-brand-700"
+          >
+            サインイン
           </button>
-          <p className="mt-5 mb-3 text-muted">&copy; Novalumo</p>
         </form>
-      </main>
-    </>
+      </div>
+
+      <p className="mt-6 text-center text-xs text-slate-400">&copy; Novalumo</p>
+    </main>
   );
 };
 

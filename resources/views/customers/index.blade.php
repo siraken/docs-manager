@@ -1,39 +1,39 @@
 @extends('layouts/default')
 @section('page')
 
-<div class="row">
-    <div class="col-12">
-        <a href="{{ route('customers.create') }}" class="btn btn-secondary">顧客の新規登録</a>
-    </div>
-</div>
+<x-page-header title="顧客管理">
+    <x-slot:actions>
+        <x-button :href="route('customers.create')" variant="primary" icon="plus-lg">顧客の新規登録</x-button>
+    </x-slot:actions>
+</x-page-header>
 
-<div class="row">
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th style="width: 30%;">Name</th>
-                        <th style="width: 30%;">Address</th>
-                        <th style="width: 30%;">Email</th>
-                        <th style="width: 10%;">操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($customers as $row)
-                    <tr>
-                        <td>{{ $row->name }} {{ $row->is_company ? "(C)" : "" }}</td>
-                        <td>{{ $row->city . $row->state . $row->country }}</td>
-                        <td>{{ $row->email }}</td>
-                        <td>
-                            <a class="btn btn-secondary btn-sm" href="{{ route('customers.edit', ['id' => $row->id]) }}">編集</a>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+@if (count($customers) === 0)
+    <x-empty-state>顧客がまだ登録されていません</x-empty-state>
+@else
+    <x-table>
+        <x-slot:head>
+            <th class="px-4 py-3">Name</th>
+            <th class="px-4 py-3">Address</th>
+            <th class="px-4 py-3">Email</th>
+            <th class="px-4 py-3"><span class="sr-only">操作</span></th>
+        </x-slot:head>
+
+        @foreach ($customers as $row)
+            <tr class="transition hover:bg-slate-50">
+                <td class="px-4 py-3 align-middle">
+                    <span class="font-medium text-slate-900">{{ $row->name }}</span>
+                    @if ($row->is_company)
+                        <x-badge color="brand" class="ml-1.5">法人</x-badge>
+                    @endif
+                </td>
+                <td class="px-4 py-3 align-middle text-slate-600">{{ $row->city . $row->state . $row->country }}</td>
+                <td class="px-4 py-3 align-middle text-slate-600">{{ $row->email }}</td>
+                <td class="px-4 py-3 text-right align-middle">
+                    <x-button :href="route('customers.edit', ['id' => $row->id])" size="sm" icon="pencil">編集</x-button>
+                </td>
+            </tr>
+        @endforeach
+    </x-table>
+@endif
 
 @endsection

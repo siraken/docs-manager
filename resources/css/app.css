@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+/* アイコンフォント。Bootstrap 本体とは独立したプロジェクトで、CDN ではなく
+   npm 依存として Vite にバンドルさせている (外部ホストへの依存を持たないため) */
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+@import "./document-table.css";
+@import "./item-overlay.css";
+
+/* Tailwind v4 は既定でプロジェクト全体を走査するが、対象を明示しておく */
+@source "../views";
+@source "../ts";
+
+@theme {
+    /* ブランドカラー。従来 document-table / items_name のアクセントに使っていた
+       #00acc1 (Material Cyan 600) を基点にしたスケール */
+    --color-brand-50: #e0f7fa;
+    --color-brand-100: #b2ebf2;
+    --color-brand-200: #80deea;
+    --color-brand-300: #4dd0e1;
+    --color-brand-400: #26c6da;
+    --color-brand-500: #00bcd4;
+    --color-brand-600: #00acc1;
+    --color-brand-700: #0097a7;
+    --color-brand-800: #00838f;
+    --color-brand-900: #006064;
+
+    --font-sans:
+        ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue",
+        "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP",
+        "Yu Gothic UI", Meiryo, sans-serif;
+}
+
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    /* Alpine が初期化されるまで x-show の要素を出さない */
+    [x-cloak] {
+        display: none !important;
+    }
+
+    body {
+        @apply bg-slate-50 font-sans text-slate-800 antialiased;
+    }
+
+    /* 数値は等幅の桁送りで揃える (金額表示が多いため) */
+    .tabular {
+        font-variant-numeric: tabular-nums;
+    }
+}

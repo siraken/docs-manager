@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 13 + Blade + Bootstrap 5 のサーバーサイドレンダリング構成で、一部に React/TypeScript を後付けしている。UI・コード内コメントは日本語。
+Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 13 + Blade + Tailwind CSS v4 のサーバーサイドレンダリング構成で、一部に React/TypeScript を後付けしている。UI・コード内コメントは日本語。
 
 Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げてきた（1 メジャー = 1 PR）。**現在 13 で、アップグレードは完了している。**
 
@@ -82,7 +82,9 @@ vendor が無い状態からの初回セットアップは `./runner composer:in
 
 **pnpm 10 以降は依存パッケージの postinstall を既定でブロックする**（サプライチェーン対策）。許可は `pnpm-workspace.yaml` の `allowBuilds` に書く。値はリストではなく「パッケージ名 → bool」のマップである点に注意。設定を足すときは `pnpm approve-builds <pkg> '!<pkg>'` を使うと正しい書式で書き込まれる。現在は Vite の中核である `esbuild` のみ許可している。
 
-エントリは `vite.config.js` の `input` に定義（`resources/sass/app.scss` と `resources/ts/app.tsx`）。出力は `public/build/`（gitignore 済み）で、`manifest.json` を Blade の `@vite` が読む。
+エントリは `vite.config.js` の `input` に定義（`resources/css/app.css` と `resources/ts/app.tsx`）。出力は `public/build/`（gitignore 済み）で、`manifest.json` を Blade の `@vite` が読む。
+
+**Tailwind v4 はネイティブバイナリ (`@tailwindcss/oxide`) を使い、Node 20+ を要求する**。ホストの Node が古いまま `pnpm install` すると、プラットフォーム別の optional dependency（`@tailwindcss/oxide-darwin-arm64` など）が engines 不一致でスキップされ、ビルド時に `Cannot find native binding` で落ちる。`node_modules` を消して **devShell の中で** 入れ直すこと。
 
 Blade 側は `layouts/default.blade.php` と `layouts/auth.blade.php` で
 `@viteReactRefresh` → `@vite([...])` の順に書く（React Refresh は `@vite` より前でないと動かない）。
@@ -93,6 +95,41 @@ Vite は ESM 前提なので `require()` は使えない。`jquery-ui` まわり
 
 1. **`window.jQuery` が必要**: `resources/ts/lib/jquery/setup.ts` で先にグローバルを用意してから読み込んでいる（import は宣言順に評価される性質を利用）
 2. **AMD の依存が自動解決されない**: `jquery-ui` の各モジュールは `define([...])` で依存を宣言しており、Vite はこれを辿ってくれない。`sortable` は `mouse` を、`mouse` は `widget` を必要とするため、`jquery.ts` で依存する順に明示して import している。**これを省くと `$.ui.mouse` が undefined になり、sortable の初期化で例外が出て `jquery.ts` 全体の処理が止まる**（金額計算・行追加・行削除がまとめて動かなくなる）
+
+### スタイル (Tailwind CSS v4)
+
+Bootstrap 5 は削除済み。**Tailwind CSS v4** の CSS-first 構成で、`tailwind.config.js` も PostCSS も autoprefixer も無い。
+
+- Vite プラグイン `@tailwindcss/vite` を `vite.config.js` に足し、`resources/css/app.css` の先頭で `@import "tailwindcss"` する
+- 配色などは同ファイルの `@theme` ブロックで CSS 変数として定義する。ブランドカラー `--color-brand-*` は、もともと独自 CSS のアクセントに使われていた `#00acc1` (Material Cyan 600) を基点にしたスケール
+- 走査対象は `@source` で `../views` と `../ts` を明示している（v4 は既定でプロジェクト全体を走査するが、明示しておく）
+- 独自 CSS は `resources/css/document-table.css`（発注書の明細テーブル）と `item-overlay.css`（品目候補のオーバーレイ）の 2 つだけ。**SCSS は廃止**（ネストは Lightning CSS が素の CSS として処理する）ので `sass` 依存も外してある
+
+**アイコンは `bootstrap-icons`**（Bootstrap 本体とは別プロジェクト）。CDN ではなく npm 依存にして Vite にバンドルさせている。フラッシュメッセージの `flash_icon` にコントローラから `bi-` 名を渡す仕組みは従来どおり。CSS の大半（117KB 中 100KB 程度）はこのアイコン定義で、使うのは十数種だが CDN 時代と同じものなので絞り込んではいない。
+
+### Blade コンポーネントと Alpine.js
+
+Tailwind は CSS しか提供しないので、Bootstrap の JS コンポーネント（modal / dropdown / collapse / toast）は **Alpine.js** に置き換えてある（`resources/ts/lib/alpine.ts` で `Alpine.start()`）。
+
+再利用する UI は `resources/views/components/` の匿名 Blade コンポーネントにまとめてある。`x-button` / `x-input` / `x-select` / `x-textarea` / `x-label` / `x-card` / `x-table` / `x-badge` / `x-toggle` / `x-empty-state` / `x-page-header` / `x-dropdown`（+ `x-dropdown-item` / `x-dropdown-divider`）/ `x-modal` / `x-flash` / `x-order-status` / `x-order-row`。それ以外はユーティリティを直書きする。
+
+落とし穴が 3 つある。
+
+1. **Blade コンポーネントタグの中で Blade ディレクティブを使わない**。`<x-toggle @checked($v) />` のように書くと、コンポーネントタグのパーサが属性として解釈できずタグ自体がコンパイルされず、`<x-toggle>` が未知の HTML 要素としてそのまま出力される（後続の要素がその中に入れ子になり、画面から消える）。`:checked="(bool) $v"` のように **プロパティとして渡す**こと。素の HTML タグの中（`<option @selected(...)>` など）なら問題ない
+2. **フラッシュのトーストはヘッダーと重なる**。`x-flash` は `top` プロパティで位置を受け取り、`layouts/default` では既定の `top-20`（h-16 のヘッダーの下）、`layouts/auth` では `top-4` を渡している
+3. **発注書の明細行のマークアップは `x-order-row` が唯一の定義**。`orders/form.blade.php` は 5 行を描画したうえで、同じコンポーネントを `index="__INDEX__"` で `<template id="order-row-template">` にも入れておき、`jquery.ts` の行追加処理がそれを複製して添字を差し替える。以前は同じ HTML が jquery.ts の文字列テンプレートにも書かれていて、しかもその中に CakePHP 時代の `<?php foreach ... ?>` が生のまま残っていた
+
+React 側との連携は DOM の CustomEvent で行う。案件フォームの「保存する」ボタン（Blade）が `open-projects-modal` を投げ、`ProjectsModal.tsx` がそれを拾って開く。Bootstrap の `data-bs-toggle` を使っていた箇所の置き換え。
+
+### ローカルでの動作確認 (sqlite)
+
+MySQL を立てずに画面を確認したいときは sqlite に向けられる。ただし **`php artisan serve` は任意の環境変数を子プロセスに渡さない**（`ServeCommand` の passthrough 許可リストにあるものだけ）。`DB_CONNECTION=sqlite artisan serve` は効かず `.env` の MySQL を見にいくので、PHP 内蔵サーバーを直接叩くこと。
+
+```bash
+php -S 127.0.0.1:8123 -t public <ルーターPHP>   # DB_CONNECTION / DB_DATABASE を env で渡す
+```
+
+`config:cache` していなければ、実プロセスの環境変数は `.env` より優先される（Laravel は `Dotenv::createImmutable` を使う）。
 
 ## PHP バージョンの注意
 
@@ -143,6 +180,13 @@ Vite はビルド時に `import.meta.env.VITE_*` を値へ埋め込む。**`proc
 - **`OrderController::csv()` はカレントディレクトリにファイルを書く**: `'./' . $order_no . '.csv'` を作って `readfile()` 後に `unlink()` する。`order_no` は検証されていない
 
 - **`tsc --noEmit` が通らない**: `resources/ts/lib/jquery/jquery.ts` に型エラーが 6 件ある（`$(...).val()` の戻り値で算術演算している箇所、`jquery-ui` の `sortable` の型が無い箇所など）。Laravel Mix も Vite も型チェックを行わないため、ビルド自体は通る。型チェックを CI に入れるなら先に潰す必要がある
+
+Tailwind 移行時にブラウザで触って追加で判明したもの。
+
+- **発注書一覧のステータス切り替えが動かない**: `orders/index` と `orders/trash` のステータスのピルは `onclick="slipSetter.status(...)"` を呼ぶが、`slipSetter` を定義している `resources/js/status.js` は **Vite の input にも、どの Blade にも、どの TS からも読み込まれていない**。クリックすると `ReferenceError: slipSetter is not defined` になる。このファイル自体も `require()` を使っており ESM のままでは動かない
+- **ユーザーの新規登録画面が 500**: `users/form.blade.php` の 2FA リンクが `route('users.2fa', ['id' => $user->id])` を呼ぶが、`UserController::create()` は未保存の `new User()` を渡すため `id` が null で `Missing required parameter` になる。編集画面 (`/users/edit/{id}`) は動く
+- **ダッシュボードが二重に描画される**: `layouts/default.blade.php` の `<div id="app">` に react-router の `<App />` がマウントされ、`/` のとき `pages/Dashboard.tsx` が Blade 版のすぐ下にもう 1 つ描画される。この React 版は `href` に `{{ route(...) }}` という Blade の文字列がそのまま入っていた名残で、実質使われていない
+- **`orders/view.blade.php` は CakePHP のまま**: `$this->Html->url()` / `WWW_ROOT` / `APP` を使っており Laravel では 1 行目で落ちる。`OrderController::view()` が無いのでそもそも到達しない。**Bootstrap のクラスが残っている唯一のファイル**で、Tailwind 移行の対象外にしてある
 
 ### テストしにくい箇所
 
@@ -213,10 +257,11 @@ Laravel の `SoftDeletes` は使わず、`order_headers.is_deleted` (integer) �
 
 ### フロントエンドの二重構造
 
-主体は Blade + Bootstrap 5 + jQuery。React は「特定 DOM に自己マウントする部品」として同居している。
+主体は Blade + Tailwind + Alpine + jQuery。React は「特定 DOM に自己マウントする部品」として同居している。
 
 - 各コンポーネントがファイル末尾で `document.getElementById(...)` を見て自分で `ReactDOM.render` する（例: `Calc.tsx`、`ProjectsModal.tsx` → Blade 側の `<div id="projects-modal">`）
-- `app.tsx` は react-router の `<App />` を `#app` にマウントするが、`#app` は `layouts/default.blade.php` 内にあるため全ページに存在する
+- `app.tsx` は react-router の `<App />` を `#app` にマウントするが、`#app` は `layouts/default.blade.php` 内にあるため全ページに存在する。**その結果 `/` ではダッシュボードが二重に描画される**（既知の不具合を参照）
+- `Calc.tsx` (`#calc`) と `Example.tsx` (`#example`) のマウント先はどの Blade にも存在せず、実際には描画されない
 - `resources/ts/lib/novalumo.ts` は `window.novalumo` として公開され、Blade の inline スクリプトから呼ばれる
 - **Inertia は削除済み**: 一度も使われていなかったため、Laravel 11 化の際に composer の `inertiajs/inertia-laravel` と `HandleInertiaRequests` ミドルウェアごと削除した（npm 側の `@inertiajs/*` は Vite 移行時に削除済み）
 - React 18（`react-dom/client` の `createRoot`）。react-router-dom も v7

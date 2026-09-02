@@ -1,19 +1,14 @@
 @extends('layouts/default')
 @section('page')
 
-<div class="row">
-    <div class="col-12">
-        <a href="{{ route('projects.index') }}" class="btn btn-secondary">
-            戻る
-        </a>
-    </div>
-</div>
+<x-page-header :title="$task->title">
+    <x-slot:actions>
+        <x-button :href="route('projects.index')" icon="arrow-left">戻る</x-button>
+    </x-slot:actions>
+</x-page-header>
 
-<div class="row">
-    <div class="col-12">
-        <h1>{{ $task->title }}</h1>
-        {!! $task->description !!}
-    </div>
-</div>
+<x-card class="text-sm leading-relaxed text-slate-700">
+    {!! $task->description !!}
+</x-card>
 
 @endsection

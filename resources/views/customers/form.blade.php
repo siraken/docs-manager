@@ -1,71 +1,51 @@
 @extends('layouts/default')
 @section('page')
 
-<form method="post" action="" autocomplete="off" id="MainForm">
-    <div class="row mb-3">
-        <div class="col-12">
-            <a href="{{ route('customers.index') }}" class="btn btn-secondary">Back</a>
-            <button class="btn btn-secondary" type="submit">Save</button>
-        </div>
-    </div>
+@php
+    $fields = [
+        ['name' => 'email', 'label' => 'Email', 'required' => true],
+        ['name' => 'phone', 'label' => 'Phone', 'required' => true],
+        ['name' => 'post_code', 'label' => 'Post code', 'required' => true],
+        ['name' => 'address', 'label' => 'Address', 'required' => true],
+        ['name' => 'city', 'label' => 'City', 'required' => true],
+        ['name' => 'state', 'label' => 'State', 'required' => true],
+        ['name' => 'country', 'label' => 'Country', 'required' => true],
+    ];
+@endphp
 
-    <div class="row">
-        <div class="col-6">
+<form method="post" action="" autocomplete="off" id="MainForm">
+    <x-page-header title="顧客の編集">
+        <x-slot:actions>
+            <x-button :href="route('customers.index')" icon="arrow-left">Back</x-button>
+            <x-button type="submit" variant="primary" icon="check-lg">Save</x-button>
+        </x-slot:actions>
+    </x-page-header>
+
+    <div class="max-w-2xl">
+        <x-card class="space-y-5">
             @csrf
 
-            <div class="mb-3">
-                <label class="form-label">Name<span class="badge bg-danger ms-1">Required</span></label>
-                <input type="text" name="name" class="form-control" value="{{ old('name', $customer['name']) }}" required>
+            <div>
+                <x-label for="name" required>Name</x-label>
+                <x-input id="name" name="name" value="{{ old('name', $customer['name']) }}" required />
             </div>
 
-            <div class="mb-3">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" name="is_company" role="switch" id="is-company-switch" checked="{{ $customer->is_company === 1 ? "true" : "false" }}">
-                    <label class="form-check-label" for="is-company-switch">This is a company</label>
-                  </div>
-            </div>
+            <x-toggle name="is_company" id="is-company-switch" label="This is a company"
+                      :checked="(bool) old('is_company', $customer->is_company)" />
 
-            <div class="mb-3">
-                <label class="form-label">Email<span class="badge bg-danger ms-1">Required</span></label>
-                <input type="text" name="email" class="form-control" value="{{ old('email', $customer['email']) }}" required>
-            </div>
+            @foreach ($fields as $field)
+                <div>
+                    <x-label :for="$field['name']" :required="$field['required']">{{ $field['label'] }}</x-label>
+                    <x-input :id="$field['name']" :name="$field['name']"
+                             value="{{ old($field['name'], $customer[$field['name']]) }}" required />
+                </div>
+            @endforeach
 
-            <div class="mb-3">
-                <label class="form-label">Phone<span class="badge bg-danger ms-1">Required</span></label>
-                <input type="text" name="phone" class="form-control" value="{{ old('phone', $customer['phone']) }}" required>
+            <div>
+                <x-label for="note">Note</x-label>
+                <x-textarea id="note" name="note">{{ old('note', $customer['note']) }}</x-textarea>
             </div>
-
-            <div class="mb-3">
-                <label class="form-label">Post code<span class="badge bg-danger ms-1">Required</span></label>
-                <input type="text" name="post_code" class="form-control" value="{{ old('post_code', $customer['post_code']) }}" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Address<span class="badge bg-danger ms-1">Required</span></label>
-                <input type="text" name="address" class="form-control" value="{{ old('address', $customer['address']) }}" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">City<span class="badge bg-danger ms-1">Required</span></label>
-                <input type="text" name="city" class="form-control" value="{{ old('city', $customer['city']) }}" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">State<span class="badge bg-danger ms-1">Required</span></label>
-                <input type="text" name="state" class="form-control" value="{{ old('state', $customer['state']) }}" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Country<span class="badge bg-danger ms-1">Required</span></label>
-                <input type="text" name="country" class="form-control" value="{{ old('country', $customer['country']) }}" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Note</label>
-                <textarea name="note" class="form-control">{{ old('note', $customer['note']) }}</textarea>
-            </div>
-
-        </div>
+        </x-card>
     </div>
 </form>
 

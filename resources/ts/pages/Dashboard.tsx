@@ -1,37 +1,28 @@
 import * as React from "react";
 
+const SHORTCUTS = [
+  { label: "出張申請", href: "/trips" },
+  { label: "出張旅費精算", href: "/expenses" },
+  { label: "発注書作成", href: "/orders" },
+];
+
 const DashboardPage = () => {
   return (
     <>
-      <div className="row mb-3">
-        <div className="col-12">
-          <h1 className="h3">Welcome, Name</h1>
-        </div>
-      </div>
+      <h1 className="mb-6 text-xl font-semibold tracking-tight text-slate-900">
+        Welcome, Name
+      </h1>
 
-      <div className="row">
-        <div className="col-12">
-          <div className="d-flex gap-3">
-            <a
-              href="{{ route('trips.index') }}"
-              className="btn btn-secondary shadow-sm p-3"
-            >
-              出張申請
-            </a>
-            <a
-              href="{{ route('expenses.index') }}"
-              className="btn btn-secondary shadow-sm p-3"
-            >
-              出張旅費精算
-            </a>
-            <a
-              href="{{ route('orders.index') }}"
-              className="btn btn-secondary shadow-sm p-3"
-            >
-              発注書作成
-            </a>
-          </div>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {SHORTCUTS.map((shortcut) => (
+          <a
+            key={shortcut.href}
+            href={shortcut.href}
+            className="rounded-xl bg-white p-5 font-medium text-slate-900 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-brand-300"
+          >
+            {shortcut.label}
+          </a>
+        ))}
       </div>
     </>
   );
