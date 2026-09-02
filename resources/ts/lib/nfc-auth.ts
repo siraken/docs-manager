@@ -1,4 +1,4 @@
-import axios from "axios";
+import { http } from "./http";
 
 const DOCUMENT_ROOT =
   import.meta.env.VITE_APP_ENV === "local" ? "" : "/docs-manager";
@@ -72,13 +72,14 @@ window.addEventListener("load", () => {
         reader.addEventListener("reading", ({ message, serialNumber }: any) => {
           tagDataTextarea.textContent += `> Serial Number: ${serialNumber}`;
 
-          axios
+          http
             .post(`${DOCUMENT_ROOT}/login/login-nfc`, {
-              serialNumber: serialNumber,
-              pin: pinInput.value,
+              json: {
+                serialNumber: serialNumber,
+                pin: pinInput.value,
+              },
             })
-            .then((response) => {
-              // alert(response.data.user.name);
+            .then(() => {
               window.location.href = `${DOCUMENT_ROOT}/`;
             })
             .catch((error) => {

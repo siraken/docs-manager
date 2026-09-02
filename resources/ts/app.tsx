@@ -4,7 +4,6 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import DashboardPage from "./pages/Dashboard";
 import LoginPage from "./pages/Login";
 
-import "./lib/bootstrap";
 import "./lib/alpine";
 import "./lib/jquery/jquery";
 import "./lib/nfc-auth";

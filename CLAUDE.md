@@ -157,6 +157,22 @@ Laravel 11 で導入された skeleton に合わせてある。**`app/Http/Kerne
 - **翻訳ファイルは `lang/`**（`resources/lang/` ではない。Laravel 9 以降の配置）
 - **config は必要なものだけ**。`cors` / `hashing` / `view` / `broadcasting` は全て標準値だったので削除し、フレームワークの既定に任せている
 
+### HTTP クライアント (ky)
+
+**axios は廃止し `ky` を使う**（fetch のラッパー、依存 0）。設定済みインスタンスは `resources/ts/lib/http.ts` の `http` で、これを import すること。素の `ky` や `fetch` を直接使うと以下が漏れる。
+
+- **`X-XSRF-TOKEN`**: `XSRF-TOKEN` クッキーの値を URL デコードして載せる。axios が暗黙にやっていた処理を `beforeRequest` フックで再現している。JSON を投げる先（`login-nfc` / `login-metamask` / `orders/set-status`）はすべて `routes/web.php` にあり CSRF の対象
+- **`X-Requested-With: XMLHttpRequest`**
+
+**ky 2.x のフックは引数を 1 つのオブジェクトで受け取る**（`({ request }) => ...`）。1.x の `(request, options) => ...` とは非互換なので、ネット上の 1.x 向けサンプルをそのまま貼らないこと。
+
+axios との違いで注意が要るのは 2 点。
+
+1. **既定タイムアウトが 10 秒**（axios は無制限）。長い処理を叩くときは `timeout` を明示する
+2. **レスポンスボディは `.json()` で取り出す**。axios の `res.data` に相当するものは無い
+
+リトライは既定で GET / PUT / HEAD / DELETE / OPTIONS / TRACE のみが対象で、**POST は再送されない**。現状の呼び出しはすべて POST なので axios と挙動は変わらない。
+
 ### フロントエンドの環境変数
 
 Vite はビルド時に `import.meta.env.VITE_*` を値へ埋め込む。**`process.env.MIX_*` は解決されない**（Mix 時代の書き方が残っていると常に `undefined` になる）。
@@ -165,7 +181,8 @@ Vite はビルド時に `import.meta.env.VITE_*` を値へ埋め込む。**`proc
 
 ## Laravel 13 で入れた設定
 
-- **CSRF ミドルウェアは `PreventRequestForgery`**: Laravel 13 で `VerifyCsrfToken` からリネームされ、`Sec-Fetch-Site` ヘッダによるリクエスト元検証が加わった。`app/Http/Middleware/PreventRequestForgery.php` がそれを継承し、Kernel と `config/sanctum.php` から参照している。`VerifyCsrfToken` / `ValidateCsrfToken` は非推奨エイリアスとして残っているが使わないこと
+- **CSRF ミドルウェアは `PreventRequestForgery`**: Laravel 13 で `VerifyCsrfToken` からリネームされ、`Sec-Fetch-Site` ヘッダによるリクエスト元検証が加わった。**継承した独自クラスは持っておらず**、web グループにフレームワーク標準の `Illuminate\Foundation\Http\Middleware\PreventRequestForgery` がそのまま入っている（明示的に名前を書いているのは `config/sanctum.php` の `validate_csrf_token` だけ）。`VerifyCsrfToken` / `ValidateCsrfToken` は非推奨エイリアスとして残っているが使わないこと
+- **`handle()` は `hasValidOrigin()` を `tokensMatch()` より先に評価する**。`Sec-Fetch-Site: same-origin` が付いていればトークンを見ずに通す。そのためブラウザからの同一オリジン fetch は CSRF トークンが無くても 200 になり、**ブラウザ操作だけではトークン検証の経路を確認できない**。検証したいときは `Sec-Fetch-Site` を送らない curl を使うこと（トークン無し・不正なら 419 になる）
 - **`config/session.php` の `serialization` は `json`**: PHP の unserialize による gadget chain 攻撃を避けるため。このアプリはセッションに `user_id` / `name` / `email` の文字列しか入れていないので json で足りる
 - **`config/cache.php` の `serializable_classes` は `false`**: キャッシュから PHP オブジェクトを復元しない設定。キャッシュにオブジェクトを入れていないため false のままでよい
 - **`composer.json` の `allow-plugins` に `pestphp/pest-plugin`**: composer 2.2 以降はプラグインの実行に明示的な許可が要る。増やすときは必要最小限にする
@@ -185,7 +202,7 @@ Vite はビルド時に `import.meta.env.VITE_*` を値へ埋め込む。**`proc
 
 Tailwind 移行時にブラウザで触って追加で判明したもの。
 
-- **発注書一覧のステータス切り替えが動かない**: `orders/index` と `orders/trash` のステータスのピルは `onclick="slipSetter.status(...)"` を呼ぶが、`slipSetter` を定義している `resources/js/status.js` は **Vite の input にも、どの Blade にも、どの TS からも読み込まれていない**。クリックすると `ReferenceError: slipSetter is not defined` になる。このファイル自体も `require()` を使っており ESM のままでは動かない
+- **発注書一覧のステータス切り替えが動かない**: `orders/index` と `orders/trash` のステータスのピルは `onclick="slipSetter.status(...)"` を呼ぶが、`slipSetter` を定義している `resources/js/status.js` は **Vite の input にも、どの Blade にも、どの TS からも読み込まれていない**。クリックすると `ReferenceError: slipSetter is not defined` になる。ファイル自体は ky 移行の際に `require()` から ESM に直してあるので、あとはバンドルに載せるだけ
 - **ユーザーの新規登録画面が 500**: `users/form.blade.php` の 2FA リンクが `route('users.2fa', ['id' => $user->id])` を呼ぶが、`UserController::create()` は未保存の `new User()` を渡すため `id` が null で `Missing required parameter` になる。編集画面 (`/users/edit/{id}`) は動く
 - **ダッシュボードが二重に描画される**: `layouts/default.blade.php` の `<div id="app">` に react-router の `<App />` がマウントされ、`/` のとき `pages/Dashboard.tsx` が Blade 版のすぐ下にもう 1 つ描画される。この React 版は `href` に `{{ route(...) }}` という Blade の文字列がそのまま入っていた名残で、実質使われていない
 - **`orders/view.blade.php` は CakePHP のまま**: `$this->Html->url()` / `WWW_ROOT` / `APP` を使っており Laravel では 1 行目で落ちる。`OrderController::view()` が無いのでそもそも到達しない。**Bootstrap のクラスが残っている唯一のファイル**で、Tailwind 移行の対象外にしてある
