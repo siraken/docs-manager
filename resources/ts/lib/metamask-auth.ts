@@ -1,4 +1,4 @@
-import axios from "axios";
+import { http } from "./http";
 
 const Chains = {
   1: "Mainnet",
@@ -41,11 +41,11 @@ window.addEventListener("load", async () => {
       // TODO: More secure way to get the address
       if (address) {
         console.info("Authenticating with address:", address);
-        axios
+        http
           .post(`${DOCUMENT_ROOT}/login/login-metamask`, {
-            address: address,
+            json: { address: address },
           })
-          .then((response) => {
+          .then(() => {
             window.location.href = `${DOCUMENT_ROOT}/`;
           })
           .catch((error) => {
