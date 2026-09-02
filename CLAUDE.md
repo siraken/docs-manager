@@ -67,6 +67,17 @@ just install           # composer install + pnpm install
 just composer-init     # devShell が使えないときの退避路 (Docker 内の composer)
 ```
 
+**`just dev` は Vite しか起動しない**。アセット配信と HMR だけなので、画面を見るには別のターミナルで `just up`（Sail のアプリ + MySQL）が要る。開くのは **`http://localhost`**（`docker-compose.yml` の `APP_PORT` 既定値 80）であって、Vite が起動時に表示する `http://localhost:5173` ではない。後者はアセット用で、ルートを開いても何も返さない。
+
+```bash
+# ターミナル 1
+just up            # アプリ + MySQL (http://localhost)
+# ターミナル 2
+just dev           # Vite の HMR
+```
+
+`just dev` を動かすと `public/hot` が作られ、Blade の `@vite` がアセットの参照先を Vite の dev サーバーに切り替える。ページのオリジン（`http://localhost`）と Vite のオリジン（`http://127.0.0.1:5173`）は別になるが、`laravel-vite-plugin` が CORS を通すので問題なく読める。**Vite を止めたら `public/hot` が消えることを確認すること**（残っているとビルド成果物ではなく止まった dev サーバーを見にいくため、画面が真っ白になる）。
+
 `set positional-arguments` を使い、レシピ側では `"$@"` で受けている。そのため `just artisan make:model "My Model"` のように**空白を含む引数もそのまま渡せる**（旧 `runner` は `ARGS=${@:2}` を単語分割される形で展開していたため、空白入りの引数が分裂した）。
 
 **`prod:migrate` は移していない**。`ssh` 先で `migrate:fresh`（＝全テーブル削除）を走らせるうえ、接続先のサーバーは廃止済みだった（「デプロイ / CI」を参照）。
