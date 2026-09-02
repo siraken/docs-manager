@@ -1,6 +1,6 @@
-/* 発注書の明細テーブル。jquery-ui の sortable で行を並べ替えるため、
-   行の枠線・ドラッグ中の見た目・削除ボタンのホバー表示だけをここで持つ。
-   セル内の input / select の見た目は Blade 側のユーティリティで指定する。 */
+/* 発注書の明細テーブル。行の枠線・ドラッグ中の見た目・削除ボタンのホバー表示
+   だけをここで持つ。セル内の input / select の見た目は Blade 側のユーティリティ
+   で指定する。並べ替えは order-form.ts が HTML5 の Drag and Drop で行う。 */
 .document-table {
     border-collapse: collapse;
     margin-bottom: 1.5rem;
@@ -66,6 +66,7 @@
     background-color: var(--color-red-50);
 }
 
-.document-table .item-cell {
-    position: relative;
+/* ドラッグ中の行。掴んでいることが分かればよいので薄くするだけ */
+.document-table tr.is-dragging {
+    opacity: 0.4;
 }
