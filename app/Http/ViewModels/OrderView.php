@@ -13,7 +13,7 @@ use Illuminate\Support\Collection;
  * ドメインエンティティを Blade へ直接渡すと、表示のための整形 (日付書式・
  * 桁区切り・ラベル) がテンプレートに散る。ここで整形済みの値にしておく。
  */
-final readonly class OrderView
+final readonly class OrderView implements \JsonSerializable
 {
     /** @param list<OrderLineView> $lines */
     private function __construct(
@@ -78,6 +78,64 @@ final readonly class OrderView
         return collect($orders)->map(
             static fn (Order $order): self => self::fromEntity($order, $customerNames[$order->customerId()] ?? ''),
         )->values();
+    }
+
+    /**
+     * Inertia は props を JSON にして Svelte へ渡す。メソッド (displayName) の
+     * 結果や、各行から辿るリンクの URL もここで確定させる。
+     *
+     * 画面から参照する URL をサーバー側で組むのは Inertia でよくあるやり方で、
+     * Ziggy のようなルートヘルパをフロントに持ち込まずに済む。
+     *
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'orderNo' => $this->orderNo,
+            'title' => $this->title,
+            'customerId' => $this->customerId,
+            'customerName' => $this->customerName,
+            'responsible' => $this->responsible,
+            'honorTitle' => $this->honorTitle,
+            'issuedDate' => $this->issuedDate,
+            'expDate' => $this->expDate,
+            'issuedDateLabel' => $this->issuedDateLabel,
+            'expDateLabel' => $this->expDateLabel,
+            'subtotal' => $this->subtotal,
+            'tax' => $this->tax,
+            'total' => $this->total,
+            'totalLabel' => $this->totalLabel,
+            'remarks' => $this->remarks,
+            'issueStatus' => $this->issueStatus,
+            'orderStatus' => $this->orderStatus,
+            'isDeleted' => $this->isDeleted,
+            'note' => $this->note,
+            'lines' => $this->lines,
+
+            'displayName' => $this->displayName(),
+            'addressee' => $this->addressee(),
+
+            'urls' => [
+                'show' => route('orders.view', ['id' => $this->id]),
+                'edit' => route('orders.edit', ['id' => $this->id]),
+                'pdf' => route('orders.pdf', ['id' => $this->id]),
+                'csv' => route('orders.csv', ['id' => $this->id]),
+                'trash' => route('orders.delete', ['id' => $this->id]),
+                'restore' => route('orders.restore', ['id' => $this->id]),
+            ],
+        ];
+    }
+
+    /** 宛名。「顧客名 担当者 御中」の形に組む */
+    public function addressee(): string
+    {
+        return trim(implode(' ', array_filter([
+            $this->customerName,
+            $this->responsible,
+            $this->honorTitle,
+        ], static fn (?string $part): bool => $part !== null && $part !== '')));
     }
 
     /** 一覧の見出しに出す文字列。件名が無ければ顧客名で代替する */

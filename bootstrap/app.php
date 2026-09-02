@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AddResponseHeaders;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\LoginMiddleware;
 use App\Domain\Shared\Exception\DomainException;
 use App\Domain\Shared\Exception\EntityNotFoundException;
@@ -18,9 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // レスポンスに Server ヘッダを足すだけの独自ミドルウェア
         $middleware->web(append: [
+            // レスポンスに Server ヘッダを足すだけの独自ミドルウェア
             AddResponseHeaders::class,
+            // Inertia の共有データ。Inertia を使わない (Blade のままの) ルートでは
+            // 何も起きないので、web グループ全体に掛けてよい
+            HandleInertiaRequests::class,
         ]);
 
         // Laravel 11 以降、api グループの既定は SubstituteBindings だけで

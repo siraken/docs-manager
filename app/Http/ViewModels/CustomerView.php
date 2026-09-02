@@ -7,7 +7,7 @@ namespace App\Http\ViewModels;
 use App\Domain\Customer\Entity\Customer;
 use Illuminate\Support\Collection;
 
-final readonly class CustomerView
+final readonly class CustomerView implements \JsonSerializable
 {
     private function __construct(
         public ?int $id,
@@ -41,6 +41,23 @@ final readonly class CustomerView
             note: $customer->note(),
             location: $customer->locationLabel(),
         );
+    }
+
+    /**
+     * Inertia の props 用。発注書フォームの取引先セレクトが使うので、
+     * 一覧に要る項目だけ出す。
+     *
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'isCompany' => $this->isCompany,
+            'email' => $this->email,
+            'location' => $this->location,
+        ];
     }
 
     /** 新規作成フォーム用の空の入れ物 */
