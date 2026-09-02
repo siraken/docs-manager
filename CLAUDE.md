@@ -4,24 +4,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 10 + Blade + Bootstrap 5 のサーバーサイドレンダリング構成で、一部に React/TypeScript を後付けしている。UI・コード内コメントは日本語。
+Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 11 + Blade + Bootstrap 5 のサーバーサイドレンダリング構成で、一部に React/TypeScript を後付けしている。UI・コード内コメントは日本語。
 
-**Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げている途中**（1 メジャー = 1 PR）。現在 10。
+**Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げている途中**（1 メジャー = 1 PR）。現在 11。
 
 ## 開発環境 (nix flake)
 
 `flake.nix` + `.envrc` (`use flake`) で、Sail と同じバージョンのツールがホストに入る。direnv 済みならディレクトリに入るだけ、そうでなければ `nix develop`。
 
-| ツール | バージョン | 由来 |
-| --- | --- | --- |
-| php | 8.1.19 | `nixpkgs-2211` |
-| composer | 2.5.4 | `nixpkgs-2211` (php81 用) |
-| node | 22.23.2 | `nixpkgs` (unstable) |
-| pnpm | 11.22.0 | `nixpkgs` (unstable) |
+| ツール | バージョン |
+| --- | --- |
+| php | 8.2.33 |
+| composer | 2.10.2 |
+| node | 22.23.2 |
+| pnpm | 11.22.0 |
 
-**なぜ nixpkgs input が 2 つあるか**: `nixpkgs-unstable` には php82 以降しか無く、`php81` は EOL 扱いで評価が throw される。Laravel 10 の要件は PHP 8.1+ なので、`nixpkgs-2211` (nixos-22.11) を別 input として pin して php81 を引いている。**この input は PHP 専用**で、Node と pnpm は unstable 側から取る。
+すべて `nixpkgs-unstable` の単一 input から取っている。
 
-Node 22 なのは、pnpm 11 が Node 22.13+ を、Vite 5 が Node 18+ を要求するため（`nodejs_18` / `nodejs_20` は unstable では EOL 扱いで引けない）。Laravel 11 以降は PHP 8.2+ が要件になるので、その時点で `nixpkgs-2211` は不要になり unstable の php82 以降に一本化できる。
+**input が 1 つに戻っている経緯**: Laravel 10 までは PHP 8.1 が要件で、`php81` が unstable では EOL 扱いで評価が throw されるため `nixos-22.11` を別 input として pin していた。Laravel 11 で要件が PHP 8.2+ になり、unstable の `php82` で満たせるようになったのでその input を削除した。
+
+Node 22 なのは、pnpm 11 が Node 22.13+ を、Vite 6 が Node 18+ を要求するため（`nodejs_18` / `nodejs_20` は unstable では EOL 扱いで引けない）。
 
 devShell が担うのはホスト側ツールチェーンのみ。**アプリの実行と MySQL は従来通り Sail (Docker)**。`shellHook` で `vendor/bin` と `node_modules/.bin` に PATH を通してある。
 
@@ -62,7 +64,7 @@ vendor が無い状態からの初回セットアップは `./runner composer:in
 
 ### フロントエンドビルド
 
-**Vite 5**（Laravel Mix から移行済み）。パッケージマネージャは **pnpm**（`pnpm-lock.yaml`）。
+**Vite 6**（Laravel Mix から移行済み）。パッケージマネージャは **pnpm**（`pnpm-lock.yaml`）。
 
 ```bash
 ./runner pnpm dev      # 開発サーバ (HMR)
@@ -82,9 +84,27 @@ Vite は ESM 前提なので `require()` は使えない。`jquery-ui` は `wind
 
 ## PHP バージョンの注意
 
-**PHP 8.1**（`composer.json` は `^8.1`、`docker-compose.yml` は `docker/8.1` を参照、nix devShell も 8.1.19）。`docker/7.4` `docker/8.0` のイメージ定義は残っているが未使用。Laravel 11 では PHP 8.2+ が要件になる。
+**PHP 8.2**（`composer.json` は `^8.2`、nix devShell は 8.2.33）。
+
+Sail のイメージは **`vendor/laravel/sail/runtimes/8.2` を直接参照**している。以前はリポジトリ内の `docker/{7.4,8.0,8.1}` に Sail のコピーを抱えていたが、Ubuntu 21.10（EOL）ベースで独自カスタマイズも無かったため、Laravel 11 化の際に削除して公式の runtime に委譲した。PHP を上げるときは `docker-compose.yml` の `context` と `image` のバージョンを変えるだけでよい（vendor 内には 8.0〜8.5 が揃っている）。
+
+`vendor/` は gitignore されているので、`sail up` の前に `composer install` が必要。
 
 PHP 8.1 で **PDO SQLite が integer / float を native type で返すようになった**（7.4 までは文字列）。テストは sqlite、本番は MySQL なので、型に依存するコードは両者で挙動が変わりうる。実際 `ProjectController::index()` のステータス表示はこの影響を受けている（後述）。
+
+## composer の advisory を一時的に無視している
+
+`composer.json` の `config.policy.advisories.ignore-id` に 3 件の ID が入っている。
+
+composer 2.10 以降は、既知の脆弱性がある版のインストールを既定でブロックする。Laravel 11 は EOL でパッチが来ないため、**11 系のどのバージョンを選んでもこの 3 件に該当してインストールできない**。アップグレードを 1 メジャーずつ進める都合上、11 を通過するために一時的に無視している。
+
+| ID | 解消するバージョン |
+| --- | --- |
+| `PKSA-mdq4-51ck-6kdq` | Laravel 12.60.0 |
+| `PKSA-3r5d-mb8f-1qw9` | Laravel 12.60.0 |
+| `PKSA-m5cs-t1y6-qpcs` | Laravel 12.61.1 |
+
+**Laravel 12 に上げたらこの設定は削除すること。** 消し忘れると、以降ずっとこの 3 件を見逃すことになる。
 
 ## 既知の不具合（アップグレード前から壊れている）
 
@@ -171,7 +191,7 @@ Laravel の `SoftDeletes` は使わず、`order_headers.is_deleted` (integer) �
 - 各コンポーネントがファイル末尾で `document.getElementById(...)` を見て自分で `ReactDOM.render` する（例: `Calc.tsx`、`ProjectsModal.tsx` → Blade 側の `<div id="projects-modal">`）
 - `app.tsx` は react-router の `<App />` を `#app` にマウントするが、`#app` は `layouts/default.blade.php` 内にあるため全ページに存在する
 - `resources/ts/lib/novalumo.ts` は `window.novalumo` として公開され、Blade の inline スクリプトから呼ばれる
-- **Inertia は未使用**: composer 側の `inertiajs/inertia-laravel` と `HandleInertiaRequests`（web ミドルウェアに登録済み）は残っているが、ルートビュー `app.blade.php` が存在せず Inertia レスポンスを返す箇所も無い。npm 側の `@inertiajs/*` は Vite 移行時に削除済み
+- **Inertia は削除済み**: 一度も使われていなかったため、Laravel 11 化の際に composer の `inertiajs/inertia-laravel` と `HandleInertiaRequests` ミドルウェアごと削除した（npm 側の `@inertiajs/*` は Vite 移行時に削除済み）
 - React 17（`ReactDOM.render`）。`@types/react` は 18 系で型がずれることがある
 
 ## デプロイ / CI
