@@ -2,6 +2,13 @@ import { marked } from "marked";
 
 // setup が先に window.jQuery を用意してから jquery-ui を読み込む
 import $ from "./setup";
+// jquery-ui のモジュールは AMD の define([...]) 形式で依存を宣言しており、
+// ESM (Vite) ではその依存が自動では解決されない。sortable は mouse を、
+// mouse は widget を必要とするため、依存する順に明示して import する。
+// (これを怠ると $.ui.mouse が undefined になり、sortable の初期化で
+//  例外が出てこのファイル全体の処理が止まる)
+import "jquery-ui/ui/widget";
+import "jquery-ui/ui/widgets/mouse";
 import "jquery-ui/ui/widgets/sortable";
 
 $(() => {

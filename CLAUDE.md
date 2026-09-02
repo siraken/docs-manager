@@ -89,7 +89,10 @@ Blade 側は `layouts/default.blade.php` と `layouts/auth.blade.php` で
 
 **テストでは `withoutVite()` が必須**。`tests/TestCase.php` の `setUp()` で呼んでいる。これがないと `@vite` がビルド成果物を探しに行き、テスト前に `yarn build` が必要になる。
 
-Vite は ESM 前提なので `require()` は使えない。`jquery-ui` は `window.jQuery` を参照するため、`resources/ts/lib/jquery/setup.ts` で先にグローバルを用意してから読み込んでいる（import は宣言順に評価される性質を利用）。
+Vite は ESM 前提なので `require()` は使えない。`jquery-ui` まわりに 2 つ落とし穴がある。
+
+1. **`window.jQuery` が必要**: `resources/ts/lib/jquery/setup.ts` で先にグローバルを用意してから読み込んでいる（import は宣言順に評価される性質を利用）
+2. **AMD の依存が自動解決されない**: `jquery-ui` の各モジュールは `define([...])` で依存を宣言しており、Vite はこれを辿ってくれない。`sortable` は `mouse` を、`mouse` は `widget` を必要とするため、`jquery.ts` で依存する順に明示して import している。**これを省くと `$.ui.mouse` が undefined になり、sortable の初期化で例外が出て `jquery.ts` 全体の処理が止まる**（金額計算・行追加・行削除がまとめて動かなくなる）
 
 ## PHP バージョンの注意
 
@@ -100,6 +103,26 @@ Sail のイメージは **`vendor/laravel/sail/runtimes/8.2` を直接参照**�
 `vendor/` は gitignore されているので、`sail up` の前に `composer install` が必要。
 
 PHP 8.1 で **PDO SQLite が integer / float を native type で返すようになった**（7.4 までは文字列）。テストは sqlite、本番は MySQL なので、型に依存するコードは両者で挙動が変わりうる。実際 `ProjectController::index()` のステータス表示はこの影響を受けている（後述）。
+
+## アプリケーション構造 (Laravel 11+ の新形式)
+
+Laravel 11 で導入された skeleton に合わせてある。**`app/Http/Kernel.php` や `app/Console/Kernel.php` は存在しない。**
+
+- **ミドルウェアの登録は `bootstrap/app.php`**。`withMiddleware()` の中で、web グループへの `AddResponseHeaders` の append、`login` エイリアス (`LoginMiddleware`) の登録、api の `throttleApi()` を行う
+- **`throttleApi()` を外さないこと**。Laravel 11 以降、api グループの既定は `SubstituteBindings` だけで `throttle:api` はオプトインに変わった。旧 `app/Http/Kernel.php` では有効だったので明示的に復元してある。参照される `api` リミッター (60/min) は `AppServiceProvider::boot()` にある
+- **ルーティングも `bootstrap/app.php`** の `withRouting(web:, api:, commands:)`。旧 `RouteServiceProvider` は無い
+- **例外ハンドリングは `withExceptions()`**。旧 `app/Exceptions/Handler.php` は無い
+- **サービスプロバイダの登録は `bootstrap/providers.php`**。`config/app.php` に `providers` 配列は無い。現在は `AppServiceProvider` だけで、api の RateLimiter 定義もここに置いている
+- **フレームワーク標準のミドルウェアはファイルとして持たない**。`TrustProxies` / `TrimStrings` / `EncryptCookies` などはすべて標準値のままだったので削除した。除外設定を足したくなったら `bootstrap/app.php` の `withMiddleware()` で行う（例: `$middleware->validateCsrfTokens(except: [...])`）
+- **残しているカスタムミドルウェアは 2 つだけ**: `LoginMiddleware`（独自セッション認証）と `AddResponseHeaders`（`Server` ヘッダ）
+- **翻訳ファイルは `lang/`**（`resources/lang/` ではない。Laravel 9 以降の配置）
+- **config は必要なものだけ**。`cors` / `hashing` / `view` / `broadcasting` は全て標準値だったので削除し、フレームワークの既定に任せている
+
+### フロントエンドの環境変数
+
+Vite はビルド時に `import.meta.env.VITE_*` を値へ埋め込む。**`process.env.MIX_*` は解決されない**（Mix 時代の書き方が残っていると常に `undefined` になる）。
+
+`VITE_APP_ENV` は `nfc-auth.ts` / `metamask-auth.ts` がベースパスの判定に使っている。**本番ビルド時にこの変数が設定されていないと、`/docs-manager` プレフィックスの判定が意図せず本番側に倒れる**ので注意。
 
 ## Laravel 13 で入れた設定
 

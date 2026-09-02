@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const DOCUMENT_ROOT =
-  process.env.MIX_APP_ENV === "local" ? "" : "/docs-manager";
+  import.meta.env.VITE_APP_ENV === "local" ? "" : "/docs-manager";
 
 window.addEventListener("load", () => {
   // For debugging on PC
