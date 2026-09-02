@@ -8,7 +8,7 @@ Novalumo 社内向けの業務管理ツール（発注書・出張申請・出�
 
 Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げてきた（1 メジャー = 1 PR）。**現在 13 で、アップグレードは完了している。**
 
-サーバー側は **Domain / Application / Infrastructure / Presentation の 4 層**に分けてある（「レイヤー構成」を参照）。以前はコントローラに DB アクセス・金額計算・PDF 描画・外部 API 呼び出しが直書きされていた。
+サーバー側は **Laravel の既定 (`app/Http`) の内側に Domain / Application / Infrastructure を足した**構成（「レイヤー構成」を参照）。以前はコントローラに DB アクセス・金額計算・PDF 描画・外部 API 呼び出しが直書きされていた。
 
 ## 開発環境 (nix flake)
 
@@ -184,7 +184,7 @@ Svelte 側との連携は DOM の CustomEvent で行う。案件フォームの�
 
 ### ビューに渡すのは ViewModel
 
-**Blade に Eloquent モデルもドメインエンティティも渡さない**。`app/Presentation/Http/ViewModels/` の readonly クラス（`OrderView` / `CustomerView` / `ProjectView` / `UserView` / `TravelView` / `TravelExpenseView` / `CompanyProfileView` / `AcademyInquiryView`）に整形済みの値を詰めて渡す。
+**Blade に Eloquent モデルもドメインエンティティも渡さない**。`app/Http/ViewModels/` の readonly クラス（`OrderView` / `CustomerView` / `ProjectView` / `UserView` / `TravelView` / `TravelExpenseView` / `CompanyProfileView` / `AcademyInquiryView`）に整形済みの値を詰めて渡す。
 
 - プロパティはキャメルケース（`$row->issuedDateLabel`）。移行前はカラム名で `$row['issued_date']` と引いていたため、DB のカラム名を変えると画面が壊れた
 - 日付や金額は**整形済みの値も持たせる**（`issuedDate` = `2026-09-01` / `issuedDateLabel` = `2026/09/01`、`total` = `1650` / `totalLabel` = `1,650`）。前者はフォームの `value`、後者は表示に使う
@@ -221,7 +221,7 @@ Laravel 11 で導入された skeleton に合わせてある。**`app/Http/Kerne
 - **例外ハンドリングは `withExceptions()`**。旧 `app/Exceptions/Handler.php` は無い
 - **サービスプロバイダの登録は `bootstrap/providers.php`**。`config/app.php` に `providers` 配列は無い。`AppServiceProvider`（api の RateLimiter 定義）と `DomainServiceProvider`（インターフェースと実装の対応）の 2 つ
 - **フレームワーク標準のミドルウェアはファイルとして持たない**。`TrustProxies` / `TrimStrings` / `EncryptCookies` などはすべて標準値のままだったので削除した。除外設定を足したくなったら `bootstrap/app.php` の `withMiddleware()` で行う（例: `$middleware->validateCsrfTokens(except: [...])`）
-- **残しているカスタムミドルウェアは 2 つだけ**: `LoginMiddleware`（独自セッション認証）と `AddResponseHeaders`（`Server` ヘッダ）。どちらも `app/Presentation/Http/Middleware/` にある
+- **残しているカスタムミドルウェアは 2 つだけ**: `LoginMiddleware`（独自セッション認証）と `AddResponseHeaders`（`Server` ヘッダ）。どちらも Laravel の既定どおり `app/Http/Middleware/` にある
 - **`AddResponseHeaders` は `$response->headers->set()` を使う**。`$response->header()` は `Illuminate\Http\Response` のメソッドで、ファイルダウンロードで返る `BinaryFileResponse` には無い。以前はこれが原因で `/downloader/{file}` が必ず 500 になっていた
 - **例外の HTTP への変換は `bootstrap/app.php` の `withExceptions()`**。`EntityNotFoundException` を 404 に、それ以外の `DomainException` を「元の画面へリダイレクト + フラッシュ」（JSON リクエストなら 422）に落としている。ドメイン層がフレームワークを知らずに済むのはここで受けているため
 - **翻訳ファイルは `lang/`**（`resources/lang/` ではない。Laravel 9 以降の配置）
@@ -230,29 +230,34 @@ Laravel 11 で導入された skeleton に合わせてある。**`app/Http/Kerne
 
 ## レイヤー構成
 
-サーバー側は 4 層に分かれている。**依存は外側から内側に向かう一方向**で、ドメイン層は Laravel も Eloquent も知らない。
+**HTTP まわりは Laravel の既定の場所に置き、その内側に 3 つの層を足す**という方針。`app/Http` を独自の場所（`app/Presentation` など）に動かすと、`artisan make:controller` の生成先とズレるうえ、Laravel を知っている人が最初に見る場所から外れる。**依存は外側から内側に向かう一方向**で、ドメイン層は Laravel も Eloquent も知らない。
 
 ```
 app/
+├── Http/             Laravel の既定。HTTP との変換だけを行う
+│   ├── Controllers/      ユースケースを呼んで View か Response を返す
+│   ├── Requests/         FormRequest。検証と Input DTO への組み替え
+│   ├── ViewModels/       Blade に渡す整形済みの値
+│   └── Middleware/
+├── Support/Flash.php フラッシュメッセージの 3 キーを組み立てる
+│
+│   ここから下が拡張。Laravel の既定には無い
+│
 ├── Domain/           業務ルール。フレームワーク非依存
 │   ├── Shared/           Money、ドメイン例外
 │   ├── Order/            Entity/Order・OrderLine、ValueObject、Repository インターフェース
-│   ├── Customer/ Project/ User/ Travel/ Academy/ Setting/
+│   └── Customer/ Project/ User/ Travel/ Academy/ Setting/
 ├── Application/      ユースケース。「何をするか」の手順
 │   ├── <文脈>/UseCase/   1 クラス 1 ユースケース (execute() だけを持つ)
 │   ├── <文脈>/Input/     ユースケースへの入力 DTO
 │   ├── <文脈>/Port/      外部に出ていく操作の抽象 (PDF 描画・CSV 読み書き・メール・セッション・外部 API)
 │   └── Shared/           DateParser、RenderedDocument
-├── Infrastructure/   技術的な詳細。Port と Repository の実装
-│   ├── Persistence/Eloquent/  Models・Mapper・各 Repository
-│   ├── Pdf/ Csv/ Auth/ Mail/ Freee/ SpreadSheet/
-└── Presentation/Http/  HTTP との変換だけ
-    ├── Controllers/   ユースケースを呼んで View か Response を返す
-    ├── Requests/      FormRequest。検証と Input DTO への組み替え
-    ├── ViewModels/    Blade に渡す整形済みの値
-    ├── Middleware/
-    └── Support/Flash  フラッシュメッセージの 3 キーを組み立てる
+└── Infrastructure/   技術的な詳細。Port と Repository の実装
+    ├── Persistence/Eloquent/  Models・Mapper・各 Repository
+    └── Pdf/ Csv/ Auth/ Mail/ Freee/ SpreadSheet/
 ```
+
+**`app/Http` は「薄いこと」で層を保っている**。ディレクトリ名で守られていないぶん、ここに業務ロジックが戻ってこないかはレビューで見る必要がある。目安は「コントローラのメソッドが 10 行を超えたら、それはユースケース側の仕事」。
 
 **新しい機能を足すときの流れ**:
 
@@ -260,12 +265,12 @@ app/
 2. 手順を `Application/<文脈>/UseCase/` に 1 クラスで書く。必要な入力は `Input/` の DTO にする
 3. DB や外部サービスに触るなら、まず `Domain/.../Repository/` か `Application/.../Port/` にインターフェースを置き、実装を `Infrastructure` に書く
 4. `DomainServiceProvider::$bindings` に「インターフェース => 実装」を 1 行足す
-5. `Presentation` に FormRequest とコントローラのメソッドを足し、`routes/web.php` に登録する
+5. `app/Http` に FormRequest とコントローラのメソッドを足し、`routes/web.php` に登録する
 
 **守ること**:
 
 - **ドメイン層に `use Illuminate\...` を書かない**。書きたくなったらそれは Infrastructure の関心
-- **コントローラに業務ロジックを書かない**。分岐が出てきたらユースケース側へ
+- **コントローラに業務ロジックを書かない**。分岐が出てきたらユースケース側へ。`app/Http` は Laravel の既定の場所なので、油断すると元の「全部入りコントローラ」に戻る
 - **Eloquent モデルはリポジトリの外に出さない**。ビューへはドメインのエンティティではなく ViewModel を渡す（Blade が `$row['is_issued']` のようにカラム名で引くと、DB の都合が画面に漏れる）
 - **ユースケースはコンストラクタでインターフェースを受け取る**。テストで `$this->app->instance(...)` して差し替えられる
 
@@ -363,7 +368,7 @@ Vite はビルド時に `import.meta.env.VITE_*` を値へ埋め込む。**`proc
 `Illuminate\Auth` ではなく **素のセッション**で実装されている。
 
 - セッションへの書き込みは `Infrastructure\Auth\SessionAuthStore`（`Application\Auth\Port\AuthSessionInterface` の実装）が担当する。`session(['user_id', 'name', 'email'])` というキーの構成は変えていない
-- `Presentation\Http\Middleware\LoginMiddleware`（ルートミドルウェア名 `login`）が `session('name') === null` で `/login` にリダイレクト
+- `App\Http\Middleware\LoginMiddleware`（ルートミドルウェア名 `login`）が `session('name') === null` で `/login` にリダイレクト
 - 認証が必要なルートは `Route::middleware('login')->group(...)` で囲む（`auth` ミドルウェアではない）
 - ログインユーザー参照は `session('user_id')` / `session('name')`。`Auth::user()` は機能しない
 - 代替ログイン: NFC（Web NFC API）、MetaMask（ウォレットアドレス照合）。いずれも `Application\Auth\UseCase\` にユースケースがある
@@ -389,7 +394,7 @@ Route::post('/edit/{id}', 'update');
 `x-flash` が `flash_message` / `flash_status` / `flash_icon` の 3 キーをまとめて読む。**手で 3 つ書かず `Flash` ヘルパを使う**（色とアイコンの取り違えを避けるため）。
 
 ```php
-use App\Presentation\Http\Support\Flash;
+use App\Support\Flash;
 
 return redirect()->route('orders.index')->with(Flash::success('発注書を作成しました'));
 // Flash::error() / Flash::warning() もある
@@ -419,7 +424,7 @@ Laravel の `SoftDeletes` は使わず、`order_headers.is_deleted` (integer) �
 - **ゼロから描画**: `TcpdfOrderPdfRenderer` — `setasign\Fpdi\Tcpdf\Fpdi` に座標指定で直接書き込む。ロゴ・社印は `resources/img/`
 - **テンプレート PDF に重ね書き**: `TcpdfTravelPdfRenderer` / `TcpdfTravelExpensePdfRenderer` — `resources/pdf/*.pdf` を `setSourceFile()` + `importPage()` で読み込み、その上にテキストを配置
 
-**`Output()` は `'S'` を付けてバイト列で受け取る**。ブラウザへ直接書き出さないので、レスポンスの組み立て方は Presentation 層が決められるし、テストから内容を検証できる。
+**`Output()` は `'S'` を付けてバイト列で受け取る**。ブラウザへ直接書き出さないので、レスポンスの組み立て方はコントローラが決められるし、テストから内容を検証できる。
 
 日本語フォントは `kozminproregular`（明朝）/ `kozgopromedium`（ゴシック）。座標は mm 単位のマジックナンバーなので、レイアウト変更時は実際に PDF を出して確認すること。
 

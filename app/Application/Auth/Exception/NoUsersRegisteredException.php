@@ -8,7 +8,7 @@ use App\Domain\Shared\Exception\DomainException;
 
 /**
  * ユーザーが 1 人も登録されていない状態。
- * Presentation 層はこれを受けてユーザー作成画面へ誘導する。
+ * コントローラはこれを受けてユーザー作成画面へ誘導する。
  */
 final class NoUsersRegisteredException extends DomainException
 {

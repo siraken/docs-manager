@@ -12,7 +12,7 @@ use App\Domain\Order\ValueObject\OrderNo;
  * 発注書の作成・更新の入力。
  *
  * HTTP の形 (item_name[] のような配列パラメータ) を知っているのは
- * Presentation 層の FormRequest で、ここには整形済みの値が渡る。
+ * HTTP 層の FormRequest (app/Http/Requests) で、ここには整形済みの値が渡る。
  */
 final readonly class OrderInput
 {

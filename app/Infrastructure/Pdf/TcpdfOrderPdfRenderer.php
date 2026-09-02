@@ -15,7 +15,7 @@ use setasign\Fpdi\Tcpdf\Fpdi;
  * 座標は mm 単位のマジックナンバーで、レイアウトを変えたら実際に PDF を出して
  * 目視で確認すること。移行前は OrderController::pdf() が同じ描画をしたうえで
  * Output() でブラウザに直接書き出しており、テストから内容を検証できなかった。
- * ここでは文字列で返し、HTTP への載せ方は Presentation 層に任せる。
+ * ここでは文字列で返し、HTTP への載せ方はコントローラに任せる。
  */
 final class TcpdfOrderPdfRenderer implements OrderPdfRendererInterface
 {

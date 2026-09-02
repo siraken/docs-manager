@@ -1,10 +1,10 @@
 <?php
 
-use App\Presentation\Http\Middleware\AddResponseHeaders;
-use App\Presentation\Http\Middleware\LoginMiddleware;
+use App\Http\Middleware\AddResponseHeaders;
+use App\Http\Middleware\LoginMiddleware;
 use App\Domain\Shared\Exception\DomainException;
 use App\Domain\Shared\Exception\EntityNotFoundException;
-use App\Presentation\Http\Support\Flash;
+use App\Support\Flash;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;

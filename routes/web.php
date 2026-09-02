@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-use App\Presentation\Http\Controllers\AcademyController;
-use App\Presentation\Http\Controllers\CustomerController;
-use App\Presentation\Http\Controllers\DashboardController;
-use App\Presentation\Http\Controllers\FileController;
-use App\Presentation\Http\Controllers\FreeeController;
-use App\Presentation\Http\Controllers\LoginController;
-use App\Presentation\Http\Controllers\OrderController;
-use App\Presentation\Http\Controllers\ProjectController;
-use App\Presentation\Http\Controllers\SettingController;
-use App\Presentation\Http\Controllers\SpreadSheetController;
-use App\Presentation\Http\Controllers\TravelController;
-use App\Presentation\Http\Controllers\TravelExpenseController;
-use App\Presentation\Http\Controllers\UserController;
+use App\Http\Controllers\AcademyController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FileController;
+use App\Http\Controllers\FreeeController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SpreadSheetController;
+use App\Http\Controllers\TravelController;
+use App\Http\Controllers\TravelExpenseController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
