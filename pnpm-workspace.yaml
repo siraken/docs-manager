@@ -1,7 +1,10 @@
 # pnpm 10 以降は既定で依存パッケージの postinstall 等をブロックする (サプライチェーン対策)。
 # ここで明示的に許可したものだけがスクリプトを実行できる。
-#   esbuild        : Vite の中核。ネイティブバイナリの配置に postinstall が必要
+#
+# Vite 8 で束ね役が Rollup + esbuild から Rolldown + Oxc に変わり、esbuild は
+# 依存から消えた (Vite の optional な peer になった)。Rolldown はプラットフォーム
+# 別のプリビルドを optional dependency として配るため postinstall を必要としない。
+# その結果、現在許可が要るパッケージは 1 つも無い。
 #   @parcel/watcher: watch 用のオプショナル依存。無くても動くため拒否する
 allowBuilds:
   '@parcel/watcher': false
-  esbuild: true

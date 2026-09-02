@@ -31,7 +31,7 @@
           # freee API の生 cURL、sqlite でのテストまで追加設定なしで動く。
           php = pkgs.php83;
 
-          # Vite 5 は Node 18+ を、pnpm 11 は Node 22.13+ を要求する。
+          # Vite 8 は Node 20.19+ / 22.12+ を、pnpm 11 は Node 22.13+ を要求する。
           # nodejs_18 / nodejs_20 は unstable では EOL 扱いで引けない。
           nodejs = pkgs.nodejs_22;
         in

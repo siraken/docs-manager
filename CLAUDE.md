@@ -24,7 +24,7 @@ Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げてき
 
 **input が 1 つに戻っている経緯**: Laravel 10 までは PHP 8.1 が要件で、`php81` が unstable では EOL 扱いで評価が throw されるため `nixos-22.11` を別 input として pin していた。Laravel 11 で要件が PHP 8.2+ になり、unstable の `php82` で満たせるようになったのでその input を削除した。
 
-Node 22 なのは、pnpm 11 が Node 22.13+ を、Vite 6 が Node 18+ を要求するため（`nodejs_18` / `nodejs_20` は unstable では EOL 扱いで引けない）。
+Node 22 なのは、pnpm 11 が Node 22.13+ を、Vite 8 が Node 20.19+ / 22.12+ を要求するため（`nodejs_18` / `nodejs_20` は unstable では EOL 扱いで引けない）。
 
 devShell が担うのはホスト側ツールチェーンのみ。**アプリの実行と MySQL は従来通り Sail (Docker)**。`shellHook` で `vendor/bin` と `node_modules/.bin` に PATH を通してある。
 
@@ -97,7 +97,9 @@ just sail-test                                 # Sail 経由 (MySQL)
 
 ### フロントエンドビルド
 
-**Vite 6**（Laravel Mix から移行済み）。パッケージマネージャは **pnpm**（`pnpm-lock.yaml`）。TypeScript は **6.0**。
+**Vite 8**（Laravel Mix から移行済み）。パッケージマネージャは **pnpm**（`pnpm-lock.yaml`）。TypeScript は **6.0**。
+
+**Vite 8 は束ね役が Rollup + esbuild から Rolldown + Oxc に変わっている**。`build.rollupOptions` は `build.rolldownOptions` に、`esbuild` 設定は `oxc` に改名された（このプロジェクトはどちらも使っていない）。`esbuild` は Vite の optional な peer に降格し、**依存から完全に消えた**。
 
 **バンドル対象に `.js` は 1 つも無い**。`tsconfig.json` の `include` は `resources/ts/**/*` と `vite.config.ts`。**`tsc --noEmit` も `svelte-check` も現在 0 件で通る**ので、型エラーを増やしたまま放置しないこと（`just check` で両方走る）。
 
@@ -106,13 +108,13 @@ just dev       # 開発サーバ (HMR)
 just build     # 本番ビルド
 ```
 
-**pnpm 10 以降は依存パッケージの postinstall を既定でブロックする**（サプライチェーン対策）。許可は `pnpm-workspace.yaml` の `allowBuilds` に書く。値はリストではなく「パッケージ名 → bool」のマップである点に注意。設定を足すときは `pnpm approve-builds <pkg> '!<pkg>'` を使うと正しい書式で書き込まれる。現在は Vite の中核である `esbuild` のみ許可している。
+**pnpm 10 以降は依存パッケージの postinstall を既定でブロックする**（サプライチェーン対策）。許可は `pnpm-workspace.yaml` の `allowBuilds` に書く。値はリストではなく「パッケージ名 → bool」のマップである点に注意。設定を足すときは `pnpm approve-builds <pkg> '!<pkg>'` を使うと正しい書式で書き込まれる。**現在、許可が要るパッケージは 1 つも無い**（Vite 8 で esbuild が依存から消え、Rolldown はプリビルドを optional dependency として配るため postinstall を必要としない）。
 
-**TypeScript 6 は `moduleResolution: "node"` (node10) を非推奨エラーにする**。TS 7 で機能停止するため、`tsconfig.json` は `module: "esnext"` + `moduleResolution: "bundler"` に移行済み。`import.meta.env` の型は `types` に `vite/client` を足して解決している（無いと `ImportMeta` に `env` が生えず `nfc-auth.ts` / `metamask-auth.ts` が型エラーになる）。なお **tsc は emit に使っていない**（`--noEmit` のみ）。実際のトランスパイルは esbuild が行い、esbuild は `module` / `moduleResolution` を読まないので、この変更でビルド成果物は 1 バイトも変わらない。
+**TypeScript 6 は `moduleResolution: "node"` (node10) を非推奨エラーにする**。TS 7 で機能停止するため、`tsconfig.json` は `module: "esnext"` + `moduleResolution: "bundler"` に移行済み。`import.meta.env` の型は `types` に `vite/client` を足して解決している（無いと `ImportMeta` に `env` が生えず `nfc-auth.ts` / `metamask-auth.ts` が型エラーになる）。なお **tsc は emit に使っていない**（`--noEmit` のみ）。実際のトランスパイルはバンドラ側（Vite 8 では Oxc、それ以前は esbuild）が行う。
 
 エントリは `vite.config.ts` の `input` に定義（`resources/css/app.css` と `resources/ts/app.ts`）。出力は `public/build/`（gitignore 済み）で、`manifest.json` を Blade の `@vite` が読む。
 
-**Tailwind v4 はネイティブバイナリ (`@tailwindcss/oxide`) を使い、Node 20+ を要求する**。ホストの Node が古いまま `pnpm install` すると、プラットフォーム別の optional dependency（`@tailwindcss/oxide-darwin-arm64` など）が engines 不一致でスキップされ、ビルド時に `Cannot find native binding` で落ちる。`node_modules` を消して **devShell の中で** 入れ直すこと。
+**ネイティブバイナリを使う依存が 2 つある**: Tailwind v4 の `@tailwindcss/oxide` と、Vite 8 のバンドラである `rolldown`。どちらもプラットフォーム別のプリビルドを optional dependency として配り（`@tailwindcss/oxide-darwin-arm64` / `@rolldown/binding-darwin-arm64`）、`engines` に Node のバージョン制約を持つ。**ホストの Node が古いまま `pnpm install` すると engines 不一致で黙ってスキップされ**、ビルド時に `Cannot find native binding` で落ちる。`node_modules` を消して **devShell の中で** 入れ直すこと。
 
 Blade 側は `layouts/default.blade.php` と `layouts/auth.blade.php` が `@vite([...])` を書く。**`@viteReactRefresh` は削除済み**（React を剥がしたため）。
 
@@ -124,8 +126,8 @@ Vite は ESM 前提なので `require()` は使えない。バンドル対象の
 
 **Svelte 5**（runes）。**SvelteKit は使っていない** —— ルーティングは Laravel が持ち、Svelte は Blade が描いた DOM に差し込む「島」として使う（「フロントエンドの構成」を参照）。
 
-- ビルドは `@sveltejs/vite-plugin-svelte`。**バージョンを上げるときは Vite との対応に注意**: 7.x の peer は `vite ^8` なので、Vite 6 のこのプロジェクトでは **6.2.4 に固定**している。上げるなら Vite ごと（`laravel-vite-plugin` の最新 3.x も Vite 8 要求）
-- `svelte.config.js` は `vitePreprocess()` だけ。`<script lang="ts">` はこれを通して Vite (esbuild) が処理する
+- ビルドは `@sveltejs/vite-plugin-svelte` 7.x。**バージョンを上げるときは Vite との対応に注意**: peer が `vite ^8` で、`laravel-vite-plugin` 3.x も同じく Vite 8 を要求する。この 3 つは足並みを揃えて上げること
+- `svelte.config.js` は `vitePreprocess()` だけ。`<script lang="ts">` はこれを通して Vite（8 では Oxc）が処理する
 - **`tsc` は `.svelte` の中身を見ない**。型を担保するのは `svelte-check` なので、`just check` は両方走らせる。`resources/ts/types/svelte.d.ts` の `declare module "*.svelte"` は「import できること」を tsc に教えるだけのもの（SvelteKit を使っていないと降ってこないため自前で置いている）
 
 ### 発注書の明細テーブル (order-form.ts)
