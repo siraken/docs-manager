@@ -10,7 +10,7 @@
     "require": {
         "google/apiclient": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
-        "laravel/framework": "^11.0",
+        "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.5",
         "laravel/ui": "^4.0",
@@ -63,11 +63,6 @@
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
-        "sort-packages": true,
-        "policy": {
-            "advisories": {
-                "ignore-id": ["PKSA-mdq4-51ck-6kdq", "PKSA-m5cs-t1y6-qpcs", "PKSA-3r5d-mb8f-1qw9"]
-            }
-        }
+        "sort-packages": true
     }
 }

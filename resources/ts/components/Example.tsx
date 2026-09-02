@@ -1,5 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 
 function Example() {
   return (
@@ -19,6 +19,7 @@ function Example() {
 
 export default Example;
 
-if (document.getElementById("example")) {
-  ReactDOM.render(<Example />, document.getElementById("example"));
+const rootElement = document.getElementById("example");
+if (rootElement) {
+  createRoot(rootElement).render(<Example />);
 }
