@@ -22,11 +22,11 @@
             <tr class="transition hover:bg-slate-50">
                 <td class="px-4 py-3 align-middle">
                     <span class="font-medium text-slate-900">{{ $row->name }}</span>
-                    @if ($row->is_company)
+                    @if ($row->isCompany)
                         <x-badge color="brand" class="ml-1.5">法人</x-badge>
                     @endif
                 </td>
-                <td class="px-4 py-3 align-middle text-slate-600">{{ $row->city . $row->state . $row->country }}</td>
+                <td class="px-4 py-3 align-middle text-slate-600">{{ $row->location }}</td>
                 <td class="px-4 py-3 align-middle text-slate-600">{{ $row->email }}</td>
                 <td class="px-4 py-3 text-right align-middle">
                     <x-button :href="route('customers.edit', ['id' => $row->id])" size="sm" icon="pencil">編集</x-button>

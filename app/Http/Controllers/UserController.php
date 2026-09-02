@@ -1,123 +1,112 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
+use App\Application\User\UseCase\ConfirmTwoFactorSetupUseCase;
+use App\Application\User\UseCase\CreateUserUseCase;
+use App\Application\User\UseCase\DeleteUserUseCase;
+use App\Application\User\UseCase\GetUserUseCase;
+use App\Application\User\UseCase\ListUsersUseCase;
+use App\Application\User\UseCase\RegisterNfcCredentialUseCase;
+use App\Application\User\UseCase\StartTwoFactorSetupUseCase;
+use App\Application\User\UseCase\UpdateUserUseCase;
+use App\Http\Requests\ConfirmTwoFactorRequest;
+use App\Http\Requests\RegisterNfcRequest;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
+use App\Support\Flash;
+use App\Http\ViewModels\UserView;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
-class UserController extends Controller
+final class UserController extends Controller
 {
-    /**
-     * ユーザー一覧
-     */
-    public function index()
+    public function index(ListUsersUseCase $listUsers): View
     {
-        $users = User::all();
-        return view('users/index', compact('users'));
+        return view('users.index', [
+            'users' => UserView::collection($listUsers->execute()),
+        ]);
     }
 
     /**
-     * Create
+     * 新規登録フォーム。
      *
+     * 移行前はここで未保存の User を渡していたため、ビューの 2FA リンクが
+     * route('users.2fa', ['id' => null]) を組もうとして 500 になっていた。
+     * ビュー側は $user->id が null のときリンクを出さないようにしてある。
      */
-    public function create(Request $request)
+    public function create(): View
     {
-        $user = new User();
+        return view('users.form', [
+            'user' => UserView::empty(),
+            'isNew' => true,
+        ]);
+    }
 
-        if ($request->isMethod('POST')) {
-            if ($user->fill([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password)
-            ])->save()) {
-                return redirect('/users')->with([
-                    'flash_message' => 'Successful',
-                    'flash_status' => 'success',
-                    'flash_icon' => 'check-circle-fill',
-                ]);
-            }
-        }
+    public function store(StoreUserRequest $request, CreateUserUseCase $createUser): RedirectResponse
+    {
+        $createUser->execute($request->toInput());
 
-        return view('users/form', compact('user'));
+        return redirect()->route('users.index')->with(Flash::success('ユーザーを登録しました'));
+    }
+
+    public function edit(int $id, GetUserUseCase $getUser): View
+    {
+        return view('users.form', [
+            'user' => UserView::fromEntity($getUser->execute($id)),
+            'isNew' => false,
+        ]);
+    }
+
+    public function update(UpdateUserRequest $request, int $id, UpdateUserUseCase $updateUser): RedirectResponse
+    {
+        $updateUser->execute($id, $request->toInput());
+
+        return redirect()->route('users.index')->with(Flash::success('ユーザーを更新しました'));
     }
 
     /**
-     * Edit
+     * ユーザーの削除。
      *
+     * 一覧に削除ボタンはあったが、押すと未定義の JS 関数を呼ぶだけで
+     * サーバー側の受け口が無かった。
      */
-    public function edit(Request $request, $id = null)
+    public function destroy(int $id, DeleteUserUseCase $deleteUser): RedirectResponse
     {
-        $user = User::find($id)->makeVisible(['password', 'nfc_serial_number', 'nfc_pin']);
+        $deleteUser->execute($id);
 
-        // ddd($user->toArray());
-
-        if ($user === null) {
-            abort(404, 'Not Found ;(');
-        }
-
-        if ($request->isMethod('POST')) {
-            $user = $user->fill([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => empty($request->password) ? $user->password : Hash::make($request->password),
-                'nfc_serial_number' => $request->nfc_serial_number,
-                // 'nfc_pin' => empty($request->nfc_pin) ? $user->nfc_pin : Hash::make($request->nfc_pin),
-                'nfc_pin' => empty($request->nfc_pin) ? $user->nfc_pin : $request->nfc_pin,
-                'wallet_address' => $request->wallet_address,
-            ]);
-
-            if ($user->save()) {
-                return redirect('/users')->with([
-                    'flash_message' => 'Successful',
-                    'flash_status' => 'success',
-                    'flash_icon' => 'check-circle-fill',
-                ]);
-            }
-
-            if (!empty($request->nfc_serial_number)) {
-                $user->nfc_serial_number = Hash::make($request->nfc_serial_number);
-                $user->nfc_pin = Hash::make($request->nfc_pin);
-
-                $user->save();
-            }
-        }
-        return view('users/form', compact('user'));
+        return redirect()->route('users.index')->with(Flash::success('ユーザーを削除しました'));
     }
 
-    public function register_nfc_info(Request $request, $id = null)
+    /** NFC カードの登録 (Scan した値をそのまま保存する) */
+    public function registerNfc(RegisterNfcRequest $request, int $id, RegisterNfcCredentialUseCase $registerNfc): RedirectResponse
     {
-        $user = User::find($id);
+        $registerNfc->execute($id, $request->toInput());
 
-        if ($user === null) {
-            abort(404, 'Not Found ;(');
-        }
-
-        if ($request->isMethod('POST')) {
-            $user->nfc_serial_number = Hash::make($request->serial_number);
-            $user->nfc_pin = Hash::make($request->pin);
-
-            if ($user->save()) {
-                return redirect('/users')->with([
-                    'flash_message' => 'Successful',
-                    'flash_status' => 'success',
-                    'flash_icon' => 'check-circle-fill',
-                ]);
-            }
-        }
-        return view('users/form', compact('user'));
+        return redirect()->route('users.index')->with(Flash::success('NFC カードを登録しました'));
     }
 
-    // TODO: 実装
-    public function register_2fa_auth($id)
+    /** 二段階認証の設定画面 (シークレットを発行して QR 用の URI を出す) */
+    public function twoFactor(int $id, StartTwoFactorSetupUseCase $startSetup, GetUserUseCase $getUser): View
     {
-        $user = User::find($id);
+        $setup = $startSetup->execute($id);
 
-        // TODO: 2FA は未実装。実装時に TOTP ライブラリを選定して導入する
-        $secret = "";
-        $qrCodeUrl = "";
+        return view('users.2fa', [
+            'user' => UserView::fromEntity($getUser->execute($id)),
+            'setup' => $setup,
+        ]);
+    }
 
-        return view('users/2fa', compact('user', 'qrCodeUrl'));
+    /** 認証アプリのコードを検証して二段階認証を有効にする */
+    public function confirmTwoFactor(
+        ConfirmTwoFactorRequest $request,
+        int $id,
+        ConfirmTwoFactorSetupUseCase $confirmSetup,
+    ): RedirectResponse {
+        $confirmSetup->execute($id, $request->code());
+
+        return redirect()->route('users.index')->with(Flash::success('二段階認証を有効にしました'));
     }
 }

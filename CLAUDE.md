@@ -8,6 +8,8 @@ Novalumo 社内向けの業務管理ツール（発注書・出張申請・出�
 
 Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げてきた（1 メジャー = 1 PR）。**現在 13 で、アップグレードは完了している。**
 
+サーバー側は **Laravel の既定 (`app/Http`) の内側に Domain / Application / Infrastructure を足した**構成（「レイヤー構成」を参照）。以前はコントローラに DB アクセス・金額計算・PDF 描画・外部 API 呼び出しが直書きされていた。
+
 ## 開発環境 (nix flake)
 
 `flake.nix` + `.envrc` (`use flake`) で、Sail と同じバージョンのツールがホストに入る。direnv 済みならディレクトリに入るだけ、そうでなければ `nix develop`。
@@ -96,15 +98,19 @@ just sail-test                                 # Sail 経由 (MySQL)
 
 テストは Pest の関数記法（`test()` / `beforeEach()` / `expect()`）で書く。
 
-**共通のフィクスチャは `tests/Pest.php` に置く**。Pest ではテストファイル内で定義した関数もグローバルスコープに入るため、複数ファイルで同名の関数を定義すると再宣言エラーになる。`createUser()` / `actingAsUser()` / `createCustomer()` / `createHeader()` / `orderPayload()` がここにある。
+**共通のフィクスチャは `tests/Pest.php` に置く**。Pest ではテストファイル内で定義した関数もグローバルスコープに入るため、複数ファイルで同名の関数を定義すると再宣言エラーになる。`createUser()` / `actingAsUser()` / `createCustomer()` / `createHeader()` / `orderPayload()` / `walletAddress()` がここにある。**この制約は Unit テストにも及ぶ**ので、テストファイル内でヘルパを定義するときは他ファイルと衝突しない名前にすること（例: `tests/Unit/OrderTest.php` の `newOrder()` / `orderLine()`）。
 
-`uses(TestCase::class)->in('Feature')` と `uses(RefreshDatabase::class)->in('Feature')` も `tests/Pest.php` で設定している。Unit テストはフレームワークを起動しない素の PHPUnit TestCase で動く。
+フィクスチャは Eloquent モデルを直接使う。ユースケース経由で用意すると「準備」と「検証対象」が同じ経路になり、リグレッションを検出できなくなる。
+
+`uses(TestCase::class)->in('Feature')` と `uses(RefreshDatabase::class)->in('Feature')` も `tests/Pest.php` で設定している。
+
+**ドメイン層は Laravel に依存しないので Unit テストで書ける**。`tests/Unit/` にある Money / TaxRate / ProjectStatus / OrderNo / TwoFactorSecret / Order / TravelExpense のテストはフレームワークを起動せずに動く。金額計算やステータス遷移のような業務ルールはここに書き、HTTP の配線は Feature に書く。
 
 **PHPUnit 12**（12.5.33）。`phpunit.xml` で `DB_CONNECTION=sqlite` / `DB_DATABASE=:memory:` を指定しているため、テストは MySQL を必要とせず Sail を起動しなくても回る。DB を使うテストは `RefreshDatabase` を付ける。設定は PHPUnit 10 で入った形式（`<coverage>` ではなく `<source>`）のままで 12 でもそのまま通る。
 
 `phpunit.xml` の `xsi:noNamespaceSchemaLocation` は `10.5` を指したままだが、**PHPUnit 12 はこれを警告しない**（スキーマの参照先はエディタ向けで、PHPUnit 自身は使わない）。動かないわけではないので、慌てて直さなくてよい。
 
-**sqlite と MySQL の型差異に注意**: sqlite (PDO) は integer カラムを文字列で返す。`$header->total_price` は `'1100'` であって `1100` ではないため、テストで数値比較する際は `(int)` にキャストする。この差異は `ProjectController::index()` の挙動まで変える（後述）。
+**sqlite と MySQL の型差異に注意**: sqlite (PDO) は integer カラムを文字列で返す。`$header->total_price` は `'1100'` であって `1100` ではないため、テストで数値比較する際は `(int)` にキャストする。アプリ側では Mapper（`app/Infrastructure/Persistence/Eloquent/Mapper/`）がドメインへ移す際に必ず型を寄せているので、この差異がドメイン層まで漏れることはない。
 
 ### フロントエンドビルド
 
@@ -147,6 +153,7 @@ Vite は ESM 前提なので `require()` は使えない。バンドル対象の
 
 - 各欄は `name` 属性で引く（`qty[]` / `cost[]` / `tax[]` / `price[]`）。**行ごとの id は持たせていない**。以前は `id="qty_0"` のような添字付き id を振って `for` で回していたが、行を削除しても添字が詰まらず、生きている行を id の存在チェックで拾い直す作りになっていた
 - **金額欄 (`price[]`) に入るのは税込金額**。列見出しが「金額」で、小計・消費税・合計は別の行に出しているため
+- **フロントの計算結果はサーバーに送っても使われない**。保存される金額は `Domain\Order\Entity\OrderLine` が数量・単価・税区分から計算し直す（`SaveOrderRequest` は `price[]` / `subtotal` / `taxTotal` / `totalPrice` を読まない）。ここの計算式を変えるときは `OrderLine` 側も合わせること。税率の定義は `Domain\Order\ValueObject\TaxRate` が正
 - **`draggable` は掴む直前に立てる**。`pointerdown` の位置が入力欄なら `false`、それ以外なら `true` にする。常時 `true` にすると入力欄の文字選択がドラッグに横取りされる（jquery-ui の `cancel` 既定と同じ考え方）
 - `dragover` で `preventDefault()` を呼ばないとドロップ先として認識されない。Firefox は `dataTransfer` に何か入れないとドラッグ自体が始まらない
 
@@ -171,9 +178,18 @@ Tailwind は CSS しか提供しないので、Bootstrap の JS コンポーネ�
 
 1. **Blade コンポーネントタグの中で Blade ディレクティブを使わない**。`<x-toggle @checked($v) />` のように書くと、コンポーネントタグのパーサが属性として解釈できずタグ自体がコンパイルされず、`<x-toggle>` が未知の HTML 要素としてそのまま出力される（後続の要素がその中に入れ子になり、画面から消える）。`:checked="(bool) $v"` のように **プロパティとして渡す**こと。素の HTML タグの中（`<option @selected(...)>` など）なら問題ない
 2. **フラッシュのトーストはヘッダーと重なる**。`x-flash` は `top` プロパティで位置を受け取り、`layouts/default` では既定の `top-20`（h-16 のヘッダーの下）、`layouts/auth` では `top-4` を渡している
-3. **発注書の明細行のマークアップは `x-order-row` が唯一の定義**。`orders/form.blade.php` は 5 行を描画したうえで、同じコンポーネントを `<template id="order-row-template">` にも入れておき、`order-form.ts` の行追加処理が `template.content` を複製して足す。コンポーネントは引数を取らない（行ごとの id が無くなったため、添字を渡す必要もなくなった）。以前は同じ HTML が jquery.ts の文字列テンプレートにも書かれていて、しかもその中に CakePHP 時代の `<?php foreach ... ?>` が生のまま残っていた
+3. **発注書の明細行のマークアップは `x-order-row` が唯一の定義**。`orders/form.blade.php` は既存の明細 + 空行を描画したうえで、同じコンポーネントを `<template id="order-row-template">` にも入れておき、`order-form.ts` の行追加処理が `template.content` を複製して足す。コンポーネントは `:line`（既存の明細。新規行なら null）と `:tax-options` を受け取る。以前は同じ HTML が jquery.ts の文字列テンプレートにも書かれていて、しかもその中に CakePHP 時代の `<?php foreach ... ?>` が生のまま残っていた
 
 Svelte 側との連携は DOM の CustomEvent で行う。案件フォームの「保存する」ボタン（Blade）が `open-projects-modal` を投げ、`ProjectsModal.svelte` がそれを拾って開く。Bootstrap の `data-bs-toggle` を使っていた箇所の置き換え。
+
+### ビューに渡すのは ViewModel
+
+**Blade に Eloquent モデルもドメインエンティティも渡さない**。`app/Http/ViewModels/` の readonly クラス（`OrderView` / `CustomerView` / `ProjectView` / `UserView` / `TravelView` / `TravelExpenseView` / `CompanyProfileView` / `AcademyInquiryView`）に整形済みの値を詰めて渡す。
+
+- プロパティはキャメルケース（`$row->issuedDateLabel`）。移行前はカラム名で `$row['issued_date']` と引いていたため、DB のカラム名を変えると画面が壊れた
+- 日付や金額は**整形済みの値も持たせる**（`issuedDate` = `2026-09-01` / `issuedDateLabel` = `2026/09/01`、`total` = `1650` / `totalLabel` = `1,650`）。前者はフォームの `value`、後者は表示に使う
+- 一覧には `::collection()` で `Illuminate\Support\Collection` を返す。テストが `viewData('orders')->keyBy(...)` のように扱えるようにするため
+- 新規作成フォームには `::empty()` を渡す（null チェックを Blade に持ち込まないため）
 
 ### ローカルでの動作確認 (sqlite)
 
@@ -203,11 +219,69 @@ Laravel 11 で導入された skeleton に合わせてある。**`app/Http/Kerne
 - **`throttleApi()` を外さないこと**。Laravel 11 以降、api グループの既定は `SubstituteBindings` だけで `throttle:api` はオプトインに変わった。旧 `app/Http/Kernel.php` では有効だったので明示的に復元してある。参照される `api` リミッター (60/min) は `AppServiceProvider::boot()` にある
 - **ルーティングも `bootstrap/app.php`** の `withRouting(web:, api:, commands:)`。旧 `RouteServiceProvider` は無い
 - **例外ハンドリングは `withExceptions()`**。旧 `app/Exceptions/Handler.php` は無い
-- **サービスプロバイダの登録は `bootstrap/providers.php`**。`config/app.php` に `providers` 配列は無い。現在は `AppServiceProvider` だけで、api の RateLimiter 定義もここに置いている
+- **サービスプロバイダの登録は `bootstrap/providers.php`**。`config/app.php` に `providers` 配列は無い。`AppServiceProvider`（api の RateLimiter 定義）と `DomainServiceProvider`（インターフェースと実装の対応）の 2 つ
 - **フレームワーク標準のミドルウェアはファイルとして持たない**。`TrustProxies` / `TrimStrings` / `EncryptCookies` などはすべて標準値のままだったので削除した。除外設定を足したくなったら `bootstrap/app.php` の `withMiddleware()` で行う（例: `$middleware->validateCsrfTokens(except: [...])`）
-- **残しているカスタムミドルウェアは 2 つだけ**: `LoginMiddleware`（独自セッション認証）と `AddResponseHeaders`（`Server` ヘッダ）
+- **残しているカスタムミドルウェアは 2 つだけ**: `LoginMiddleware`（独自セッション認証）と `AddResponseHeaders`（`Server` ヘッダ）。どちらも Laravel の既定どおり `app/Http/Middleware/` にある
+- **`AddResponseHeaders` は `$response->headers->set()` を使う**。`$response->header()` は `Illuminate\Http\Response` のメソッドで、ファイルダウンロードで返る `BinaryFileResponse` には無い。以前はこれが原因で `/downloader/{file}` が必ず 500 になっていた
+- **例外の HTTP への変換は `bootstrap/app.php` の `withExceptions()`**。`EntityNotFoundException` を 404 に、それ以外の `DomainException` を「元の画面へリダイレクト + フラッシュ」（JSON リクエストなら 422）に落としている。ドメイン層がフレームワークを知らずに済むのはここで受けているため
 - **翻訳ファイルは `lang/`**（`resources/lang/` ではない。Laravel 9 以降の配置）
 - **config は必要なものだけ**。`cors` / `hashing` / `view` / `broadcasting` は全て標準値だったので削除し、フレームワークの既定に任せている
+- **外部サービスの設定は `config/services.php`**。freee と Google スプレッドシートの認証情報をここに集約している。**`env()` を直接読まないこと**（`config:cache` した環境では `.env` を読み直さないため null になる）
+
+## レイヤー構成
+
+**HTTP まわりは Laravel の既定の場所に置き、その内側に 3 つの層を足す**という方針。`app/Http` を独自の場所（`app/Presentation` など）に動かすと、`artisan make:controller` の生成先とズレるうえ、Laravel を知っている人が最初に見る場所から外れる。**依存は外側から内側に向かう一方向**で、ドメイン層は Laravel も Eloquent も知らない。
+
+```
+app/
+├── Http/             Laravel の既定。HTTP との変換だけを行う
+│   ├── Controllers/      ユースケースを呼んで View か Response を返す
+│   ├── Requests/         FormRequest。検証と Input DTO への組み替え
+│   ├── ViewModels/       Blade に渡す整形済みの値
+│   └── Middleware/
+├── Support/Flash.php フラッシュメッセージの 3 キーを組み立てる
+│
+│   ここから下が拡張。Laravel の既定には無い
+│
+├── Domain/           業務ルール。フレームワーク非依存
+│   ├── Shared/           Money、ドメイン例外
+│   ├── Order/            Entity/Order・OrderLine、ValueObject、Repository インターフェース
+│   └── Customer/ Project/ User/ Travel/ Academy/ Setting/
+├── Application/      ユースケース。「何をするか」の手順
+│   ├── <文脈>/UseCase/   1 クラス 1 ユースケース (execute() だけを持つ)
+│   ├── <文脈>/Input/     ユースケースへの入力 DTO
+│   ├── <文脈>/Port/      外部に出ていく操作の抽象 (PDF 描画・CSV 読み書き・メール・セッション・外部 API)
+│   └── Shared/           DateParser、RenderedDocument
+└── Infrastructure/   技術的な詳細。Port と Repository の実装
+    ├── Persistence/Eloquent/  Models・Mapper・各 Repository
+    └── Pdf/ Csv/ Auth/ Mail/ Freee/ SpreadSheet/
+```
+
+**`app/Http` は「薄いこと」で層を保っている**。ディレクトリ名で守られていないぶん、ここに業務ロジックが戻ってこないかはレビューで見る必要がある。目安は「コントローラのメソッドが 10 行を超えたら、それはユースケース側の仕事」。
+
+**新しい機能を足すときの流れ**:
+
+1. 業務ルールがあるなら `Domain` にエンティティ / 値オブジェクトを置く（テストは `tests/Unit/`）
+2. 手順を `Application/<文脈>/UseCase/` に 1 クラスで書く。必要な入力は `Input/` の DTO にする
+3. DB や外部サービスに触るなら、まず `Domain/.../Repository/` か `Application/.../Port/` にインターフェースを置き、実装を `Infrastructure` に書く
+4. `DomainServiceProvider::$bindings` に「インターフェース => 実装」を 1 行足す
+5. `app/Http` に FormRequest とコントローラのメソッドを足し、`routes/web.php` に登録する
+
+**守ること**:
+
+- **ドメイン層に `use Illuminate\...` を書かない**。書きたくなったらそれは Infrastructure の関心
+- **コントローラに業務ロジックを書かない**。分岐が出てきたらユースケース側へ。`app/Http` は Laravel の既定の場所なので、油断すると元の「全部入りコントローラ」に戻る
+- **Eloquent モデルはリポジトリの外に出さない**。ビューへはドメインのエンティティではなく ViewModel を渡す（Blade が `$row['is_issued']` のようにカラム名で引くと、DB の都合が画面に漏れる）
+- **ユースケースはコンストラクタでインターフェースを受け取る**。テストで `$this->app->instance(...)` して差し替えられる
+
+**依存注入はメソッドインジェクションを使っている**。コントローラのコンストラクタに 10 個のユースケースを並べると、1 アクションのために全部が解決されてしまうため。
+
+```php
+public function index(ListOrdersUseCase $listOrders): View
+{
+    return view('orders.index', ['orders' => OrderView::collection($listOrders->execute())]);
+}
+```
 
 ### HTTP クライアント (ky)
 
@@ -239,27 +313,53 @@ Vite はビルド時に `import.meta.env.VITE_*` を値へ埋め込む。**`proc
 - **`config/cache.php` の `serializable_classes` は `false`**: キャッシュから PHP オブジェクトを復元しない設定。キャッシュにオブジェクトを入れていないため false のままでよい
 - **`composer.json` の `allow-plugins` に `pestphp/pest-plugin`**: composer 2.2 以降はプラグインの実行に明示的な許可が要る。増やすときは必要最小限にする
 
-## 既知の不具合（アップグレード前から壊れている）
+## 移行時に直した不具合
 
-リグレッションテスト追加時に判明したもの。**Laravel のバージョンを上げて壊れたのではなく、元から壊れている**。該当テストは `markTestIncomplete()` で理由付きで残してあるので、直したら外すこと。
+レイヤー分割にあわせて、**アップグレード前から壊れていた箇所をまとめて直した**。以下はいずれも Laravel のバージョンを上げて壊れたものではなく、元から壊れていたもの。振る舞いが変わっているので、旧挙動を前提にした手順書があれば更新すること。
 
-- **発注書の編集が保存できない**: `OrderController::edit()` は `$req['is_issued']` / `is_ordered` / `is_deleted` / `is_converted` を参照するが、`resources/views/orders/form.blade.php` に対応する入力が一切ない。POST すると `Undefined index` で 500 になる
-- **`OrderController::view()` が存在しない**: ルート `orders.view` (`/orders/view/{id}`) は登録されているのにメソッドが無く 500。一覧にリンクが無いため UI からは到達しない
-- **顧客の編集が保存されない**: `CustomerController::edit()` に `isMethod('post')` の分岐が無く、POST しても常に view を返すだけ
-- **案件のステータス表示が壊れている**: `ProjectController::index()` が `switch ($project->status) { case $project->status === 0: ... }` と書かれている（`switch (true)` の誤用）。sqlite では status 1・2 が「未知」になる。値の型が変わる MySQL では結果が変わりうる
-- **明細のない発注書は CSV 出力できない**: `OrderController::csv()` が `$details[0]` を無条件に参照する
-- **`OrderController::csv()` はカレントディレクトリにファイルを書く**: `'./' . $order_no . '.csv'` を作って `readfile()` 後に `unlink()` する。`order_no` は検証されていない
+| 症状 | 直した内容 |
+| --- | --- |
+| 発注書の編集が保存できず 500 | `edit()` がフォームに存在しない `is_issued` 等を参照していた。更新は集約の同一性を保ったまま行い、フォームが持たない項目（発行・受注ステータス、ごみ箱フラグ、社内メモ）は現在値を維持する。**id も変わらなくなった**（旧実装は物理削除 → 再作成だった） |
+| 編集画面に既存の値が出ない | `orders/form.blade.php` は `$header` / `$details` を受け取りながら一切使っていなかった。`x-order-row` が明細を受け取るようにして描画する |
+| `OrderController::view()` が無い | ルートだけあってメソッドが無く 500。ビューも CakePHP のまま（`$this->Html->url()` で 1 行目から落ちる）だったので、明細と金額を出す Blade に書き直した |
+| 顧客の編集が保存されない | `edit()` に POST 分岐が無く、保存ボタンを押しても何も起きなかった（画面は成功したように見える） |
+| 案件のステータス表示が壊れている | `switch ($project->status) { case $project->status === 0: ... }` という `switch (true)` の誤用。さらに一覧が 3 種類・フォームが 8 種類と定義が食い違っていた。`ProjectStatus` enum（8 種類）に一本化 |
+| 明細のない発注書で CSV が落ちる | `$details[0]` を無条件参照していた。ヘッダー行を固定で持つようにして、明細が無くても出力できる |
+| CSV がカレントディレクトリにファイルを書く | `'./' . $order_no . '.csv'` を作って `readfile()` → `unlink()` していた（`order_no` は未検証）。メモリ上で組み立てて `Response` で返す |
+| ユーザーの新規登録画面が 500 | 未保存ユーザーに対して `route('users.2fa', ['id' => null])` を組もうとしていた。2FA ボタンは編集時だけ出す |
+| `/downloader/{file}` が必ず 500 | `AddResponseHeaders` が `$response->header()` を呼ぶが、`BinaryFileResponse` にそのメソッドは無い。`$response->headers->set()` に変更 |
+| ファイルのアップロード / ダウンロードにパストラバーサル | `$_POST` / `$_FILES` を直接読み、ファイル名を検証せず storage のパスに連結していた。`basename()` で潰し、実パスが保存先の内側にあることを確認する |
+| NFC 登録経路でログインできない | 登録時だけ `Hash::make()` していたのに、ログインは平文で完全一致を見ていた。照合方式に合わせて平文で保存する（ハッシュ化は `NfcCredential` の TODO） |
+| 2FA が未実装 | `register_2fa_auth()` は空文字を返すスタブだった。TOTP (RFC 6238) を `TwoFactorSecret` に実装（外部ライブラリ不要）。**ログイン時にコードを要求する経路はまだ無い** |
+| Academy の問い合わせが保存されない | `fill()` を呼ぶだけで `save()` していなかった。`index()` も中身が空だったので一覧を実装 |
+| 旅費精算に費目の入力欄が無い | PDF は交通費・宿泊費などを印字するのに、フォームに入力欄が無く常に空欄だった。費目を入力できるようにして、**合計は内訳から計算する** |
+| 精算 CSV の取り込み後に出張申請の一覧へ戻る | リダイレクト先が `/trips` だった |
+| 案件の `price` が `$fillable` から漏れている | コントローラが個別代入していたため表面化していなかった |
+| `is_deleted` が NULL の発注書が一覧から消える | `where('is_deleted', '!=', 1)` は SQL の NULL 比較の都合で NULL 行を落とす。NULL も「削除されていない」として扱う |
+| freee API がエラーでも 200 を返す | cURL の戻り値を検証せずそのまま出していた。失敗は 502 で返す |
+| ログイン通知メールの失敗でログインできない | `Mail::send()` の例外がそのまま外に出ていた。通知は失敗してもログインは成立させ、ログに残す |
+| 存在しないメールアドレスだけ別のメッセージ | 「The user does not exist.」と表示しており、登録済みかどうかを外から判別できた。メッセージを統一 |
 
-Tailwind 移行時にブラウザで触って追加で判明したもの。
+**削除したもの**（いずれも到達不能または実体が無かった）:
 
-- **ユーザーの新規登録画面が 500**: `users/form.blade.php` の 2FA リンクが `route('users.2fa', ['id' => $user->id])` を呼ぶが、`UserController::create()` は未保存の `new User()` を渡すため `id` が null で `Missing required parameter` になる。編集画面 (`/users/edit/{id}`) は動く
-- **`orders/view.blade.php` は CakePHP のまま**: `$this->Html->url()` / `WWW_ROOT` / `APP` を使っており Laravel では 1 行目で落ちる。`OrderController::view()` が無いのでそもそも到達しない。Bootstrap のクラスと jQuery 前提の inline スクリプトが残っているが、到達しないため Tailwind 移行の対象外にしてある
-- **`nfc-auth.ts` が Bootstrap のクラスを付けている**: `createElement` で作る要素に `form-control` / `btn btn-primary` を付けるが、Bootstrap の CSS はもう無いのでスタイルの当たらない裸の要素になる（機能自体は動く）
+- `PrintController` — ルート未登録で、`$this->Clients` など CakePHP の残骸を参照しており動かなかった
+- `CalendarController` / `EmailController` — 中身が `//` だけで、ルートも無かった
+- `App\Models\Task` — `tasks` テーブルのマイグレーションが存在しない
+- `App\Lib\Common` — `calcPer()` は PDF レンダラへ、`getTaxes()` は `TaxRate` enum へ移した。`getMonths()` はどこからも呼ばれていなかった
+- `projects/view.blade.php` — 未定義の `$task` を参照しており、ルートも無かった
+- ごみ箱の「ごみ箱を空にする」ボタン — リンク先が一覧自身で、何もしないダミーだった
+- 出張申請一覧の「ごみ箱に入れる」 — リンク先が発注書の削除ルート (`orders.delete`) を指していた
 
-### テストしにくい箇所
+## 残っている TODO
 
-- `OrderController::setStatus()` は `file_get_contents("php://input")` を直接読むため、Laravel のテストからは検証できない
-- `OrderController::csv()` は Laravel の Response ではなく素の `header()` + `readfile()` で出力するため、テスト実行中は "headers already sent" になる。PDF (`$pdf->Output()`) は出力バッファで捕捉できる
+コード中に `TODO:` / `FIXME:` コメントで置いてある。特に重いもの:
+
+- **MetaMask ログインが安全でない**: ウォレットアドレスは公開情報なので、いまは「知っていれば入れる」認証になっている。nonce への署名と `ecrecover` による検証に置き換える必要がある（`Domain\User\ValueObject\WalletAddress`）
+- **NFC の PIN が平文保存**: ログインが平文の完全一致で照合しているため。両方をハッシュ化する場合、シリアル番号は検索キーとして使うので決定的ハッシュが要る（`Domain\User\ValueObject\NfcCredential`）
+- **2FA がログインに繋がっていない**: 設定と検証は動くが、ログイン時にコードを要求していない（`Application\Auth\UseCase\LoginWithPasswordUseCase`）
+- **ログイン試行のレート制限が無い**: web ルートには throttle が掛かっていない
+- **2FA のリカバリコードが無い**: 端末を失うと復旧できない
+- **QR コード画像を生成していない**: `otpauth://` URI を手入力してもらう形になっている
 
 ## アーキテクチャ上の重要な癖
 
@@ -267,61 +367,77 @@ Tailwind 移行時にブラウザで触って追加で判明したもの。
 
 `Illuminate\Auth` ではなく **素のセッション**で実装されている。
 
-- `LoginController::auth()` がパスワード照合後、`session(['user_id', 'name', 'email'])` を手動でセット
+- セッションへの書き込みは `Infrastructure\Auth\SessionAuthStore`（`Application\Auth\Port\AuthSessionInterface` の実装）が担当する。`session(['user_id', 'name', 'email'])` というキーの構成は変えていない
 - `App\Http\Middleware\LoginMiddleware`（ルートミドルウェア名 `login`）が `session('name') === null` で `/login` にリダイレクト
 - 認証が必要なルートは `Route::middleware('login')->group(...)` で囲む（`auth` ミドルウェアではない）
 - ログインユーザー参照は `session('user_id')` / `session('name')`。`Auth::user()` は機能しない
-- 代替ログイン: NFC（`auth_with_nfc` / Web NFC API）、MetaMask（`auth_with_metamask` / ウォレットアドレス照合）
-- 2FA は未実装（`UserController::register_2fa_auth` はスタブ、`users.two_factor_secret_code` カラムのみ存在）
+- 代替ログイン: NFC（Web NFC API）、MetaMask（ウォレットアドレス照合）。いずれも `Application\Auth\UseCase\` にユースケースがある
+- **ログイン時にセッション ID を再生成する**（セッション固定攻撃対策）。移行前は行っていなかった
+- **`config/session.php` の `serialization` が `json`** なので、セッションに入れてよいのはスカラー値だけ。2FA の設定中シークレットも文字列で出し入れしている（`SessionTwoFactorSetupStore`）
+- 2FA は設定と検証が動く（`TwoFactorSecret`）が、**ログイン時にコードを要求する経路はまだ無い**
 
-### コントローラの GET/POST 兼用パターン
+### フォーム表示と保存はメソッドを分ける
 
-`create` / `edit` は 1 メソッドでフォーム表示と保存を兼ねる。ルート側で同じメソッドに GET と POST の両方を登録し、メソッド内で `$request->isMethod('POST')` 分岐する。新しい CRUD を足すときはこの形に合わせる。
+URL は移行前と同じ（同じパスに GET と POST）だが、**コントローラのメソッドは分けてある**。FormRequest による検証を効かせるためで、1 メソッドに兼ねさせると GET でフォームを開いただけで `required` のルールが走ってしまう。
 
 ```php
-Route::get('/create', 'create')->name('xxx.create');
-Route::post('/create', 'create');
+Route::get('/create', 'create')->name('xxx.create');  // フォーム表示
+Route::post('/create', 'store');                      // 保存
+Route::get('/edit/{id}', 'edit')->name('xxx.edit');
+Route::post('/edit/{id}', 'update');
 ```
+
+**ルート名は GET 側にだけ付ける**（移行前と同じ名前を維持しているので、Blade の `route()` は変更不要）。新しい CRUD もこの形に合わせる。
 
 ### フラッシュメッセージ
 
-リダイレクト時は必ずこの 3 キーをセットする。`resources/views/layouts/default.blade.php` が Bootstrap toast として描画する。
+`x-flash` が `flash_message` / `flash_status` / `flash_icon` の 3 キーをまとめて読む。**手で 3 つ書かず `Flash` ヘルパを使う**（色とアイコンの取り違えを避けるため）。
 
 ```php
-return redirect('/orders')->with([
-    'flash_message' => '...',
-    'flash_status'  => 'success', // Bootstrap のカラー名
-    'flash_icon'    => 'check-circle-fill', // bootstrap-icons 名
-]);
+use App\Support\Flash;
+
+return redirect()->route('orders.index')->with(Flash::success('発注書を作成しました'));
+// Flash::error() / Flash::warning() もある
 ```
+
+ドメイン例外を投げた場合は `bootstrap/app.php` の `withExceptions()` が拾って `Flash::error()` 付きで元の画面に戻すので、コントローラで catch する必要はない。
 
 ### Eloquent のリレーションは定義されていない
 
-モデルは `$fillable` のみで `hasMany` / `belongsTo` を持たない。関連取得はコントローラ内でクエリビルダの `join` か、個別 `find()` で行っている（例: `OrderController::pdf()`）。
+モデルは `$fillable` のみで `hasMany` / `belongsTo` を持たない。関連の組み立ては**リポジトリの仕事**で、コントローラやビューには出てこない。
 
 - 発注書は `order_headers` (1) : `order_details` (N)。外部キーは `order_details.slip_id` → `order_headers.id`（`order_header_id` ではない）
-- 編集時は「既存明細を全削除 → 再作成」方式（`OrderController::edit()`）
+- `OrderRepository` は集約（ヘッダー + 明細）を組み立てて返す。**一覧でも明細を読む**（合計金額を明細から導出するため）が、`whereIn('slip_id', ...)` で 1 クエリにまとめてあり N+1 にはならない
+- 保存時、明細は洗い替え（全削除 → 再作成）。行の増減と並び替えが同時に起きるため差分更新にしていない。ヘッダーは `id` を保ったまま更新される
+- 顧客名のように「別の集約に属する表示用の値」は、コントローラがまとめて引いて ViewModel に渡す（`OrderController::customerNames()`）
 
 ### 論理削除は手動
 
-Laravel の `SoftDeletes` は使わず、`order_headers.is_deleted` (integer) を自前で見ている。一覧は `where('is_deleted', '!=', '1')`、`/orders/trash` がゴミ箱、`/orders/restore/{id}` が復元。
+Laravel の `SoftDeletes` は使わず、`order_headers.is_deleted` (integer) を自前で見ている。`/orders/trash` がゴミ箱、`/orders/restore/{id}` が復元。
+
+判定は `OrderRepository` に閉じている。**`is_deleted` が NULL の行も「削除されていない」として扱う**（移行前の `where('is_deleted', '!=', 1)` は SQL の NULL 比較の都合で NULL 行を落としていた）。
 
 ### PDF 生成 (TCPDF / FPDI)
 
-2 方式が混在する。
+実装は `app/Infrastructure/Pdf/` にあり、`Application\Order\Port\OrderPdfRendererInterface` などのポート越しに呼ばれる。2 方式が混在する。
 
-- **ゼロから描画**: `OrderController::pdf()` — `setasign\Fpdi\Tcpdf\Fpdi` に座標指定で直接書き込む。ロゴ・社印は `resources/img/`
-- **テンプレート PDF に重ね書き**: `TravelController::pdf()` / `TravelExpenseController::pdf()` — `resources/pdf/*.pdf` を `setSourceFile()` + `importPage()` で読み込み、その上にテキストを配置
+- **ゼロから描画**: `TcpdfOrderPdfRenderer` — `setasign\Fpdi\Tcpdf\Fpdi` に座標指定で直接書き込む。ロゴ・社印は `resources/img/`
+- **テンプレート PDF に重ね書き**: `TcpdfTravelPdfRenderer` / `TcpdfTravelExpensePdfRenderer` — `resources/pdf/*.pdf` を `setSourceFile()` + `importPage()` で読み込み、その上にテキストを配置
+
+**`Output()` は `'S'` を付けてバイト列で受け取る**。ブラウザへ直接書き出さないので、レスポンスの組み立て方はコントローラが決められるし、テストから内容を検証できる。
 
 日本語フォントは `kozminproregular`（明朝）/ `kozgopromedium`（ゴシック）。座標は mm 単位のマジックナンバーなので、レイアウト変更時は実際に PDF を出して確認すること。
 
-`PrintController` は CakePHP からの移植途中で**動作しない**（`$this->Clients` / `$this->RequestHandler` / `WWW_ROOT` は Laravel に存在しない）。ルートにも未登録。
+**差出人欄は settings テーブルから引く**（`CompanyProfile`）。未登録なら `CompanyProfile::default()` が移行前に直書きされていた値を返すので、設定なしでも PDF は出る。
 
 ### 外部連携
 
-- **freee API** (`freeeController`): SDK を使わず生の cURL。トークン類は `.env` の `FREEE_API_*` から `env()` で直読み（config 経由ではない）
-- **Google Sheets** (`App\Models\SpreadSheet`): `resources/json/credentials.json`（gitignore 済み、`credentials.example.json` が雛形）+ `.env` の `GOOGLE_SPREADSHEET_ID`。Eloquent モデルではなく static ユーティリティとして使われている
-- **CSV インポート**: `SplFileObject` + `READ_CSV` で読み、`header` パラメータが真なら 1 行目を捨てる（`TravelController` / `TravelExpenseController` の `csvImport`）
+外部に出ていく操作はすべて `Application/*/Port/` のインターフェース越しに呼ぶ。実装は `app/Infrastructure/` にある。
+
+- **freee API** (`Infrastructure\Freee\CurlFreeeApiClient`): SDK は使わないが、生の cURL から Laravel の HTTP クライアントに変えてある。5 つのリソース取得は URL の差しかないので `FreeeResource` enum で 1 本にまとめた。認証情報は `config('services.freee.*')`
+- **Google Sheets** (`Infrastructure\SpreadSheet\GoogleSheetsClient`): `resources/json/credentials.json`（gitignore 済み、`credentials.example.json` が雛形）+ `config('services.google_sheets.spreadsheet_id')`
+- **CSV インポート**: `SplFileObject` + `READ_CSV` で読む（`Infrastructure\Csv\SplFileObjectCsvReader`）。フラグの組み合わせは移行前と同じ。**列は 0 始まりではなく `$row[1]` から読む**（先頭列は使われない）という癖もそのまま
+- **CSV の取り込みは 1 トランザクション**。1 行でも日付として解釈できない行があれば全体を取り消す（移行前は 1 行ずつ保存していたため、途中で失敗すると半端に入った）
 
 ### フロントエンドの構成
 

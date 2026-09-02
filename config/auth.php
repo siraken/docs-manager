@@ -62,7 +62,10 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+            // Eloquent モデルは永続化の詳細として Infrastructure 層に置いている。
+            // このアプリは Illuminate\Auth を使っていないが、Sanctum が provider を
+            // 参照するため設定自体は残す。
+            'model' => App\Infrastructure\Persistence\Eloquent\Models\User::class,
         ],
 
         // 'users' => [

@@ -58,6 +58,29 @@ test('存在しないユーザーはログイン画面に戻される', function
     $response->assertSessionMissing('user_id');
 });
 
+test('存在しないユーザーとパスワード誤りで応答が変わらない', function () {
+    // 移行前は前者だけ "The user does not exist." と表示しており、
+    // メールアドレスが登録済みかどうかを外から判別できた。
+    createUser();
+
+    $missing = $this->post('/login', ['email' => 'nobody@example.com', 'password' => 'secret123']);
+    $wrong = $this->post('/login', ['email' => 'test@example.com', 'password' => 'wrong-password']);
+
+    expect($missing->getSession()->get('flash_message'))
+        ->toBe($wrong->getSession()->get('flash_message'));
+});
+
+test('ログイン時にセッションIDが再生成される', function () {
+    createUser();
+
+    $before = session()->getId();
+
+    $this->post('/login', ['email' => 'test@example.com', 'password' => 'secret123']);
+
+    // セッション固定攻撃を避けるため、ログインの前後で ID が変わる
+    expect(session()->getId())->not->toBe($before);
+});
+
 test('ユーザーが一人もいない場合はユーザー作成画面へ誘導される', function () {
     $response = $this->post('/login', [
         'email' => 'test@example.com',
@@ -110,18 +133,38 @@ test('NFCのPINが違えばログインできない', function () {
 });
 
 test('ウォレットアドレスが一致すればログインできる', function () {
-    $user = createUser(['wallet_address' => '0xabc123']);
+    $user = createUser(['wallet_address' => walletAddress('abc')]);
 
-    $response = $this->post('/login/login-metamask', ['address' => '0xabc123']);
+    $response = $this->post('/login/login-metamask', ['address' => walletAddress('abc')]);
 
     $response->assertRedirect('/');
     $response->assertSessionHas('user_id', $user->id);
 });
 
-test('未登録のウォレットアドレスではログインできない', function () {
-    createUser(['wallet_address' => '0xabc123']);
+test('ウォレットアドレスの大文字小文字は区別しない', function () {
+    // チェックサム表現の差でログインできなくならないようにする
+    $user = createUser(['wallet_address' => '0xAbCdEf0000000000000000000000000000000001']);
 
-    $response = $this->post('/login/login-metamask', ['address' => '0xdeadbeef']);
+    $response = $this->post('/login/login-metamask', [
+        'address' => '0xabcdef0000000000000000000000000000000001',
+    ]);
+
+    $response->assertSessionHas('user_id', $user->id);
+});
+
+test('形式が不正な既存データでもログインできる', function () {
+    // 移行前はアドレスを検証せずに保存していたため、42 文字でない値が
+    // 既存 DB に残っている可能性がある。復元経路では形式検証をしない。
+    $user = createUser(['wallet_address' => '0xabc123']);
+
+    $this->post('/login/login-metamask', ['address' => '0xabc123'])
+        ->assertSessionHas('user_id', $user->id);
+});
+
+test('未登録のウォレットアドレスではログインできない', function () {
+    createUser(['wallet_address' => walletAddress('abc')]);
+
+    $response = $this->post('/login/login-metamask', ['address' => walletAddress('def')]);
 
     $response->assertRedirect('/login');
     $response->assertSessionMissing('user_id');

@@ -1,13 +1,12 @@
 @extends('layouts/default')
 @section('page')
 
-{{-- slipSetter.status がトークンを document.getElementsByName('_token') から読む --}}
+{{-- status.ts がトークンを document.querySelector('input[name="_token"]') から読む --}}
 @csrf
 
 <x-page-header title="発注書 / ごみ箱">
     <x-slot:actions>
         <x-button :href="route('orders.index')" icon="arrow-left">戻る</x-button>
-        <x-button :href="route('orders.index')" variant="danger" icon="trash">ごみ箱を空にする</x-button>
     </x-slot:actions>
 </x-page-header>
 
@@ -28,25 +27,21 @@
             <tr class="transition hover:bg-slate-50">
                 <td class="px-4 py-3 align-middle">
                     <div class="flex flex-col gap-1">
-                        <x-order-status type="issued" :id="$row['id']" :value="$row['is_issued']" />
-                        <x-order-status type="ordered" :id="$row['id']" :value="$row['is_ordered']" />
+                        <x-order-status type="issued" :id="$row->id" :value="$row->issueStatus" />
+                        <x-order-status type="ordered" :id="$row->id" :value="$row->orderStatus" />
                     </div>
                 </td>
                 <td class="px-4 py-3 align-middle">
-                    <a href="{{ route('orders.edit', ['id' => $row['id']]) }}"
+                    <a href="{{ route('orders.view', ['id' => $row->id]) }}"
                        class="font-medium text-brand-700 hover:text-brand-900 hover:underline">
-                        {{ $row['title'] ? $row['title'] . '（' . $row['customer_id'] . '）' : $row['customer_id'] }}
+                        {{ $row->displayName() }}
                     </a>
-                    <p class="text-xs text-slate-400">#{{ $row['order_no'] }}</p>
+                    <p class="text-xs text-slate-400">#{{ $row->orderNo }}</p>
                 </td>
-                <td class="px-4 py-3 align-middle whitespace-nowrap text-slate-600 tabular">
-                    {{ date('Y/m/d', strtotime($row['issued_date'])) }}
-                </td>
-                <td class="px-4 py-3 align-middle whitespace-nowrap text-slate-600 tabular">
-                    {{ !empty($row['exp_date']) ? date('Y/m/d', strtotime($row['exp_date'])) : '-' }}
-                </td>
+                <td class="px-4 py-3 align-middle whitespace-nowrap text-slate-600 tabular">{{ $row->issuedDateLabel }}</td>
+                <td class="px-4 py-3 align-middle whitespace-nowrap text-slate-600 tabular">{{ $row->expDateLabel }}</td>
                 <td class="px-4 py-3 text-right align-middle font-semibold whitespace-nowrap text-slate-900 tabular">
-                    {{ number_format($row['total_price'] ?: 0) }}円
+                    {{ $row->totalLabel }}円
                 </td>
                 <td class="px-4 py-3 text-right align-middle">
                     <x-dropdown>
@@ -58,7 +53,7 @@
                             <x-dropdown-item disabled>{{ $row->note }}</x-dropdown-item>
                             <x-dropdown-divider />
                         @endif
-                        <x-dropdown-item :href="route('orders.restore', ['id' => $row['id']])">ごみ箱から戻す</x-dropdown-item>
+                        <x-dropdown-item :href="route('orders.restore', ['id' => $row->id])">ごみ箱から戻す</x-dropdown-item>
                     </x-dropdown>
                 </td>
             </tr>

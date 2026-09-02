@@ -1,61 +1,61 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Customer;
+use App\Application\Customer\UseCase\CreateCustomerUseCase;
+use App\Application\Customer\UseCase\GetCustomerUseCase;
+use App\Application\Customer\UseCase\ListCustomersUseCase;
+use App\Application\Customer\UseCase\UpdateCustomerUseCase;
+use App\Http\Requests\SaveCustomerRequest;
+use App\Support\Flash;
+use App\Http\ViewModels\CustomerView;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
-class CustomerController extends Controller
+final class CustomerController extends Controller
 {
-    /**
-     * 一覧
-     *
-     *
-     */
-    public function index()
+    public function index(ListCustomersUseCase $listCustomers): View
     {
-        $customers = Customer::all();
-        return view('customers.index', compact('customers'));
+        return view('customers.index', [
+            'customers' => CustomerView::collection($listCustomers->execute()),
+        ]);
+    }
+
+    public function create(): View
+    {
+        return view('customers.form', [
+            'customer' => CustomerView::empty(),
+            'isNew' => true,
+        ]);
+    }
+
+    public function store(SaveCustomerRequest $request, CreateCustomerUseCase $createCustomer): RedirectResponse
+    {
+        $createCustomer->execute($request->toInput());
+
+        return redirect()->route('customers.index')->with(Flash::success('顧客を登録しました'));
+    }
+
+    public function edit(int $id, GetCustomerUseCase $getCustomer): View
+    {
+        return view('customers.form', [
+            'customer' => CustomerView::fromEntity($getCustomer->execute($id)),
+            'isNew' => false,
+        ]);
     }
 
     /**
-     * 新規作成
+     * 顧客の更新。
      *
-     *
+     * 移行前は edit() に POST 分岐が無く、保存ボタンを押しても何も起きなかった
+     * (画面はフォームに戻るだけなので、成功したように見えていた)。
      */
-    public function create(Request $request)
+    public function update(SaveCustomerRequest $request, int $id, UpdateCustomerUseCase $updateCustomer): RedirectResponse
     {
-        $customer = new Customer();
+        $updateCustomer->execute($id, $request->toInput());
 
-        if ($request->isMethod('post')) {
-
-            $request->is_company = $request->is_company ? 1 : 0;
-
-            $customer->name = $request->name;
-            $customer->is_company = $request->is_company;
-            $customer->email = $request->email;
-            $customer->phone = $request->phone;
-            $customer->post_code = $request->post_code;
-            $customer->address = $request->address;
-            $customer->city = $request->city;
-            $customer->state = $request->state;
-            $customer->country = $request->country;
-            $customer->note = $request->note;
-            $customer->save();
-            return redirect()->route('customers.index');
-        }
-
-        return view('customers.form', compact('customer'));
-    }
-
-    /**
-     * 編集
-     *
-     *
-     */
-    public function edit($id)
-    {
-        $customer = Customer::find($id);
-        return view('customers.form', compact('customer'));
+        return redirect()->route('customers.index')->with(Flash::success('顧客を更新しました'));
     }
 }

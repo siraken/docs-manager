@@ -6,6 +6,10 @@ import { http } from "./http";
  * Blade 側のピルが `onclick="slipSetter.status(this, ...)"` で呼ぶ。
  * 一覧の Blade は、このスクリプトがトークンを読めるように `@csrf` だけを
  * 単体で出力している。
+ *
+ * 次の状態は保存済みの値からサーバーが決める。以前は画面が持っている現在値
+ * (currentStatus) を送ってサーバーがそれを基に遷移を決めていたため、画面が
+ * 古いと保存結果がずれた。
  */
 
 const DOCUMENT_ROOT =
@@ -13,10 +17,12 @@ const DOCUMENT_ROOT =
 
 type SetStatusResponse = {
   status?: number;
+  is_issued?: number;
+  is_ordered?: number;
 };
 
 export const slipSetter: Window["slipSetter"] = {
-  status(el, type, id, currentStatus) {
+  status(el, type, id) {
     const token =
       document.querySelector<HTMLInputElement>('input[name="_token"]')?.value ??
       "";
@@ -31,7 +37,6 @@ export const slipSetter: Window["slipSetter"] = {
         json: {
           type: type,
           id: id,
-          currentStatus: currentStatus,
           _token: token,
         },
       })

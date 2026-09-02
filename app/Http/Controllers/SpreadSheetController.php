@@ -1,24 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\SpreadSheet;
+use App\Application\SpreadSheet\UseCase\AppendSpreadSheetRowUseCase;
+use Illuminate\Http\JsonResponse;
 
-class SpreadSheetController extends Controller
+/**
+ * Google スプレッドシート連携の疎通確認。
+ *
+ * TODO: 移行前から「ダミーの 1 行を書き込む」だけの動作確認用エンドポイント。
+ *       業務上の用途 (何をシートに出すのか) が決まっていないため、そのまま
+ *       残してある。用途が決まったら専用のユースケースに置き換えること。
+ */
+final class SpreadSheetController extends Controller
 {
-    public function store()
+    public function store(AppendSpreadSheetRowUseCase $appendRow): JsonResponse
     {
-        $spread_sheet = new SpreadSheet();
+        $appendRow->execute(['Test', 12345, true]);
 
-        $insert_data = [
-            'hoge' => 'Test',
-            'huga' => 12345,
-            'foo'  => true
-        ];
-
-        $spread_sheet->insert_spread_sheet($insert_data);
-
-        return response('Test data are stored successfully.', 200);
+        return response()->json(['message' => 'Test data are stored successfully.']);
     }
 }

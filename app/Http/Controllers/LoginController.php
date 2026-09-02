@@ -1,190 +1,85 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Application\Auth\Exception\AuthenticationFailedException;
+use App\Application\Auth\Exception\NoUsersRegisteredException;
+use App\Application\Auth\Port\LoginContext;
+use App\Application\Auth\UseCase\LoginWithNfcUseCase;
+use App\Application\Auth\UseCase\LoginWithPasswordUseCase;
+use App\Application\Auth\UseCase\LoginWithWalletUseCase;
+use App\Application\Auth\UseCase\LogoutUseCase;
+use App\Http\Requests\LoginRequest;
+use App\Support\Flash;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
-class LoginController extends Controller
+/**
+ * 独自セッション認証の入り口。
+ *
+ * このアプリは Illuminate\Auth を使わない。セッションの組み立ては
+ * Infrastructure 層の SessionAuthStore が担当し、ここは HTTP との変換だけ行う。
+ */
+final class LoginController extends Controller
 {
-    /**
-     * ログイン画面
-     */
-    public function index()
+    public function index(): View
     {
         return view('login');
     }
 
-    /**
-     * ログイン認証
-     */
-    public function auth(Request $request)
+    public function auth(LoginRequest $request, LoginWithPasswordUseCase $login): RedirectResponse
     {
-
-        if (User::all()->count() === 0) {
+        try {
+            $user = $login->execute($request->email(), $request->password(), $this->context($request));
+        } catch (NoUsersRegisteredException) {
+            // 初期構築時。ユーザーが 1 人もいないので作成画面へ送る
             return redirect('/users/create');
+        } catch (AuthenticationFailedException $e) {
+            return redirect('/login')->with(Flash::error($e->getMessage()));
         }
 
-        $user = User::where('email', $request->email)->first();
-
-        // ユーザーが存在しない場合
-        if ($user === null) {
-            return redirect('/login')->with([
-                'flash_message' => 'The user does not exist.',
-                'flash_status' => 'danger',
-                'flash_icon' => 'x-circle-fill',
-            ]);
-        }
-
-        // パスワードの一致確認
-        if (Hash::check($request->password, $user->password)) {
-            // セッション
-            session([
-                'user_id' => $user->id,
-                'name'  => $user->name,
-                'email' => $user->email
-            ]);
-
-            // Send email to user
-            $this->send_email($request, $user);
-
-            return redirect('/')->with([
-                'flash_message' => 'Logged in as ' . $user->name,
-                'flash_status' => 'success',
-                'flash_icon' => 'check-circle-fill',
-            ]);
-        } else {
-
-            return redirect('/login')->with([
-                'flash_message' => 'Failed to login.',
-                'flash_status' => 'danger',
-                'flash_icon' => 'x-circle-fill',
-            ]);
-        }
+        return redirect('/')->with(Flash::success('Logged in as ' . $user->name()));
     }
 
-    /**
-     * ログアウト
-     */
-    public function destroy(Request $request)
+    public function authWithNfc(Request $request, LoginWithNfcUseCase $login): RedirectResponse
     {
-        // セッションを破棄
-        session()->flush();
+        try {
+            $login->execute($request->input('serialNumber'), $request->input('pin'));
+        } catch (AuthenticationFailedException $e) {
+            return redirect('/login')->with(Flash::error($e->getMessage()));
+        }
 
-        return redirect('/login')->with([
-            'flash_message' => 'Logged out.',
-            'flash_status' => 'success',
-            'flash_icon' => 'check-circle-fill',
-        ]);
+        return redirect('/')->with(Flash::success('Logged in with NFC.'));
     }
 
-    private function send_email($request, $user)
+    public function authWithMetamask(Request $request, LoginWithWalletUseCase $login): RedirectResponse
     {
-        if (env('APP_ENV') === 'production') {
-            Mail::send(
-                [
-                    'text' => 'emails.login'
-                ],
-                [
-                    'datetime' => date('Y-m-d H:i:s'),
-                    'name' => $user->name,
-                    'ip' => $request->ip(),
-                    'user_agent' => $request->header('User-Agent'),
-                ],
-                function ($message) use ($user) {
-                    $message
-                        ->from('system@novalumo.llc', 'Novalumo Docs Manager')
-                        ->to($user->email, $user->name)
-                        ->subject('ログイン通知');
-                }
-            );
+        try {
+            $login->execute($request->input('address'));
+        } catch (AuthenticationFailedException $e) {
+            return redirect('/login')->with(Flash::error($e->getMessage()));
         }
+
+        return redirect('/')->with(Flash::success('Logged in with Metamask.'));
     }
 
-    public function auth_with_nfc(Request $request)
+    public function destroy(LogoutUseCase $logout): RedirectResponse
     {
-        // Get info
-        $serial = $request->serialNumber;
-        $pin = $request->pin;
+        $logout->execute();
 
-        // Find user
-        $user = User::where('nfc_serial_number', $serial)->where('nfc_pin', $pin)->first();
-
-        if ($user !== null) {
-
-            // JSON
-            // return response()->json([
-            //     'status' => 'success',
-            //     'user' => [
-            //         'id' => $user->id,
-            //         'name' => $user->name,
-            //         'email' => $user->email,
-            //     ],
-            // ]);
-
-            // セッション
-            session([
-                'user_id' => $user->id,
-                'name'  => $user->name,
-                'email' => $user->email
-            ]);
-
-            return redirect('/')->with([
-                'flash_message' => 'Logged in with NFC.',
-                'flash_status' => 'success',
-                'flash_icon' => 'check-circle-fill',
-            ]);
-        } else {
-            return redirect('/login')->with([
-                'flash_message' => 'Failed to login.',
-                'flash_status' => 'danger',
-                'flash_icon' => 'x-circle-fill',
-            ]);
-        }
+        return redirect('/login')->with(Flash::success('Logged out.'));
     }
 
-    public function auth_with_metamask(Request $request)
+    /** ログイン通知メールに載せるリクエスト情報 */
+    private function context(Request $request): LoginContext
     {
-        // Get info
-        // TODO: More secure way to get info
-        // * Currently, this method can be used if one knows the address of the user through API.
-        $address = $request->address;
-
-        // Find user
-        $user = User::where('wallet_address', $address)->first();
-
-        if ($user !== null) {
-
-            // JSON
-            // return response()->json([
-            //     'status' => 'success',
-            //     'user' => [
-            //         'id' => $user->id,
-            //         'name' => $user->name,
-            //         'email' => $user->email,
-            //     ],
-            // ]);
-
-            // セッション
-            session([
-                'user_id' => $user->id,
-                'name'  => $user->name,
-                'email' => $user->email
-            ]);
-
-            return redirect('/')->with([
-                'flash_message' => 'Logged in with Metamask.',
-                'flash_status' => 'success',
-                'flash_icon' => 'check-circle-fill',
-            ]);
-        } else {
-            return redirect('/login')->with([
-                'flash_message' => 'Failed to login.',
-                'flash_status' => 'danger',
-                'flash_icon' => 'x-circle-fill',
-            ]);
-        }
+        return new LoginContext(
+            ipAddress: $request->ip(),
+            userAgent: $request->header('User-Agent'),
+            occurredAt: new \DateTimeImmutable(),
+        );
     }
 }

@@ -1,7 +1,8 @@
 @props(['type', 'id', 'value'])
 
 @php
-    // sqlite と MySQL で integer カラムの型が変わるため int にそろえてから引く
+    // ViewModel から enum の値 (int) が渡る。既存データが文字列でも拾えるよう
+    // int に寄せてから引く。
     $current = (int) $value;
 
     $labels = $type === 'issued'
@@ -18,7 +19,7 @@
 @endphp
 
 <button type="button"
-        onclick="slipSetter.status(this, '{{ $type }}', {{ $id }}, {{ $current }})"
+        onclick="slipSetter.status(this, '{{ $type }}', {{ $id }})"
         class="inline-flex w-24 items-center justify-center gap-1 rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset transition select-none active:scale-95 {{ $tones[$tone] }}">
     @if ($current === 1)
         <i class="bi bi-check-lg text-[10px]" aria-hidden="true"></i>

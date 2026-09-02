@@ -1,26 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * レスポンスに Server ヘッダを足す。
+ *
+ * 値の設定に $response->header() ではなく $response->headers->set() を使う。
+ * 前者は Illuminate\Http\Response のメソッドで、ファイルのダウンロードで返る
+ * BinaryFileResponse や StreamedResponse には存在しない。移行前はこれが原因で
+ * /downloader/{file} が必ず 500 になっていた
+ * (Call to undefined method BinaryFileResponse::header())。
+ * headers プロパティは Symfony の全レスポンスが持つ。
+ */
 class AddResponseHeaders
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
-     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
-     */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
+        /** @var Response $response */
         $response = $next($request);
 
-        $response->header('Server', 'Novalumo Server');
-        // $response->header('Access-Control-Allow-Origin', 'http://localhost:3000');
-        // $response->header('Access-Control-Allow-Methods', 'GET,POST,HEAD,OPTIONS');
+        $response->headers->set('Server', 'Novalumo Server');
 
         return $response;
     }

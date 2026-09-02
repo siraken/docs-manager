@@ -1,125 +1,87 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Application\Project\Input\SalesAnalysisCriteria;
+use App\Application\Project\UseCase\AnalyzeProjectSalesUseCase;
+use App\Application\Project\UseCase\CreateProjectUseCase;
+use App\Application\Project\UseCase\GetProjectUseCase;
+use App\Application\Project\UseCase\ListProjectsUseCase;
+use App\Application\Project\UseCase\UpdateProjectUseCase;
+use App\Domain\Project\ValueObject\ProjectStatus;
+use App\Http\Requests\SaveProjectRequest;
+use App\Support\Flash;
+use App\Http\ViewModels\ProjectView;
 use Illuminate\Http\Request;
-use App\Models\Project;
-use Faker\Guesser\Name;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
-class ProjectController extends Controller
+final class ProjectController extends Controller
 {
-    /**
-     * 一覧表示
-     */
-    public function index()
+    public function index(ListProjectsUseCase $listProjects): View
     {
-        $projects = Project::all();
-        foreach ($projects as $project) {
-            switch ($project->status) {
-                case $project->status === 0:
-                    $project->status = '未着手';
-                    break;
-                case $project->status === 1:
-                    $project->status = '進行中';
-                    break;
-                case $project->status === 2:
-                    $project->status = '完了';
-                    break;
-                default:
-                    $project->status = '未知';
-                    break;
-            };
-        }
+        return view('projects.index', [
+            'projects' => ProjectView::collection($listProjects->execute()),
+        ]);
+    }
 
-        return view('projects.index', compact('projects'));
+    public function create(): View
+    {
+        return view('projects.form', [
+            'project' => ProjectView::empty(),
+            'statuses' => ProjectStatus::options(),
+            'isNew' => true,
+        ]);
+    }
+
+    public function store(SaveProjectRequest $request, CreateProjectUseCase $createProject): RedirectResponse
+    {
+        $createProject->execute($request->toInput());
+
+        return redirect()->route('projects.index')->with(Flash::success('案件を登録しました'));
+    }
+
+    public function edit(int $id, GetProjectUseCase $getProject): View
+    {
+        return view('projects.form', [
+            'project' => ProjectView::fromEntity($getProject->execute($id)),
+            'statuses' => ProjectStatus::options(),
+            'isNew' => false,
+        ]);
+    }
+
+    public function update(SaveProjectRequest $request, int $id, UpdateProjectUseCase $updateProject): RedirectResponse
+    {
+        $updateProject->execute($id, $request->toInput());
+
+        return redirect()->route('projects.index')->with(Flash::success('案件を更新しました'));
     }
 
     /**
-     * 新規作成
+     * 売上分析。
+     *
+     * TODO: 集計は年月の指定だけで、取引先や状態での絞り込みはまだ無い
+     *       (移行前からの TODO)。
      */
-    public function create(Request $request)
+    public function analysis(Request $request, AnalyzeProjectSalesUseCase $analyze): View
     {
-        $project = new Project();
+        $criteria = SalesAnalysisCriteria::of(
+            $request->input('type'),
+            $request->input('year'),
+            $request->input('month'),
+        );
 
-        if ($request->isMethod('post')) {
-            $project->name = $request->name;
-            $project->description = $request->description;
-            $project->client_id = $request->client_id;
-            $project->related_task_id = $request->related_task_id;
-            $project->start_date = $request->start_date;
-            $project->end_date = $request->end_date;
-            $project->payment_date = $request->payment_date;
-            $project->price = $request->price;
-            $project->status = $request->status;
+        $analysis = $analyze->execute($criteria);
 
-            if ($project->save()) {
-                return redirect('/projects')->with([
-                    'flash_message' => 'Successful',
-                    'flash_status' => 'success',
-                    'flash_icon' => 'check-circle-fill',
-                ]);
-            }
-        }
-
-        return view('projects.form', compact('project'));
-    }
-
-    /**
-     * 編集
-     */
-    public function edit(Request $request)
-    {
-        $project = Project::find($request->id);
-
-        if ($request->isMethod('post')) {
-            $project->name = $request->name;
-            $project->description = $request->description;
-            $project->client_id = $request->client_id;
-            $project->related_task_id = $request->related_task_id;
-            $project->start_date = $request->start_date;
-            $project->end_date = $request->end_date;
-            $project->payment_date = $request->payment_date;
-            $project->price = $request->price;
-            $project->status = $request->status;
-
-            if ($project->save()) {
-                return redirect('/projects')->with([
-                    'flash_message' => 'Successful',
-                    'flash_status' => 'success',
-                    'flash_icon' => 'check-circle-fill',
-                ]);
-            }
-        }
-        return view('projects.form', compact('project'));
-    }
-
-    /**
-     * プロジェクトの売り上げ分析
-     * TODO: 検索パラメータを追加
-     */
-    public function analysis(Request $request)
-    {
-        $columns = [
-            [
-                'field' => 'payment_date',
-                'name' => '支払日',
-            ],
-            [
-                'field' => 'start_date',
-                'name' => '開始日',
-            ],
-            [
-                'field' => 'end_date',
-                'name' => '終了日',
-            ],
-        ];
-        $year = $request->input('year') ?? intval(date('Y'));
-        $month = $request->input('month') ?? intval(date('m'));
-        $search_column = $request->input('type') ?? $columns[0]['field'];
-
-        $projects = Project::whereYear($search_column, $year)->whereMonth($search_column, $month)->get();
-        $total_price = Project::whereYear($search_column, $year)->whereMonth($search_column, $month)->sum('price');
-
-        return view('projects.analysis', compact('projects', 'total_price', 'year', 'month', 'columns', 'search_column'));
+        return view('projects.analysis', [
+            'projects' => ProjectView::collection($analysis->projects),
+            'total_price' => $analysis->totalPrice()->amount,
+            'year' => $analysis->year,
+            'month' => $analysis->month,
+            'search_column' => $analysis->dateField,
+            'columns' => SalesAnalysisCriteria::DATE_FIELDS,
+        ]);
     }
 }
