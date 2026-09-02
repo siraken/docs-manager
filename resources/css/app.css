@@ -5,7 +5,6 @@
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
 @import "./document-table.css";
-@import "./item-overlay.css";
 
 /* Tailwind v4 は既定でプロジェクト全体を走査するが、対象を明示しておく */
 @source "../views";

@@ -3,7 +3,6 @@
 @section('page')
 
 <?php
-$items = [];
 $sumInput = 'w-full bg-transparent px-1 py-1 text-right text-sm font-semibold text-slate-900 border-0 focus:outline-none';
 ?>
 
@@ -78,7 +77,7 @@ $sumInput = 'w-full bg-transparent px-1 py-1 text-right text-sm font-semibold te
                 </thead>
                 <tbody class="main_tbody" id="sortable">
                     @for ($i = 0; $i < 5; $i++)
-                        <x-order-row :index="$i" :items="$items" />
+                        <x-order-row />
                     @endfor
                 </tbody>
 
@@ -113,10 +112,10 @@ $sumInput = 'w-full bg-transparent px-1 py-1 text-right text-sm font-semibold te
     </div>
 </form>
 
-{{-- 行追加用のひな形。jquery.ts が __INDEX__ を差し替えて複製する
+{{-- 行追加用のひな形。order-form.ts が content を複製して tbody に足す
      (行のマークアップを JS 側にも書くと二重管理になるため) --}}
 <template id="order-row-template">
-    <x-order-row index="__INDEX__" :items="$items" />
+    <x-order-row />
 </template>
 
 @endsection

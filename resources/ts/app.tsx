@@ -5,7 +5,8 @@ import DashboardPage from "./pages/Dashboard";
 import LoginPage from "./pages/Login";
 
 import "./lib/alpine";
-import "./lib/jquery/jquery";
+import "./lib/order-form";
+import "./lib/status";
 import "./lib/nfc-auth";
 import "./lib/metamask-auth";
 import * as novalumo from "./lib/novalumo";
