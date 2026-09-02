@@ -23,10 +23,10 @@ use App\Http\Requests\SaveOrderRequest;
 use App\Support\Flash;
 use App\Http\ViewModels\CustomerView;
 use App\Http\ViewModels\OrderView;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 /**
  * 発注書。
@@ -34,30 +34,49 @@ use Illuminate\View\View;
  * 移行前はこのクラスに DB アクセス・金額計算・PDF 描画・CSV 書き出しが
  * すべて入っていた (511 行)。いまはユースケースを呼んで、その結果を
  * ビューかレスポンスに載せるだけ。
+ *
+ * 画面は Inertia + Svelte に移行済み (resources/ts/Pages/Orders/)。
+ * ほかの画面はまだ Blade なので、view() を返すコントローラと混在している。
+ *
+ * PDF / CSV のダウンロードは Inertia を通さない。Inertia のリクエストは XHR に
+ * なるためファイルを受け取れず、素のリンクとして開く必要がある。
  */
 final class OrderController extends Controller
 {
-    public function index(ListOrdersUseCase $listOrders, ListCustomersUseCase $listCustomers): View
+    public function index(ListOrdersUseCase $listOrders, ListCustomersUseCase $listCustomers): InertiaResponse
     {
-        return view('orders.index', [
+        return Inertia::render('Orders/Index', [
             'orders' => OrderView::collection($listOrders->execute(), $this->customerNames($listCustomers->execute())),
+            'urls' => [
+                'create' => route('orders.create'),
+                'trash' => route('orders.trash'),
+                'setStatus' => route('orders.setStatus'),
+            ],
         ]);
     }
 
-    public function trash(ListTrashedOrdersUseCase $listTrashed, ListCustomersUseCase $listCustomers): View
+    public function trash(ListTrashedOrdersUseCase $listTrashed, ListCustomersUseCase $listCustomers): InertiaResponse
     {
-        return view('orders.trash', [
+        return Inertia::render('Orders/Trash', [
             'orders' => OrderView::collection($listTrashed->execute(), $this->customerNames($listCustomers->execute())),
+            'urls' => [
+                'index' => route('orders.index'),
+                'setStatus' => route('orders.setStatus'),
+            ],
         ]);
     }
 
     /** 新規作成フォーム */
-    public function create(ListCustomersUseCase $listCustomers): View
+    public function create(ListCustomersUseCase $listCustomers): InertiaResponse
     {
-        return view('orders.form', [
+        return Inertia::render('Orders/Form', [
             'customers' => CustomerView::collection($listCustomers->execute()),
             'order' => null,
-            'taxOptions' => TaxRate::options(),
+            'taxOptions' => $this->taxOptions(),
+            'urls' => [
+                'submit' => route('orders.create'),
+                'back' => route('orders.index'),
+            ],
         ]);
     }
 
@@ -69,16 +88,20 @@ final class OrderController extends Controller
     }
 
     /** 編集フォーム */
-    public function edit(int $id, GetOrderUseCase $getOrder, ListCustomersUseCase $listCustomers): View
+    public function edit(int $id, GetOrderUseCase $getOrder, ListCustomersUseCase $listCustomers): InertiaResponse
     {
         $order = $getOrder->execute($id);
         $customers = $listCustomers->execute();
         $customerNames = $this->customerNames($customers);
 
-        return view('orders.form', [
+        return Inertia::render('Orders/Form', [
             'customers' => CustomerView::collection($customers),
             'order' => OrderView::fromEntity($order, $customerNames[$order->customerId()] ?? ''),
-            'taxOptions' => TaxRate::options(),
+            'taxOptions' => $this->taxOptions(),
+            'urls' => [
+                'submit' => route('orders.edit', ['id' => $id]),
+                'back' => route('orders.index'),
+            ],
         ]);
     }
 
@@ -90,13 +113,14 @@ final class OrderController extends Controller
     }
 
     /** 詳細 */
-    public function show(int $id, GetOrderUseCase $getOrder, ListCustomersUseCase $listCustomers): View
+    public function show(int $id, GetOrderUseCase $getOrder, ListCustomersUseCase $listCustomers): InertiaResponse
     {
         $order = $getOrder->execute($id);
         $customerNames = $this->customerNames($listCustomers->execute());
 
-        return view('orders.view', [
+        return Inertia::render('Orders/Show', [
             'order' => OrderView::fromEntity($order, $customerNames[$order->customerId()] ?? ''),
+            'urls' => ['index' => route('orders.index')],
         ]);
     }
 
@@ -125,18 +149,17 @@ final class OrderController extends Controller
     }
 
     /**
-     * 一覧のステータスピルからの JSON リクエスト。
-     * フロント (status.ts) は 200 を見て画面を再読み込みする。
+     * 一覧のステータスピルからの遷移。
+     *
+     * 移行前は JSON を返し、フロント (status.ts) が 200 を見て location.reload()
+     * していた。Inertia では元のページへリダイレクトすれば、その画面の props
+     * だけが取り直されるので全体の再読み込みが要らない。
      */
-    public function setStatus(ChangeOrderStatusRequest $request, ChangeOrderStatusUseCase $changeStatus): JsonResponse
+    public function setStatus(ChangeOrderStatusRequest $request, ChangeOrderStatusUseCase $changeStatus): RedirectResponse
     {
-        $order = $changeStatus->execute($request->orderId(), $request->statusKind());
+        $changeStatus->execute($request->orderId(), $request->statusKind());
 
-        return response()->json([
-            'status' => 200,
-            'is_issued' => $order->issueStatus()->value,
-            'is_ordered' => $order->orderStatus()->value,
-        ]);
+        return back();
     }
 
     /**
@@ -155,6 +178,23 @@ final class OrderController extends Controller
                 $document->fileName,
             ),
         ]);
+    }
+
+    /**
+     * 税区分の選択肢。Svelte 側で扱いやすいよう {value, label} の配列にする
+     * (Blade には value => label のマップで渡していた)。
+     *
+     * @return list<array{value: int, label: string}>
+     */
+    private function taxOptions(): array
+    {
+        $options = [];
+
+        foreach (TaxRate::options() as $value => $label) {
+            $options[] = ['value' => $value, 'label' => $label];
+        }
+
+        return $options;
     }
 
     /**

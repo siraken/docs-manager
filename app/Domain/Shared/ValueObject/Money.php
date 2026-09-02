@@ -11,7 +11,7 @@ use App\Domain\Shared\Exception\InvalidValueException;
  *
  * 税額の計算で小数が出るため、内部計算は float で行い境界で丸める。
  * 丸めは切り捨て (floor) —— 発注書の消費税は端数切り捨てが一般的で、
- * フロント (order-form.ts) も同じ値になるよう表示側で揃える。
+ * 画面 (OrderLines.svelte) の表示もこれに揃えてある。
  *
  * TODO: 端数処理は本来 settings (companies.tax_round) から引くべき設定値。
  *       マスタ画面が未実装のため、いまは切り捨て固定にしている。

@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 13 + Blade + Tailwind CSS v4 のサーバーサイドレンダリング構成で、一部に Svelte/TypeScript を後付けしている。UI・コード内コメントは日本語。
+Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 13 + Tailwind CSS v4。UI・コード内コメントは日本語。
+
+**画面は Blade から Inertia + Svelte 5 へ移行中**。発注書の 4 画面が移行済みで、残りはまだ Blade。混在の作法は「フロントエンドの構成」を参照。
 
 Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げてきた（1 メジャー = 1 PR）。**現在 13 で、アップグレードは完了している。**
 
@@ -104,6 +106,17 @@ just sail-test                                 # Sail 経由 (MySQL)
 
 `uses(TestCase::class)->in('Feature')` と `uses(RefreshDatabase::class)->in('Feature')` も `tests/Pest.php` で設定している。
 
+**Inertia の画面は `viewData()` ではなく props を見る**。`viewData()` は Blade のビューにしか使えない。
+
+```php
+$this->get('/orders')->assertInertia(fn (AssertableInertia $page) => $page
+    ->component('Orders/Index')
+    ->has('orders', 1)
+    ->where('orders.0.orderNo', 'ALIVE-1'));
+```
+
+`config/inertia.php` で `ensure_pages_exist` を有効にしてあるので、`component()` はページの実在も確認する（`resources/ts/Pages` を探す）。ページ名の打ち間違いがテストで落ちる。
+
 **ドメイン層は Laravel に依存しないので Unit テストで書ける**。`tests/Unit/` にある Money / TaxRate / ProjectStatus / OrderNo / TwoFactorSecret / Order / TravelExpense のテストはフレームワークを起動せずに動く。金額計算やステータス遷移のような業務ルールはここに書き、HTTP の配線は Feature に書く。
 
 **PHPUnit 12**（12.5.33）。`phpunit.xml` で `DB_CONNECTION=sqlite` / `DB_DATABASE=:memory:` を指定しているため、テストは MySQL を必要とせず Sail を起動しなくても回る。DB を使うテストは `RefreshDatabase` を付ける。設定は PHPUnit 10 で入った形式（`<coverage>` ではなく `<source>`）のままで 12 でもそのまま通る。
@@ -147,14 +160,15 @@ Vite は ESM 前提なので `require()` は使えない。バンドル対象の
 - `svelte.config.js` は `vitePreprocess()` だけ。`<script lang="ts">` はこれを通して Vite（8 では Oxc）が処理する
 - **`tsc` は `.svelte` の中身を見ない**。型を担保するのは `svelte-check` なので、`just check` は両方走らせる。`resources/ts/types/svelte.d.ts` の `declare module "*.svelte"` は「import できること」を tsc に教えるだけのもの（SvelteKit を使っていないと降ってこないため自前で置いている）
 
-### 発注書の明細テーブル (order-form.ts)
+### 発注書の明細テーブル (OrderLines.svelte)
 
-金額計算・行の追加/削除・ドラッグでの並べ替えは `resources/ts/lib/order-form.ts` が担当する。**jQuery / jquery-ui は削除済み**で、素の DOM API と HTML5 の Drag and Drop で書かれている。
+金額計算・行の追加/削除・ドラッグでの並べ替えは `resources/ts/components/OrderLines.svelte` が担当する。
 
-- 各欄は `name` 属性で引く（`qty[]` / `cost[]` / `tax[]` / `price[]`）。**行ごとの id は持たせていない**。以前は `id="qty_0"` のような添字付き id を振って `for` で回していたが、行を削除しても添字が詰まらず、生きている行を id の存在チェックで拾い直す作りになっていた
-- **金額欄 (`price[]`) に入るのは税込金額**。列見出しが「金額」で、小計・消費税・合計は別の行に出しているため
-- **フロントの計算結果はサーバーに送っても使われない**。保存される金額は `Domain\Order\Entity\OrderLine` が数量・単価・税区分から計算し直す（`SaveOrderRequest` は `price[]` / `subtotal` / `taxTotal` / `totalPrice` を読まない）。ここの計算式を変えるときは `OrderLine` 側も合わせること。税率の定義は `Domain\Order\ValueObject\TaxRate` が正
-- **`draggable` は掴む直前に立てる**。`pointerdown` の位置が入力欄なら `false`、それ以外なら `true` にする。常時 `true` にすると入力欄の文字選択がドラッグに横取りされる（jquery-ui の `cancel` 既定と同じ考え方）
+移行の経緯: jQuery + jquery-ui → 素の DOM API (`lib/order-form.ts`) → Svelte。DOM を走査していた頃は行が状態として存在せず、追加は `<template>` の複製、並べ替えは DOM の付け替えで表現していた。いまは行が配列なので、どれも配列操作になる。
+
+- **行の型は `lib/order-line.ts` の `OrderLineDraft`**。数量も単価も文字列で持つ（input の値がそのまま入るため、"1," のような途中の入力を保持できる必要がある）
+- **表示している金額は画面のためだけのもの**。保存される金額は `Domain\Order\Entity\OrderLine` が数量・単価・税区分から計算し直す（フォームは金額を送らない）。`OrderLines.svelte` の `TAX_RATES` は表示用の写しで、正は `Domain\Order\ValueObject\TaxRate`
+- **`draggable` は掴む直前に立てる**。`pointerdown` の位置が入力欄なら立てない。常時 `true` にすると入力欄の文字選択がドラッグに横取りされる（jquery-ui の `cancel` 既定と同じ考え方）
 - `dragover` で `preventDefault()` を呼ばないとドロップ先として認識されない。Firefox は `dataTransfer` に何か入れないとドラッグ自体が始まらない
 
 ### スタイル (Tailwind CSS v4)
@@ -171,6 +185,8 @@ Bootstrap 5 は削除済み。**Tailwind CSS v4** の CSS-first 構成で、`tai
 ### Blade コンポーネントと Alpine.js
 
 Tailwind は CSS しか提供しないので、Bootstrap の JS コンポーネント（modal / dropdown / collapse / toast）は **Alpine.js** に置き換えてある（`resources/ts/lib/alpine.ts` で `Alpine.start()`）。
+
+**移行中はこれらと同じ UI が Svelte 側 (`resources/ts/components/ui/`) にもある**。Inertia に移した画面はそちらを使う。どちらかだけを直すと見た目がずれるので、共通の見た目を変えるときは両方を直すこと。移行が終われば Blade 側は消える。
 
 再利用する UI は `resources/views/components/` の匿名 Blade コンポーネントにまとめてある。`x-button` / `x-input` / `x-select` / `x-textarea` / `x-label` / `x-card` / `x-table` / `x-badge` / `x-toggle` / `x-empty-state` / `x-page-header` / `x-dropdown`（+ `x-dropdown-item` / `x-dropdown-divider`）/ `x-modal` / `x-flash` / `x-order-status` / `x-order-row`。それ以外はユーティリティを直書きする。
 
@@ -197,6 +213,19 @@ MySQL を立てずに画面を確認したいときは sqlite に向けられる
 
 ```bash
 php -S 127.0.0.1:8123 -t public <ルーターPHP>   # DB_CONNECTION / DB_DATABASE を env で渡す
+```
+
+**ルーター PHP を省いて `public/index.php` を直接渡してはいけない**。ルータースクリプトを指定すると静的ファイルもそれを通るため、ビルド済みの JS/CSS まで Laravel に流れ、`login` ミドルウェアが 302 を返す。HTML は普通に返るので curl での確認は通ってしまい、**ブラウザで開くと画面が真っ白**になる。ルーターは実ファイルがあるパスで `false` を返して内蔵サーバーに配信させること。
+
+```php
+$root = __DIR__ . '/public';
+$path = urldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+
+if ($path !== '/' && is_file($root . $path)) {
+    return false;   // 静的ファイルは内蔵サーバーに任せる
+}
+
+require_once $root . '/index.php';
 ```
 
 `config:cache` していなければ、実プロセスの環境変数は `.env` より優先される（Laravel は `Dotenv::createImmutable` を使う）。
@@ -441,15 +470,55 @@ Laravel の `SoftDeletes` は使わず、`order_headers.is_deleted` (integer) �
 
 ### フロントエンドの構成
 
-主体は **Blade + Tailwind + Alpine**。**Svelte 5** は「Blade が描いた DOM の特定の場所に差し込む島」として同居している。SvelteKit は使っていない（SPA ではなく、ルーティングは Laravel が持つ）。
+**Inertia + Svelte 5 へ移行中で、いまは Blade と混在している。**
 
-- **マウントは `resources/ts/app.ts` の `ISLANDS` に集約する**。マウント先が無い画面では何もしない。以前は React コンポーネントが各ファイル末尾で自分をマウントしていたが、どこに何が生えるのか追えなかったため一箇所にまとめた
-- 現在の島は `ProjectsModal.svelte`（`#projects-modal`、案件フォームの受注前確認）**1 つだけ**
-- Svelte コンポーネントは `resources/ts/components/` に置く。`resources/ts/` の外に出すと Tailwind の `@source` を足す必要が出る
-- **Svelte 5 は runes で書く**（`$state` / `$derived` / `$effect`）。DOM の更新はマイクロタスクにまとめられるため、**テストやコンソールから状態を変えた直後に同期で DOM を読むと更新前の値が返る**（`await tick()` 相当の待機を挟むこと）
-- `resources/ts/lib/novalumo.ts` は `window.novalumo` として公開され、Blade の inline スクリプトから呼ばれる
+| | 画面 |
+| --- | --- |
+| Inertia + Svelte | 発注書（一覧・ごみ箱・フォーム・詳細） |
+| Blade + Alpine | それ以外（顧客・案件・ユーザー・出張申請・旅費精算・設定・ダッシュボード・ログイン・ファイル・Academy） |
+
+SvelteKit は使っていない。ルーティングは Laravel が持ち、Inertia がページを差し替える。
+
+### 混在させる仕組み
+
+読み込まれる JS はどちらの画面でも `resources/ts/app.ts` ひとつ。**`#app`（Inertia のマウント先）の有無で分岐**している。
+
+```ts
+if (document.getElementById("app")) {
+    createInertiaApp({ ... });   // Inertia の画面
+} else {
+    // Blade の画面: Alpine と「島」(ProjectsModal) が動く
+}
+```
+
+- ルートテンプレートは 2 枚並存する。Inertia は `resources/views/app.blade.php`、Blade の画面は従来の `layouts/default.blade.php`。**ナビの見た目を揃えておく必要がある**（`Layouts/Default.svelte` が Blade 版の移植）
+- 移行が終われば `app.ts` の else 側、Alpine、`layouts/default.blade.php`、`components/*.blade.php` がまとめて消える
+
+### ディレクトリ
+
+```
+resources/ts/
+├── Pages/           Inertia のページ。ファイル名がそのまま Inertia::render() の名前
+│   └── Orders/      Index / Trash / Form / Show
+├── Layouts/         Default.svelte (ナビ・トースト)
+├── components/
+│   ├── ui/          Blade の x-* を移植したもの (Button/Card/Input/Table/…)
+│   ├── OrderLines.svelte      明細テーブル (旧 lib/order-form.ts)
+│   ├── OrderStatusPill.svelte ステータスピル (旧 lib/status.ts)
+│   └── ProjectsModal.svelte   Blade 側の島。移行が済むまで残る
+└── lib/             order-types.ts (サーバーが渡す JSON の型) など
+```
+
+### 書くときの約束
+
+- **Svelte 5 は runes で書く**（`$state` / `$derived` / `$effect`）。DOM の更新はマイクロタスクにまとめられるため、**状態を変えた直後に同期で DOM を読むと更新前の値が返る**
+- **内部の画面へのリンクは Inertia 遷移にする**。`Button` / `DropdownItem` は `href` を渡すと `use:inertia` が付く。素のリンクにしたいときは `external` を渡す。**PDF / CSV のダウンロードは必ず `external`**（Inertia の遷移は XHR になり、ファイルを受け取れない）
+- **画面から参照する URL はサーバー側で組む**。Ziggy のようなルートヘルパは入れていない。一覧の各行のリンクは ViewModel の `urls` に、ナビやユーザーメニューは共有データに入っている
+- **ViewModel は `JsonSerializable` を実装する**。Inertia は props を JSON にして渡すので、メソッド (`displayName()`) の結果もプロパティとして出す必要がある。PHP 側の `jsonSerialize()` と `resources/ts/lib/order-types.ts` は対になっているので、片方を変えたらもう片方も直すこと
+- **フラッシュのトーストは Svelte の `transition:` を使わない**。Inertia はレイアウトを保持したままページを差し替えるため、表示条件が変わる瞬間にトランジションが中断され、opacity 0 の要素が DOM に残ることがあった。出現は CSS アニメーション (`.toast-enter`)、消すときは DOM から取り除く
+- `resources/ts/lib/novalumo.ts` は `window.novalumo` として公開され、Blade の inline スクリプトから呼ばれる。Blade の画面が無くなったら不要になる
 - **React は削除済み**: 生きていたのは `ProjectsModal` 1 つだけで、react-router の `<App />`（ダッシュボードの二重描画の原因）と `Calc` / `Example`（マウント先が存在しない）は死にコードだった
-- **Inertia は削除済み**: 一度も使われていなかったため、Laravel 11 化の際に composer の `inertiajs/inertia-laravel` と `HandleInertiaRequests` ミドルウェアごと削除した（npm 側の `@inertiajs/*` は Vite 移行時に削除済み）
+- **Inertia は一度削除して入れ直している**: 使われていなかったため Laravel 11 化の際に外したが、今回の移行で再導入した
 
 ## デプロイ / CI
 

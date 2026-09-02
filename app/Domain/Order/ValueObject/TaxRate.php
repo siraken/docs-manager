@@ -9,9 +9,9 @@ use App\Domain\Shared\Exception\InvalidValueException;
 /**
  * 明細行の税区分。
  *
- * 値は order_details.tax_id に入る整数で、選択肢は Blade の x-order-row と
- * フロントの order-form.ts (TAX_RATES) に同じものが定義されている。
- * 3 箇所に散っていた定義のうち、サーバー側の正はここ。
+ * 値は order_details.tax_id に入る整数。表示用の税率は画面側
+ * (OrderLines.svelte の TAX_RATES) にも同じ値があるが、保存される金額を決めるのは
+ * こちらなので、変えるときはサーバー側を正とする。
  *
  * TODO: 税区分は本来マスタとして持つべきもので、軽減税率の追加・廃止に
  *       追随できるようにテーブル化したい。いまは登場する 5 種類を enum で

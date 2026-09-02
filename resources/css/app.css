@@ -49,3 +49,24 @@
         font-variant-numeric: tabular-nums;
     }
 }
+
+/* フラッシュメッセージのトースト。
+
+   Svelte の transition: ディレクティブは使っていない。Inertia はレイアウトを
+   保持したままページを差し替えるため、表示条件が変わる瞬間にトランジションが
+   中断され、opacity 0 の要素が DOM に残ったままになることがあった。
+   出現だけを CSS アニメーションにして、消えるときは DOM から取り除く。 */
+@keyframes toast-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -0.5rem);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.toast-enter {
+    animation: toast-in 200ms ease-out;
+}

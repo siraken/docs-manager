@@ -2,6 +2,7 @@
 
 use App\Infrastructure\Persistence\Eloquent\Models\OrderDetail;
 use App\Infrastructure\Persistence\Eloquent\Models\OrderHeader;
+use Inertia\Testing\AssertableInertia;
 
 /**
  * 発注書のリグレッションテスト。
@@ -9,6 +10,9 @@ use App\Infrastructure\Persistence\Eloquent\Models\OrderHeader;
  * 論理削除が is_deleted カラムの手動運用であることなど、フレームワーク標準から
  * 外れた挙動を固定する。金額の計算がサーバー側に移ったこと、編集で id が
  * 変わらなくなったことも、ここで押さえている。
+ *
+ * 画面は Inertia + Svelte なので、描画結果ではなく Svelte へ渡る props を見る
+ * (viewData() は Blade のビューにしか使えない)。
  */
 
 beforeEach(function () {
@@ -19,12 +23,12 @@ test('一覧には削除済みが含まれない', function () {
     createHeader(['order_no' => 'ALIVE-1']);
     createHeader(['order_no' => 'TRASHED-1', 'is_deleted' => 1]);
 
-    $response = $this->get('/orders');
-
-    $response->assertOk();
-    $orders = $response->viewData('orders');
-    expect($orders)->toHaveCount(1)
-        ->and($orders[0]->orderNo)->toBe('ALIVE-1');
+    $this->get('/orders')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Orders/Index')
+            ->has('orders', 1)
+            ->where('orders.0.orderNo', 'ALIVE-1'));
 });
 
 test('is_deletedがNULLの行も一覧に出る', function () {
@@ -32,10 +36,9 @@ test('is_deletedがNULLの行も一覧に出る', function () {
     // NULL 行を落としていた。
     createHeader(['order_no' => 'NULL-FLAG', 'is_deleted' => null]);
 
-    $orders = $this->get('/orders')->viewData('orders');
-
-    expect($orders)->toHaveCount(1)
-        ->and($orders[0]->orderNo)->toBe('NULL-FLAG');
+    $this->get('/orders')->assertInertia(fn (AssertableInertia $page) => $page
+        ->has('orders', 1)
+        ->where('orders.0.orderNo', 'NULL-FLAG'));
 });
 
 test('ゴミ箱には削除済みだけが表示される', function () {
@@ -43,12 +46,12 @@ test('ゴミ箱には削除済みだけが表示される', function () {
     createHeader(['order_no' => 'ALIVE-1']);
     createHeader(['order_no' => 'TRASHED-1', 'is_deleted' => 1]);
 
-    $response = $this->get('/orders/trash');
-
-    $response->assertOk();
-    $orders = $response->viewData('orders');
-    expect($orders)->toHaveCount(1)
-        ->and($orders[0]->orderNo)->toBe('TRASHED-1');
+    $this->get('/orders/trash')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Orders/Trash')
+            ->has('orders', 1)
+            ->where('orders.0.orderNo', 'TRASHED-1'));
 });
 
 test('発注書を作成するとヘッダーと明細が保存される', function () {
@@ -221,34 +224,38 @@ test('詳細画面が表示できる', function () {
         'price' => 1100,
     ]);
 
-    $response = $this->get('/orders/view/' . $header->id);
-
-    $response->assertOk();
-    $response->assertSee('商品A');
-    $response->assertSee($customer->name);
+    $this->get('/orders/view/' . $header->id)
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Orders/Show')
+            ->where('order.orderNo', $header->order_no)
+            ->where('order.customerName', $customer->name)
+            ->has('order.lines', 1)
+            ->where('order.lines.0.itemName', '商品A'));
 });
 
 // --- ステータス変更 ---------------------------------------------------
 
 test('発行ステータスは押すたびに未発行と発行済みを往復する', function () {
+    // 移行前は JSON を返していたが、Inertia では元のページへ戻す (back())。
+    // フロントはリダイレクト先の props で新しい状態を受け取る。
     $header = createHeader(['is_issued' => 0]);
 
-    $this->postJson('/orders/set-status', ['id' => $header->id, 'type' => 'issued'])
-        ->assertOk()
-        ->assertJson(['status' => 200, 'is_issued' => 1]);
+    $this->from('/orders')->post('/orders/set-status', ['id' => $header->id, 'type' => 'issued'])
+        ->assertRedirect('/orders');
 
     expect((int) OrderHeader::find($header->id)->is_issued)->toBe(1);
 
-    $this->postJson('/orders/set-status', ['id' => $header->id, 'type' => 'issued'])
-        ->assertJson(['is_issued' => 0]);
+    $this->from('/orders')->post('/orders/set-status', ['id' => $header->id, 'type' => 'issued']);
+
+    expect((int) OrderHeader::find($header->id)->is_issued)->toBe(0);
 });
 
 test('受注ステータスは未受注→受注済み→失注→未受注と巡回する', function () {
     $header = createHeader(['is_ordered' => 0]);
 
     foreach ([1, 2, 0] as $expected) {
-        $this->postJson('/orders/set-status', ['id' => $header->id, 'type' => 'ordered'])
-            ->assertJson(['is_ordered' => $expected]);
+        $this->from('/orders')->post('/orders/set-status', ['id' => $header->id, 'type' => 'ordered']);
 
         expect((int) OrderHeader::find($header->id)->is_ordered)->toBe($expected);
     }
@@ -259,11 +266,13 @@ test('ステータス変更はクライアントの申告した現在値に依�
     // 画面が古いと保存結果がずれた。
     $header = createHeader(['is_issued' => 1]);
 
-    $this->postJson('/orders/set-status', [
+    $this->from('/orders')->post('/orders/set-status', [
         'id' => $header->id,
         'type' => 'issued',
         'currentStatus' => 0, // 嘘の申告
-    ])->assertJson(['is_issued' => 0]);
+    ]);
+
+    expect((int) OrderHeader::find($header->id)->is_issued)->toBe(0);
 });
 
 test('未知のステータス種別は弾かれる', function () {

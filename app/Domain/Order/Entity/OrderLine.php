@@ -11,9 +11,9 @@ use App\Domain\Shared\ValueObject\Money;
  * 発注書の明細 1 行。
  *
  * 金額 (order_details.price) は**税込**で保存する。列見出しが「金額」で、
- * 小計・消費税・合計を別行に出しているため。フロント (order-form.ts) の
- * calcAll() と同じ計算式をここに置いており、保存される金額はこの計算結果が正。
- * フォームから送られてくる price[] は画面表示用であり、信用しない。
+ * 小計・消費税・合計を別行に出しているため。画面 (OrderLines.svelte) も同じ式で
+ * 金額を出すが、そちらは表示のためだけのもので、保存される金額はこの計算結果が正。
+ * フォームは金額を送ってこない。
  */
 final readonly class OrderLine
 {

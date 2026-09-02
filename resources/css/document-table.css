@@ -1,6 +1,6 @@
 /* 発注書の明細テーブル。行の枠線・ドラッグ中の見た目・削除ボタンのホバー表示
    だけをここで持つ。セル内の input / select の見た目は Blade 側のユーティリティ
-   で指定する。並べ替えは order-form.ts が HTML5 の Drag and Drop で行う。 */
+   で指定する。並べ替えは OrderLines.svelte が HTML5 の Drag and Drop で行う。 */
 .document-table {
     border-collapse: collapse;
     margin-bottom: 1.5rem;

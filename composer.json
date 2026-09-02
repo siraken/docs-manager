@@ -8,13 +8,14 @@
     ],
     "license": "MIT",
     "require": {
+        "php": "^8.3",
         "google/apiclient": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
+        "inertiajs/inertia-laravel": "^3.3",
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
         "michelf/php-markdown": "^1.9",
-        "php": "^8.3",
         "setasign/fpdi": "^2.3",
         "setasign/fpdi-tcpdf": "^2.3",
         "tecnickcom/tcpdf": "^6.4"
