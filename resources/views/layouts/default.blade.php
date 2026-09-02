@@ -7,8 +7,7 @@
     <meta name="robots" content="noindex" />
     <meta name="googlebot" content="nofollow" />
     <title>管理ツール</title>
-    @viteReactRefresh
-    @vite(['resources/css/app.css', 'resources/ts/app.tsx'])
+    @vite(['resources/css/app.css', 'resources/ts/app.ts'])
 </head>
 
 <body class="flex min-h-full flex-col">
@@ -113,7 +112,6 @@
 
     <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
         @yield('page')
-        <div id="app"></div>
     </main>
 
     <form name="toBeLoggedOut" method="POST" action="{{ route('logout') }}">
