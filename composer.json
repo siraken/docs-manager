@@ -10,13 +10,12 @@
     "require": {
         "google/apiclient": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
-        "inertiajs/inertia-laravel": "^0.6.2",
-        "laravel/framework": "^10.0",
-        "laravel/sanctum": "^3.2",
+        "laravel/framework": "^11.0",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.5",
         "laravel/ui": "^4.0",
         "michelf/php-markdown": "^1.9",
-        "php": "^8.1",
+        "php": "^8.2",
         "setasign/fpdi": "^2.3",
         "setasign/fpdi-tcpdf": "^2.3",
         "tecnickcom/tcpdf": "^6.4"
@@ -25,8 +24,8 @@
         "fakerphp/faker": "^1.9.1",
         "laravel/sail": "^1.13",
         "mockery/mockery": "^1.4.4",
-        "nunomaduro/collision": "^7.0",
-        "phpunit/phpunit": "^10.0",
+        "nunomaduro/collision": "^8.1",
+        "phpunit/phpunit": "^11.0",
         "spatie/laravel-ignition": "^2.0"
     },
     "autoload": {
@@ -64,6 +63,11 @@
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
-        "sort-packages": true
+        "sort-packages": true,
+        "policy": {
+            "advisories": {
+                "ignore-id": ["PKSA-mdq4-51ck-6kdq", "PKSA-m5cs-t1y6-qpcs", "PKSA-3r5d-mb8f-1qw9"]
+            }
+        }
     }
 }
