@@ -1,15 +1,17 @@
 <?php
 
-use App\Models\OrderDetail;
-use App\Models\OrderHeader;
-use App\Models\Travel;
+use App\Infrastructure\Persistence\Eloquent\Models\OrderDetail;
+use App\Infrastructure\Persistence\Eloquent\Models\OrderHeader;
+use App\Infrastructure\Persistence\Eloquent\Models\Setting;
+use App\Infrastructure\Persistence\Eloquent\Models\Travel;
 
 /**
- * PDF / CSV 出力のスモークテスト。
+ * PDF / CSV 出力のテスト。
  *
- * これらのアクションは Laravel の Response を返さず、TCPDF の Output() や
- * readfile() で直接出力する。PHP や依存ライブラリのバージョンを上げた際に
- * 例外なく生成できることを担保するのが目的で、レイアウトの検証はしない。
+ * 移行前はこれらのアクションが Laravel の Response を返さず、TCPDF の Output() や
+ * readfile() で直接出力していたため、出力バッファを掴まないと検証できず、
+ * CSV に至っては "headers already sent" で検証自体が不可能だった。
+ * いまはどちらも通常のレスポンスとして返るので、素直に本文を見られる。
  */
 
 beforeEach(function () {
@@ -29,7 +31,7 @@ function createOrderWithDetail(string $orderNo = 'NO-001'): OrderHeader
         'unit' => '個',
         'cost' => 1000,
         'tax_id' => 1,
-        'price' => 1000,
+        'price' => 1100,
     ]);
 
     return $header;
@@ -38,15 +40,45 @@ function createOrderWithDetail(string $orderNo = 'NO-001'): OrderHeader
 test('発注書のPDFが生成される', function () {
     $header = createOrderWithDetail();
 
-    ob_start();
-    try {
-        $this->get('/orders/pdf/' . $header->id);
-    } finally {
-        $output = ob_get_clean();
-    }
+    $response = $this->get('/orders/pdf/' . $header->id);
 
-    expect($output)->toStartWith('%PDF-')
-        ->and(strlen($output))->toBeGreaterThan(1000);
+    $response->assertOk();
+    $response->assertHeader('Content-Type', 'application/pdf');
+    expect($response->getContent())->toStartWith('%PDF-')
+        ->and(strlen($response->getContent()))->toBeGreaterThan(1000);
+});
+
+test('PDFのファイル名は発注書番号になる', function () {
+    $header = createOrderWithDetail('NO-2026-001');
+
+    $this->get('/orders/pdf/' . $header->id)
+        ->assertHeader('Content-Disposition', 'inline; filename="NO-2026-001.pdf"');
+});
+
+test('顧客が削除済みでもPDFは生成できる', function () {
+    // 移行前は宛先の顧客を無条件に参照していたため 500 になっていた
+    $header = createHeader(['customer_id' => 999]);
+
+    $this->get('/orders/pdf/' . $header->id)->assertOk();
+});
+
+test('PDFの差出人欄には保存済みの自社情報が使われる', function () {
+    Setting::create([
+        'name' => 'テスト商会',
+        'zipcode' => '100-0001',
+        'address' => "東京都千代田区1-1\n2階",
+        'rep' => '代表 太郎',
+        'tel_no' => '03-0000-0000',
+        'logo_url' => '',
+        'com_stamp_url' => '',
+        'rep_stamp_url' => '',
+        'apply_stamp_url' => '',
+    ]);
+
+    $header = createOrderWithDetail();
+
+    // 内容の座標までは検証しない。設定を読んでも例外なく生成できることを見る
+    $this->get('/orders/pdf/' . $header->id)->assertOk();
 });
 
 test('出張申請のPDFがテンプレートから生成される', function () {
@@ -61,36 +93,29 @@ test('出張申請のPDFがテンプレートから生成される', function ()
         'apply_person' => 'テスト太郎',
     ]);
 
-    ob_start();
-    try {
-        $this->get('/trips/pdf/' . $travel->id);
-    } finally {
-        $output = ob_get_clean();
-    }
+    $response = $this->get('/trips/pdf/' . $travel->id);
 
-    expect($output)->toStartWith('%PDF-');
+    $response->assertOk();
+    expect($response->getContent())->toStartWith('%PDF-');
 });
 
 test('発注書のCSVが出力される', function () {
-    $this->markTestIncomplete(
-        'csv() は Laravel の Response を使わず素の header() を呼ぶため、'
-        . 'テストランナーが既に出力している状態では "headers already sent" になり検証できない。'
-        . '実 HTTP では動作する。Response 返却に書き換えればこのテストを有効化できる。'
-    );
-
     $header = createOrderWithDetail('CSV-001');
 
-    ob_start();
-    try {
-        $this->get('/orders/csv/' . $header->id);
-    } finally {
-        $output = ob_get_clean();
-    }
+    $response = $this->get('/orders/csv/' . $header->id);
 
-    expect($output)->toContain('商品A')->toContain('slip_id');
+    $response->assertOk();
+    $response->assertHeader('Content-Disposition', 'attachment; filename="CSV-001.csv"');
+
+    $csv = $response->getContent();
+    expect($csv)->toContain('order_no')
+        ->toContain('item_name')
+        ->toContain('商品A')
+        ->toContain('CSV-001');
 });
 
-test('明細のない発注書のCSV出力は失敗する', function () {
+test('明細のない発注書もCSVを出力できる', function () {
+    // 移行前は $details[0] を無条件に参照していたため ErrorException で落ちていた
     $customer = createCustomer();
     $header = createHeader([
         'customer_id' => $customer->id,
@@ -101,15 +126,26 @@ test('明細のない発注書のCSV出力は失敗する', function () {
         'remarks' => null,
     ]);
 
-    // csv() は $details[0] を無条件に参照するため、明細が無いと落ちる。
-    // 現状の挙動を記録しておく。
-    $this->withoutExceptionHandling();
-    $this->expectException(ErrorException::class);
+    $response = $this->get('/orders/csv/' . $header->id);
 
-    ob_start();
-    try {
-        $this->get('/orders/csv/' . $header->id);
-    } finally {
-        ob_get_clean();
-    }
+    $response->assertOk();
+    $csv = $response->getContent();
+    expect($csv)->toContain('EMPTY-001')
+        // ヘッダー行 + データ 1 行
+        ->and(substr_count(trim($csv), "\n"))->toBe(1);
+});
+
+test('CSV出力はカレントディレクトリにファイルを残さない', function () {
+    // 移行前は './' . $order_no . '.csv' を作ってから readfile + unlink していた
+    $header = createOrderWithDetail('SIDE-EFFECT');
+
+    $before = scandir(base_path());
+    $this->get('/orders/csv/' . $header->id)->assertOk();
+    $after = scandir(base_path());
+
+    expect(array_diff($after, $before))->toBe([]);
+});
+
+test('存在しない発注書のPDFは404になる', function () {
+    $this->get('/orders/pdf/999')->assertNotFound();
 });

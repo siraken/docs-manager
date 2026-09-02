@@ -2,11 +2,20 @@
 
 namespace Database\Factories;
 
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 class UserFactory extends Factory
 {
+    /**
+     * Eloquent モデルは Infrastructure 層に置いてあり、
+     * 「App\Models\User に対する UserFactory」という規約から外れるため明示する。
+     *
+     * @var class-string<User>
+     */
+    protected $model = User::class;
+
     /**
      * Define the model's default state.
      *

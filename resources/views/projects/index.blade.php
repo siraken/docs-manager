@@ -25,15 +25,15 @@
         @foreach ($projects as $row)
             <tr class="transition hover:bg-slate-50">
                 <td class="px-4 py-3">
-                    <a href="{{ route('projects.edit', ['id' => $row['id']]) }}"
-                       class="font-medium text-brand-700 hover:text-brand-900 hover:underline">{{ $row['name'] }}</a>
+                    <a href="{{ route('projects.edit', ['id' => $row->id]) }}"
+                       class="font-medium text-brand-700 hover:text-brand-900 hover:underline">{{ $row->name }}</a>
                 </td>
-                <td class="px-4 py-3 text-slate-600">{{ $row['client_id'] }}</td>
-                <td class="px-4 py-3"><x-badge>{{ $row['status'] }}</x-badge></td>
-                <td class="px-4 py-3 whitespace-nowrap text-slate-600 tabular">{{ date('Y/m/d', strtotime($row['start_date'])) }}</td>
-                <td class="px-4 py-3 whitespace-nowrap text-slate-600 tabular">{{ date('Y/m/d', strtotime($row['end_date'])) }}</td>
-                <td class="px-4 py-3 whitespace-nowrap text-slate-600 tabular">{{ date('Y/m/d', strtotime($row['payment_date'])) }}</td>
-                <td class="px-4 py-3 text-right font-semibold whitespace-nowrap text-slate-900 tabular">￥{{ number_format($row['price']) }}</td>
+                <td class="px-4 py-3 text-slate-600">{{ $row->clientId }}</td>
+                <td class="px-4 py-3"><x-badge>{{ $row->status }}</x-badge></td>
+                <td class="px-4 py-3 whitespace-nowrap text-slate-600 tabular">{{ $row->startDateLabel }}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-slate-600 tabular">{{ $row->endDateLabel }}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-slate-600 tabular">{{ $row->paymentDateLabel }}</td>
+                <td class="px-4 py-3 text-right font-semibold whitespace-nowrap text-slate-900 tabular">￥{{ $row->priceLabel }}</td>
             </tr>
         @endforeach
     </x-table>

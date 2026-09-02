@@ -1,10 +1,15 @@
 <?php
 
-use App\Http\Middleware\AddResponseHeaders;
-use App\Http\Middleware\LoginMiddleware;
+use App\Presentation\Http\Middleware\AddResponseHeaders;
+use App\Presentation\Http\Middleware\LoginMiddleware;
+use App\Domain\Shared\Exception\DomainException;
+use App\Domain\Shared\Exception\EntityNotFoundException;
+use App\Presentation\Http\Support\Flash;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -31,5 +36,18 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // ドメイン層はフレームワークを知らないので、HTTP への変換はここで行う。
+
+        // 対象が見つからない → 404
+        $exceptions->map(fn (EntityNotFoundException $e): NotFoundHttpException => new NotFoundHttpException($e->getMessage(), $e));
+
+        // 業務ルール違反 (値の不正、削除できない等) → 元の画面へ戻してメッセージを出す。
+        // API / fetch からの呼び出しには JSON で返す。
+        $exceptions->render(function (DomainException $e, Request $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+
+            return back()->withInput()->with(Flash::error($e->getMessage()));
+        });
     })->create();

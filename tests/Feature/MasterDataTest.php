@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\Customer;
-use App\Models\Project;
-use App\Models\User;
+use App\Infrastructure\Persistence\Eloquent\Models\Customer;
+use App\Infrastructure\Persistence\Eloquent\Models\Project;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 /**
@@ -26,6 +26,32 @@ test('ユーザーを作成するとパスワードがハッシュ化される',
     expect($created)->not->toBeNull()
         ->and($created->password)->not->toBe('plain-password')
         ->and(Hash::check('plain-password', $created->password))->toBeTrue();
+});
+
+test('新規登録画面が表示できる', function () {
+    // 移行前は 2FA リンクが route('users.2fa', ['id' => null]) を組もうとして
+    // Missing required parameter で 500 になっていた。
+    $this->get('/users/create')->assertOk();
+});
+
+test('パスワードが短すぎる場合は登録できない', function () {
+    $this->post('/users/create', [
+        'name' => '新規ユーザー',
+        'email' => 'new@example.com',
+        'password' => 'short',
+    ])->assertSessionHasErrors('password');
+
+    expect(User::where('email', 'new@example.com')->exists())->toBeFalse();
+});
+
+test('メールアドレスが重複する場合は登録できない', function () {
+    $this->post('/users/create', [
+        'name' => '重複ユーザー',
+        'email' => 'test@example.com', // createUser と同じ
+        'password' => 'plain-password',
+    ])->assertSessionHasErrors('email');
+
+    expect(User::count())->toBe(1);
 });
 
 test('パスワード未入力の編集では既存のハッシュが維持される', function () {
@@ -60,6 +86,7 @@ test('パスワードを入力した編集では新しいハッシュになる',
 
 test('NFCとウォレットアドレスは平文のまま保存される', function () {
     $user = createUser(['email' => 'edit@example.com']);
+    $wallet = walletAddress('abc');
 
     $this->post('/users/edit/' . $user->id, [
         'name' => '編集対象',
@@ -67,18 +94,89 @@ test('NFCとウォレットアドレスは平文のまま保存される', funct
         'password' => '',
         'nfc_serial_number' => 'AA:BB:CC',
         'nfc_pin' => '1234',
-        'wallet_address' => '0xabc',
+        'wallet_address' => $wallet,
     ]);
 
     // ログイン時に平文比較しているため、保存も平文である必要がある
     $updated = User::find($user->id)->makeVisible(['nfc_serial_number', 'nfc_pin']);
     expect($updated->nfc_serial_number)->toBe('AA:BB:CC')
         ->and($updated->nfc_pin)->toBe('1234')
-        ->and($updated->wallet_address)->toBe('0xabc');
+        ->and($updated->wallet_address)->toBe($wallet);
+});
+
+test('NFCのPIN未入力では既存のPINが維持される', function () {
+    $user = createUser([
+        'email' => 'edit@example.com',
+        'nfc_serial_number' => 'AA:BB:CC',
+        'nfc_pin' => '1234',
+    ]);
+
+    $this->post('/users/edit/' . $user->id, [
+        'name' => '編集対象',
+        'email' => 'edit@example.com',
+        'password' => '',
+        'nfc_serial_number' => 'DD:EE:FF',
+        'nfc_pin' => '',
+    ]);
+
+    $updated = User::find($user->id)->makeVisible(['nfc_serial_number', 'nfc_pin']);
+    expect($updated->nfc_serial_number)->toBe('DD:EE:FF')
+        ->and($updated->nfc_pin)->toBe('1234');
+});
+
+test('NFCシリアルを空にするとNFCログインが無効になる', function () {
+    $user = createUser([
+        'email' => 'edit@example.com',
+        'nfc_serial_number' => 'AA:BB:CC',
+        'nfc_pin' => '1234',
+    ]);
+
+    $this->post('/users/edit/' . $user->id, [
+        'name' => '編集対象',
+        'email' => 'edit@example.com',
+        'password' => '',
+        'nfc_serial_number' => '',
+    ]);
+
+    $updated = User::find($user->id)->makeVisible(['nfc_serial_number', 'nfc_pin']);
+    expect($updated->nfc_serial_number)->toBeNull()
+        ->and($updated->nfc_pin)->toBeNull();
+});
+
+test('形式が不正なウォレットアドレスは保存できない', function () {
+    $user = createUser(['email' => 'edit@example.com']);
+
+    $this->post('/users/edit/' . $user->id, [
+        'name' => '編集対象',
+        'email' => 'edit@example.com',
+        'password' => '',
+        'wallet_address' => '0xabc123', // 42 文字ではない
+    ])->assertSessionHasErrors('wallet_address');
+
+    expect(User::find($user->id)->wallet_address)->toBeNull();
 });
 
 test('ユーザー一覧が表示できる', function () {
     $this->get('/users')->assertOk();
+});
+
+test('ユーザーを削除できる', function () {
+    // 移行前は一覧に削除ボタンがあるのに、未定義の JS 関数を呼ぶだけで
+    // サーバー側の受け口も無かった。
+    $target = createUser(['email' => 'target@example.com']);
+
+    $this->delete('/users/delete/' . $target->id)->assertRedirect('/users');
+
+    expect(User::find($target->id))->toBeNull()
+        ->and(User::count())->toBe(1);
+});
+
+test('最後のユーザーは削除できない', function () {
+    $only = User::first();
+
+    $this->delete('/users/delete/' . $only->id);
+
+    expect(User::count())->toBe(1);
 });
 
 // --- 顧客 -----------------------------------------------------------
@@ -102,20 +200,38 @@ test('顧客を作成できる', function () {
         ->and((int) $customer->is_company)->toBe(1);
 });
 
-test('顧客編集はPOSTしても保存されない', function () {
-    $customer = new Customer();
-    $customer->name = '変更前';
-    $customer->is_company = 1;
-    $customer->save();
+test('顧客を編集できる', function () {
+    // 移行前は edit() に POST 分岐が無く、保存ボタンを押しても
+    // フォームを描き直すだけで何も起きなかった。
+    $customer = Customer::create(['name' => '変更前', 'is_company' => 1]);
 
     $this->post('/customers/edit/' . $customer->id, [
         'name' => '変更後',
         'is_company' => '1',
-    ]);
+        'email' => 'after@example.com',
+        'city' => '港区',
+    ])->assertRedirect('/customers');
 
-    // CustomerController::edit() には POST 分岐が無く、常に view を返すだけ。
-    // 現状の挙動 (保存されない) を記録する。
-    expect(Customer::find($customer->id)->name)->toBe('変更前');
+    $updated = Customer::find($customer->id);
+    expect($updated->name)->toBe('変更後')
+        ->and($updated->email)->toBe('after@example.com')
+        ->and($updated->city)->toBe('港区');
+});
+
+test('法人チェックを外すと個人になる', function () {
+    $customer = Customer::create(['name' => '法人', 'is_company' => 1]);
+
+    // チェックボックスは未チェックだと送信されない
+    $this->post('/customers/edit/' . $customer->id, ['name' => '個人']);
+
+    expect((int) Customer::find($customer->id)->is_company)->toBe(0);
+});
+
+test('顧客名が空だと保存できない', function () {
+    $this->post('/customers/create', ['name' => ''])
+        ->assertSessionHasErrors('name');
+
+    expect(Customer::count())->toBe(0);
 });
 
 test('顧客一覧が表示できる', function () {
@@ -135,38 +251,75 @@ test('案件を作成できる', function () {
         'payment_date' => '2027-01-31',
         'price' => 500000,
         'status' => 1,
-    ])->assertRedirect();
+    ])->assertRedirect('/projects');
 
     $project = Project::first();
     expect($project)->not->toBeNull()
         ->and($project->name)->toBe('テスト案件')
-        ->and((int) $project->price)->toBe(500000);
+        // price は移行前の $fillable から漏れていた
+        ->and((int) $project->price)->toBe(500000)
+        ->and((int) $project->status)->toBe(1);
 });
 
-test('案件一覧のステータス表示は壊れている', function () {
-    // ProjectController::index() は
+test('案件を編集できる', function () {
+    $project = Project::create(['name' => '変更前', 'status' => 0, 'price' => 100]);
+
+    $this->post('/projects/edit/' . $project->id, [
+        'name' => '変更後',
+        'price' => 200,
+        'status' => 3,
+    ])->assertRedirect('/projects');
+
+    $updated = Project::find($project->id);
+    expect($updated->name)->toBe('変更後')
+        ->and((int) $updated->price)->toBe(200)
+        ->and((int) $updated->status)->toBe(3);
+});
+
+test('案件一覧のステータス表示がフォームの選択肢と一致する', function () {
+    // 移行前は
     //   switch ($project->status) { case $project->status === 0: ... }
-    // と書かれており、case に真偽値が並んでいる (switch (true) の誤用)。
-    // status = 0 のとき最初の case (0 == true) が偽、次の case (0 == false) が
-    // 真になるため、「未着手」ではなく「進行中」と表示される。
-    //
-    // なおこの結果は値の型に依存する。PHP 8.1 で PDO SQLite が integer を
-    // native type で返すようになったため、PHP 7.4 時代 (string が返り
-    // status 1・2 が「未知」になっていた) とは挙動が変わっている。
-    // MySQL は元から integer を返すので、この結果が本番の挙動に近い。
-    foreach ([0, 1, 2] as $status) {
-        $p = new Project();
-        $p->name = '案件' . $status;
-        $p->status = $status;
-        $p->save();
+    // という switch (true) の誤用で、status = 0 が「進行中」と表示されていた。
+    // さらに一覧は 3 種類、フォームは 8 種類という食い違いもあった。
+    $expected = [
+        0 => '作業中',
+        1 => '完了',
+        2 => '連絡待ち',
+        3 => '保留',
+        4 => '打診中',
+        5 => 'メンテナンス',
+        6 => 'キャンセル',
+        7 => '見積中',
+    ];
+
+    foreach (array_keys($expected) as $status) {
+        Project::create(['name' => '案件' . $status, 'status' => $status]);
     }
 
     $response = $this->get('/projects');
     $response->assertOk();
 
     $projects = $response->viewData('projects')->keyBy('name');
-    // 0 は「未着手」であるべきだが「進行中」になる (これがバグ)
-    expect($projects['案件0']->status)->toBe('進行中')
-        ->and($projects['案件1']->status)->toBe('進行中')
-        ->and($projects['案件2']->status)->toBe('完了');
+
+    foreach ($expected as $status => $label) {
+        expect($projects['案件' . $status]->status)->toBe($label);
+    }
+});
+
+test('売上分析は指定した年月の案件だけを集計する', function () {
+    Project::create(['name' => '対象1', 'payment_date' => '2026-09-15', 'price' => 100000]);
+    Project::create(['name' => '対象2', 'payment_date' => '2026-09-30', 'price' => 200000]);
+    Project::create(['name' => '対象外', 'payment_date' => '2026-10-01', 'price' => 999999]);
+
+    $response = $this->get('/projects/analysis?type=payment_date&year=2026&month=9');
+
+    $response->assertOk();
+    expect($response->viewData('projects'))->toHaveCount(2)
+        ->and($response->viewData('total_price'))->toBe(300000);
+});
+
+test('集計対象にできない日付カラムは拒否される', function () {
+    // 移行前はリクエストの type をそのまま whereYear に渡していた。
+    $this->get('/projects/analysis?type=name')
+        ->assertRedirect();
 });

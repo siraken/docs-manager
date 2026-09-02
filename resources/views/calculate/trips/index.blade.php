@@ -44,19 +44,19 @@
 
         @foreach ($trips as $row)
             <tr class="transition hover:bg-slate-50">
-                <td class="px-4 py-3 align-middle whitespace-nowrap text-slate-600 tabular">{{ $row->apply_date }}</td>
-                <td class="px-4 py-3 align-middle font-medium text-slate-900">{{ $row->dir }}</td>
-                <td class="hidden px-4 py-3 align-middle text-slate-600 sm:table-cell">{{ mb_strimwidth($row->purpose, 0, 30, '...') }}</td>
-                <td class="hidden px-4 py-3 align-middle whitespace-nowrap text-slate-600 tabular sm:table-cell">{{ $row->date_from }}</td>
-                <td class="px-4 py-3 align-middle text-slate-600">{{ $row->apply_person }}</td>
+                <td class="px-4 py-3 align-middle whitespace-nowrap text-slate-600 tabular">{{ $row->applyDate }}</td>
+                <td class="px-4 py-3 align-middle font-medium text-slate-900">
+                    <a href="{{ route('trips.view', ['id' => $row->id]) }}"
+                       class="text-brand-700 hover:text-brand-900 hover:underline">{{ $row->destination }}</a>
+                </td>
+                <td class="hidden px-4 py-3 align-middle text-slate-600 sm:table-cell">{{ $row->shortPurpose() }}</td>
+                <td class="hidden px-4 py-3 align-middle whitespace-nowrap text-slate-600 tabular sm:table-cell">{{ $row->dateFrom }}</td>
+                <td class="px-4 py-3 align-middle text-slate-600">{{ $row->applyPerson }}</td>
                 <td class="px-4 py-3 text-right align-middle">
-                    <x-dropdown>
-                        <x-slot:trigger>
-                            <x-button size="sm" icon="gear-fill" aria-label="操作" />
-                        </x-slot:trigger>
-                        <x-dropdown-item :href="route('trips.pdf', ['id' => $row['id']])">PDF出力</x-dropdown-item>
-                        <x-dropdown-item :href="route('orders.delete', ['id' => $row['id']])">ごみ箱に入れる</x-dropdown-item>
-                    </x-dropdown>
+                    {{-- 移行前はここのドロップダウンに「ごみ箱に入れる」があり、
+                         リンク先が発注書の削除ルート (orders.delete) を指していた。
+                         出張申請に削除機能は無いため外してある。 --}}
+                    <x-button :href="route('trips.pdf', ['id' => $row->id])" size="sm" icon="file-earmark-pdf">PDF</x-button>
                 </td>
             </tr>
         @endforeach

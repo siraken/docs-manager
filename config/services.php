@@ -30,4 +30,24 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    /*
+     * freee 会計 API。
+     * 移行前は freeeController が env() を直接読んでいたため、config:cache 済みの
+     * 環境では値が取れなかった (env() は .env を読み直さない)。config 経由に寄せている。
+     */
+    'freee' => [
+        'client_id' => env('FREEE_API_CLIENT_ID'),
+        'client_secret' => env('FREEE_API_CLIENT_SECRET'),
+        'token' => env('FREEE_API_TOKEN'),
+        'refresh_token' => env('FREEE_API_REFRESH_TOKEN'),
+        'company_id' => env('FREEE_API_COMPANY_ID'),
+    ],
+
+    /*
+     * Google スプレッドシート連携。認証情報は resources/json/credentials.json。
+     */
+    'google_sheets' => [
+        'spreadsheet_id' => env('GOOGLE_SPREADSHEET_ID'),
+    ],
+
 ];

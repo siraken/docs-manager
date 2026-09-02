@@ -1,15 +1,14 @@
 <?php
 
-use App\Models\Travel;
-use App\Models\TravelExpense;
+use App\Infrastructure\Persistence\Eloquent\Models\Travel;
+use App\Infrastructure\Persistence\Eloquent\Models\TravelExpense;
 use Illuminate\Http\UploadedFile;
 
 /**
- * CSV 取り込み (TravelController / TravelExpenseController) のリグレッションテスト。
+ * CSV 取り込みのリグレッションテスト。
  *
  * SplFileObject の READ_CSV に依存しており、列は 0 始まりではなく
  * $row[1] から読まれる (先頭列は使われない) という癖がある。
- * PHP のバージョンを上げた際にこの読み取り結果が変わらないことを検出する。
  */
 
 beforeEach(function () {
@@ -40,7 +39,7 @@ function travelRow(string $dir = '東京', string $person = 'テスト太郎'): 
     ]) . "\n";
 }
 
-/** 旅費精算: 16 列必要 ($row[1]..$row[15]) */
+/** 旅費精算: 16 列必要 ($row[1]..$row[15])。末尾の合計は読まれない */
 function expenseRow(): string
 {
     return implode(',', [
@@ -83,26 +82,55 @@ test('headerパラメータが真なら1行目を読み飛ばす', function () {
         ->and(Travel::first()->dir)->toBe('東京');
 });
 
-test('headerを指定しなければ1行目もデータとして取り込まれる', function () {
+test('見出し行をデータとして読ませようとすると取り込み全体が失敗する', function () {
+    // 移行前は見出し行がそのまま 1 レコードとして保存され、日付カラムに
+    // "date_from" のような文字列が入っていた。日付として解釈できない行が
+    // あれば、その取り込みは丸ごと取り消す。
     $csv = "no,rel_id,dir,purpose,price,date_from,date_to,apply_date,apply_person\n" . travelRow();
 
-    $this->post('/trips/import', ['csv' => csvFile($csv)]);
+    $response = $this->post('/trips/import', ['csv' => csvFile($csv)]);
 
-    // 見出し行がそのまま 1 レコードとして入る
-    expect(Travel::count())->toBe(2)
-        ->and(Travel::orderBy('id')->first()->dir)->toBe('dir');
+    $response->assertRedirect('/trips');
+    $response->assertSessionHas('flash_status', 'danger');
+    expect(Travel::count())->toBe(0);
+});
+
+test('壊れた行があると1件も取り込まれない', function () {
+    $broken = implode(',', ['IGNORED', '1', '大阪', '打ち合わせ', '1000', 'not-a-date', '2026-09-11', '2026-09-01', '花子']) . "\n";
+
+    $this->post('/trips/import', ['csv' => csvFile(travelRow() . $broken)]);
+
+    // 正しい 1 行目もロールバックされる
+    expect(Travel::count())->toBe(0);
+});
+
+test('CSVファイルが無いとエラーになる', function () {
+    $this->post('/trips/import', [])->assertSessionHasErrors('csv');
 });
 
 test('出張旅費精算のCSVを取り込める', function () {
     $response = $this->post('/expenses/import', ['csv' => csvFile(expenseRow())]);
 
-    // 精算側もリダイレクト先は /trips (現状の挙動)
-    $response->assertRedirect('/trips');
+    // 移行前は精算の取り込みでも /trips に戻っていた
+    $response->assertRedirect('/expenses');
     expect(TravelExpense::count())->toBe(1);
 
     $expense = TravelExpense::first();
     expect($expense->dir)->toBe('東京')
         ->and($expense->apply_person)->toBe('テスト太郎')
         ->and((int) $expense->trans_fee)->toBe(1000)
+        // 合計は CSV の末尾ではなく内訳の和 (1000+2000+300+1500+800+3000)
         ->and((int) $expense->total_fee)->toBe(8600);
+});
+
+test('旅費精算の合計はCSVの申告ではなく内訳から計算される', function () {
+    $row = implode(',', [
+        'IGNORED', '1', '東京', '打ち合わせ', '2026-09-01', '2026-09-10', '2026-09-11',
+        '2026-09-20', 'テスト太郎', '1000', '2000', '300', '1500', '800', '3000',
+        '999999', // 食い違った合計
+    ]) . "\n";
+
+    $this->post('/expenses/import', ['csv' => csvFile($row)]);
+
+    expect((int) TravelExpense::first()->total_fee)->toBe(8600);
 });

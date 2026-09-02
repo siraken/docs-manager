@@ -1,0 +1,134 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Project\Entity;
+
+use App\Domain\Project\ValueObject\ProjectStatus;
+use App\Domain\Shared\ValueObject\Money;
+
+/**
+ * 案件。売上分析の集計対象でもある。
+ */
+final class Project
+{
+    private function __construct(
+        private ?int $id,
+        private string $name,
+        private ?string $description,
+        private ?int $clientId,
+        private ?int $relatedTaskId,
+        private ?\DateTimeImmutable $startDate,
+        private ?\DateTimeImmutable $endDate,
+        private ?\DateTimeImmutable $paymentDate,
+        private Money $price,
+        private ProjectStatus $status,
+    ) {
+    }
+
+    public static function create(
+        string $name,
+        ?string $description,
+        ?int $clientId,
+        ?int $relatedTaskId,
+        ?\DateTimeImmutable $startDate,
+        ?\DateTimeImmutable $endDate,
+        ?\DateTimeImmutable $paymentDate,
+        Money $price,
+        ProjectStatus $status,
+    ): self {
+        return new self(null, $name, $description, $clientId, $relatedTaskId, $startDate, $endDate, $paymentDate, $price, $status);
+    }
+
+    public static function reconstitute(
+        int $id,
+        string $name,
+        ?string $description,
+        ?int $clientId,
+        ?int $relatedTaskId,
+        ?\DateTimeImmutable $startDate,
+        ?\DateTimeImmutable $endDate,
+        ?\DateTimeImmutable $paymentDate,
+        Money $price,
+        ProjectStatus $status,
+    ): self {
+        return new self($id, $name, $description, $clientId, $relatedTaskId, $startDate, $endDate, $paymentDate, $price, $status);
+    }
+
+    public function update(
+        string $name,
+        ?string $description,
+        ?int $clientId,
+        ?int $relatedTaskId,
+        ?\DateTimeImmutable $startDate,
+        ?\DateTimeImmutable $endDate,
+        ?\DateTimeImmutable $paymentDate,
+        Money $price,
+        ProjectStatus $status,
+    ): void {
+        $this->name = $name;
+        $this->description = $description;
+        $this->clientId = $clientId;
+        $this->relatedTaskId = $relatedTaskId;
+        $this->startDate = $startDate;
+        $this->endDate = $endDate;
+        $this->paymentDate = $paymentDate;
+        $this->price = $price;
+        $this->status = $status;
+    }
+
+    public function assignId(int $id): void
+    {
+        $this->id = $id;
+    }
+
+    public function id(): ?int
+    {
+        return $this->id;
+    }
+
+    public function name(): string
+    {
+        return $this->name;
+    }
+
+    public function description(): ?string
+    {
+        return $this->description;
+    }
+
+    public function clientId(): ?int
+    {
+        return $this->clientId;
+    }
+
+    public function relatedTaskId(): ?int
+    {
+        return $this->relatedTaskId;
+    }
+
+    public function startDate(): ?\DateTimeImmutable
+    {
+        return $this->startDate;
+    }
+
+    public function endDate(): ?\DateTimeImmutable
+    {
+        return $this->endDate;
+    }
+
+    public function paymentDate(): ?\DateTimeImmutable
+    {
+        return $this->paymentDate;
+    }
+
+    public function price(): Money
+    {
+        return $this->price;
+    }
+
+    public function status(): ProjectStatus
+    {
+        return $this->status;
+    }
+}

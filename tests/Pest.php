@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\Customer;
-use App\Models\OrderHeader;
-use App\Models\User;
+use App\Infrastructure\Persistence\Eloquent\Models\Customer;
+use App\Infrastructure\Persistence\Eloquent\Models\OrderHeader;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -17,6 +17,7 @@ use Tests\TestCase;
 | @vite ディレクティブが解決できる。
 |
 | Unit テストはフレームワークを起動しない素の PHPUnit TestCase のまま。
+| ドメイン層は Laravel に依存しないので、その多くは Unit で書ける。
 |
 */
 
@@ -41,6 +42,9 @@ uses(RefreshDatabase::class)->in('Feature');
 |
 | Pest ではテストファイル内で定義した関数もグローバルになるため、
 | 複数のテストファイルで使うフィクスチャはここに集約する。
+|
+| フィクスチャは Eloquent モデルを直接使う。ユースケース経由にすると
+| 「準備」と「検証対象」が同じ経路になり、リグレッションを検出できなくなるため。
 |
 */
 
@@ -72,24 +76,22 @@ function actingAsUser(User $user): TestCase
 }
 
 /**
- * 顧客を 1 件作る。Customer は $fillable が無いので属性を個別に代入する。
+ * 顧客を 1 件作る。
  */
 function createCustomer(string $name = '株式会社テスト'): Customer
 {
-    $customer = new Customer();
-    $customer->name = $name;
-    $customer->is_company = 1;
-    $customer->email = 'client@example.com';
-    $customer->phone = '03-0000-0000';
-    $customer->post_code = '100-0001';
-    $customer->address = '千代田1-1';
-    $customer->city = '千代田区';
-    $customer->state = '東京都';
-    $customer->country = '日本';
-    $customer->note = null;
-    $customer->save();
-
-    return $customer;
+    return Customer::create([
+        'name' => $name,
+        'is_company' => 1,
+        'email' => 'client@example.com',
+        'phone' => '03-0000-0000',
+        'post_code' => '100-0001',
+        'address' => '千代田1-1',
+        'city' => '千代田区',
+        'state' => '東京都',
+        'country' => '日本',
+        'note' => null,
+    ]);
 }
 
 /**
@@ -118,6 +120,9 @@ function createHeader(array $attributes = []): OrderHeader
 
 /**
  * 発注書フォームの POST ペイロード。明細は配列で送られる。
+ *
+ * 金額 (price[]) は送っても使われない。保存される金額はサーバー側で
+ * 数量・単価・税区分から計算し直すため。
  */
 function orderPayload(array $overrides = []): array
 {
@@ -129,15 +134,19 @@ function orderPayload(array $overrides = []): array
         'exp_date' => '2026-09-30',
         'order_no' => 'NO-001',
         'title' => 'テスト発注',
-        'subtotal' => 1500,
-        'taxTotal' => 150,
-        'totalPrice' => 1650,
         'remarks' => '備考',
         'item_name' => ['商品A', '商品B'],
         'qty' => [1, 2],
         'unit' => ['個', '式'],
         'cost' => [1000, 250],
         'tax' => [1, 1],
-        'price' => [1000, 500],
     ], $overrides);
+}
+
+/**
+ * 有効な形式のウォレットアドレス (0x + 40 桁)。
+ */
+function walletAddress(string $suffix = '1'): string
+{
+    return '0x' . str_pad($suffix, 40, '0', STR_PAD_LEFT);
 }

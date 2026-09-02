@@ -1,26 +1,23 @@
 @extends('layouts/default')
 @section('page')
 
-{{-- CakePHP から移植途中のまま残っていたビュー。h() や $this->Number は Laravel に
-     存在しないため Blade の記法 (自動で HTML エスケープされる) に置き換えている。
-     なお現時点で trips.view のルートは存在せず、この画面には到達できない。 --}}
-
 @php
     $rows = [
-        '管理ID' => $trip->rel_id,
-        '出張先' => $trip->dir,
+        '管理ID' => $trip->relId,
+        '出張先' => $trip->destination,
         '目的' => $trip->purpose,
-        '申請者' => $trip->apply_person,
-        '金額' => '¥' . number_format($trip->price),
-        '出発日' => date('Y年m月d日', strtotime($trip->date_from)),
-        '帰着日' => date('Y年m月d日', strtotime($trip->date_to)),
-        '申請日' => date('Y年m月d日', strtotime($trip->apply_date)),
+        '申請者' => $trip->applyPerson,
+        '金額' => '¥' . $trip->priceLabel,
+        '出発日' => $trip->dateFrom,
+        '帰着日' => $trip->dateTo,
+        '申請日' => $trip->applyDate,
     ];
 @endphp
 
 <x-page-header title="出張申請 / 詳細">
     <x-slot:actions>
         <x-button :href="route('trips.index')" icon="arrow-left">戻る</x-button>
+        <x-button :href="route('trips.pdf', ['id' => $trip->id])" icon="file-earmark-pdf">PDF</x-button>
     </x-slot:actions>
 </x-page-header>
 

@@ -1,15 +1,14 @@
 <?php
 
-use App\Models\Customer;
-use App\Models\OrderDetail;
-use App\Models\OrderHeader;
+use App\Infrastructure\Persistence\Eloquent\Models\OrderDetail;
+use App\Infrastructure\Persistence\Eloquent\Models\OrderHeader;
 
 /**
- * 発注書 (OrderController) のリグレッションテスト。
+ * 発注書のリグレッションテスト。
  *
- * 論理削除が is_deleted カラムの手動運用であること、編集が
- * 「既存を物理削除して再作成」であることなど、フレームワーク標準から
- * 外れた挙動を固定する。
+ * 論理削除が is_deleted カラムの手動運用であることなど、フレームワーク標準から
+ * 外れた挙動を固定する。金額の計算がサーバー側に移ったこと、編集で id が
+ * 変わらなくなったことも、ここで押さえている。
  */
 
 beforeEach(function () {
@@ -25,7 +24,18 @@ test('一覧には削除済みが含まれない', function () {
     $response->assertOk();
     $orders = $response->viewData('orders');
     expect($orders)->toHaveCount(1)
-        ->and($orders[0]->order_no)->toBe('ALIVE-1');
+        ->and($orders[0]->orderNo)->toBe('ALIVE-1');
+});
+
+test('is_deletedがNULLの行も一覧に出る', function () {
+    // 移行前の where('is_deleted', '!=', 1) は SQL の NULL 比較の都合で
+    // NULL 行を落としていた。
+    createHeader(['order_no' => 'NULL-FLAG', 'is_deleted' => null]);
+
+    $orders = $this->get('/orders')->viewData('orders');
+
+    expect($orders)->toHaveCount(1)
+        ->and($orders[0]->orderNo)->toBe('NULL-FLAG');
 });
 
 test('ゴミ箱には削除済みだけが表示される', function () {
@@ -38,7 +48,7 @@ test('ゴミ箱には削除済みだけが表示される', function () {
     $response->assertOk();
     $orders = $response->viewData('orders');
     expect($orders)->toHaveCount(1)
-        ->and($orders[0]->order_no)->toBe('TRASHED-1');
+        ->and($orders[0]->orderNo)->toBe('TRASHED-1');
 });
 
 test('発注書を作成するとヘッダーと明細が保存される', function () {
@@ -51,6 +61,7 @@ test('発注書を作成するとヘッダーと明細が保存される', funct
 
     expect(OrderHeader::count())->toBe(1);
 
+    // 小計 = 1×1000 + 2×250 = 1500、消費税 10% = 150、合計 = 1650
     $header = OrderHeader::first();
     expect($header->order_no)->toBe('NO-001')
         ->and((int) $header->subtotal_price)->toBe(1500)
@@ -65,8 +76,45 @@ test('発注書を作成するとヘッダーと明細が保存される', funct
     $details = OrderDetail::where('slip_id', $header->id)->get();
     expect($details)->toHaveCount(2)
         ->and($details[0]->item_name)->toBe('商品A')
-        ->and((int) $details[0]->price)->toBe(1000)
-        ->and($details[1]->item_name)->toBe('商品B');
+        // order_details.price は税込。1000 + 10% = 1100
+        ->and((int) $details[0]->price)->toBe(1100)
+        ->and($details[1]->item_name)->toBe('商品B')
+        // 2 × 250 = 500、+10% で 550
+        ->and((int) $details[1]->price)->toBe(550);
+});
+
+test('合計金額はフォームの申告ではなく明細から計算される', function () {
+    createCustomer();
+
+    // 画面が送ってくる合計欄を故意に食い違わせても、保存されるのは
+    // 明細から計算した値になる。
+    $this->post('/orders/create', orderPayload([
+        'subtotal' => 999999,
+        'taxTotal' => 999999,
+        'totalPrice' => 999999,
+    ]));
+
+    $header = OrderHeader::first();
+    expect((int) $header->subtotal_price)->toBe(1500)
+        ->and((int) $header->tax_price)->toBe(150)
+        ->and((int) $header->total_price)->toBe(1650);
+});
+
+test('税区分ごとに消費税が変わる', function () {
+    createCustomer();
+
+    $this->post('/orders/create', orderPayload([
+        'item_name' => ['標準税率', '軽減税率', '対象外'],
+        'qty' => [1, 1, 1],
+        'unit' => ['個', '個', '個'],
+        'cost' => [1000, 1000, 1000],
+        'tax' => [1, 2, 5], // 10% / 軽減8% / 対象外
+    ]));
+
+    $header = OrderHeader::first();
+    expect((int) $header->subtotal_price)->toBe(3000)
+        ->and((int) $header->tax_price)->toBe(180) // 100 + 80 + 0
+        ->and((int) $header->total_price)->toBe(3180);
 });
 
 test('品名が空の明細行は保存されない', function () {
@@ -80,20 +128,16 @@ test('品名が空の明細行は保存されない', function () {
         'unit' => ['個', '', ''],
         'cost' => [1000, '', ''],
         'tax' => [1, '', ''],
-        'price' => [1000, '', ''],
     ]));
 
     $header = OrderHeader::first();
     expect(OrderDetail::where('slip_id', $header->id)->get())->toHaveCount(1);
 });
 
-test('編集は既存を物理削除して作り直すためIDが変わる', function () {
-    $this->markTestIncomplete(
-        'OrderController::edit() は $req[\'is_issued\'] 等を参照するが、'
-        . 'orders/form.blade.php に該当する入力が存在しないため Undefined index で 500 になる。'
-        . '発注書の編集は現状保存できない。修正後にこの markTestIncomplete を外すこと。'
-    );
-
+test('編集しても発注書のIDは変わらない', function () {
+    // 移行前は「既存を物理削除して作り直す」実装で id が変わっていた。
+    // さらにフォームに存在しない is_issued 等を参照していたため、POST すると
+    // Undefined array key で 500 になり、そもそも保存できなかった。
     createCustomer();
     $original = createHeader(['order_no' => 'OLD-NO']);
     OrderDetail::create([
@@ -103,23 +147,47 @@ test('編集は既存を物理削除して作り直すためIDが変わる', fun
         'unit' => '個',
         'cost' => 100,
         'tax_id' => 1,
-        'price' => 100,
+        'price' => 110,
     ]);
 
     $response = $this->post('/orders/edit/' . $original->id, orderPayload(['order_no' => 'NEW-NO']));
 
     $response->assertRedirect('/orders');
 
-    // 元のレコードは物理削除される
-    expect(OrderHeader::find($original->id))->toBeNull()
-        ->and(OrderDetail::where('slip_id', $original->id)->get())->toHaveCount(0)
-        ->and(OrderHeader::count())->toBe(1);
+    expect(OrderHeader::count())->toBe(1);
 
-    // 新しい ID で作り直される
-    $recreated = OrderHeader::first();
-    expect($recreated->id)->not->toBe($original->id)
-        ->and($recreated->order_no)->toBe('NEW-NO')
-        ->and(OrderDetail::where('slip_id', $recreated->id)->get())->toHaveCount(2);
+    $updated = OrderHeader::first();
+    expect($updated->id)->toBe($original->id)
+        ->and($updated->order_no)->toBe('NEW-NO');
+
+    // 明細は洗い替えされる
+    $details = OrderDetail::where('slip_id', $original->id)->get();
+    expect($details)->toHaveCount(2)
+        ->and($details->pluck('item_name')->all())->toBe(['商品A', '商品B']);
+});
+
+test('編集ではフォームが持たない項目が維持される', function () {
+    // 発行・受注ステータス、ごみ箱フラグ、社内メモはフォームに入力欄が無い。
+    // 更新でこれらが 0 に潰れないこと。
+    createCustomer();
+    $original = createHeader([
+        'is_issued' => 1,
+        'is_ordered' => 2,
+        'is_converted' => 1,
+        'note' => '社内メモ',
+    ]);
+
+    $this->post('/orders/edit/' . $original->id, orderPayload());
+
+    $updated = OrderHeader::find($original->id);
+    expect((int) $updated->is_issued)->toBe(1)
+        ->and((int) $updated->is_ordered)->toBe(2)
+        ->and((int) $updated->is_converted)->toBe(1)
+        ->and($updated->note)->toBe('社内メモ');
+});
+
+test('存在しない発注書の編集は404になる', function () {
+    $this->get('/orders/edit/999')->assertNotFound();
 });
 
 test('削除はis_deletedを1にするだけで行は残る', function () {
@@ -140,12 +208,7 @@ test('復元でis_deletedが0に戻る', function () {
 });
 
 test('詳細画面が表示できる', function () {
-    $this->markTestIncomplete(
-        'ルート orders.view は登録されているが OrderController::view() が存在せず 500 になる。'
-        . '一覧にリンクが無いため UI からは到達しないが、ルートは生きている。'
-        . 'メソッド追加後にこの markTestIncomplete を外すこと。'
-    );
-
+    // 移行前はルートだけあってメソッドが無く 500、ビューは CakePHP のままだった。
     $customer = createCustomer();
     $header = createHeader(['customer_id' => $customer->id]);
     OrderDetail::create([
@@ -155,8 +218,57 @@ test('詳細画面が表示できる', function () {
         'unit' => '個',
         'cost' => 1000,
         'tax_id' => 1,
-        'price' => 1000,
+        'price' => 1100,
     ]);
 
-    $this->get('/orders/view/' . $header->id)->assertOk();
+    $response = $this->get('/orders/view/' . $header->id);
+
+    $response->assertOk();
+    $response->assertSee('商品A');
+    $response->assertSee($customer->name);
+});
+
+// --- ステータス変更 ---------------------------------------------------
+
+test('発行ステータスは押すたびに未発行と発行済みを往復する', function () {
+    $header = createHeader(['is_issued' => 0]);
+
+    $this->postJson('/orders/set-status', ['id' => $header->id, 'type' => 'issued'])
+        ->assertOk()
+        ->assertJson(['status' => 200, 'is_issued' => 1]);
+
+    expect((int) OrderHeader::find($header->id)->is_issued)->toBe(1);
+
+    $this->postJson('/orders/set-status', ['id' => $header->id, 'type' => 'issued'])
+        ->assertJson(['is_issued' => 0]);
+});
+
+test('受注ステータスは未受注→受注済み→失注→未受注と巡回する', function () {
+    $header = createHeader(['is_ordered' => 0]);
+
+    foreach ([1, 2, 0] as $expected) {
+        $this->postJson('/orders/set-status', ['id' => $header->id, 'type' => 'ordered'])
+            ->assertJson(['is_ordered' => $expected]);
+
+        expect((int) OrderHeader::find($header->id)->is_ordered)->toBe($expected);
+    }
+});
+
+test('ステータス変更はクライアントの申告した現在値に依存しない', function () {
+    // 移行前は currentStatus をクライアントから受け取って次の値を決めていたため、
+    // 画面が古いと保存結果がずれた。
+    $header = createHeader(['is_issued' => 1]);
+
+    $this->postJson('/orders/set-status', [
+        'id' => $header->id,
+        'type' => 'issued',
+        'currentStatus' => 0, // 嘘の申告
+    ])->assertJson(['is_issued' => 0]);
+});
+
+test('未知のステータス種別は弾かれる', function () {
+    $header = createHeader();
+
+    $this->postJson('/orders/set-status', ['id' => $header->id, 'type' => 'unknown'])
+        ->assertStatus(422);
 });
