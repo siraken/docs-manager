@@ -31,11 +31,8 @@ case $1 in
 "npx")
     $SAIL npx $ARGS
 ;;
-"npm")
-    $SAIL npm $ARGS
-;;
-"yarn")
-    $SAIL yarn $ARGS
+"pnpm")
+    $SAIL pnpm $ARGS
 ;;
 "test")
     $FILENAME test:php

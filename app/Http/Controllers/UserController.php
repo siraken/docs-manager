@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use PHPGangsta_GoogleAuthenticator;
 
 class UserController extends Controller
 {
@@ -114,8 +113,8 @@ class UserController extends Controller
     public function register_2fa_auth($id)
     {
         $user = User::find($id);
-        $ga = new PHPGangsta_GoogleAuthenticator;
 
+        // TODO: 2FA は未実装。実装時に TOTP ライブラリを選定して導入する
         $secret = "";
         $qrCodeUrl = "";
 
