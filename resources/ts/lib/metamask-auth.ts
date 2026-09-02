@@ -11,7 +11,7 @@ const Chains = {
 };
 
 const DOCUMENT_ROOT =
-  process.env.MIX_APP_ENV === "local" ? "" : "/docs-manager";
+  import.meta.env.VITE_APP_ENV === "local" ? "" : "/docs-manager";
 
 window.addEventListener("load", async () => {
   if ("ethereum" in window && window.location.href.match(/login/)) {

@@ -101,6 +101,25 @@ Sail のイメージは **`vendor/laravel/sail/runtimes/8.2` を直接参照**�
 
 PHP 8.1 で **PDO SQLite が integer / float を native type で返すようになった**（7.4 までは文字列）。テストは sqlite、本番は MySQL なので、型に依存するコードは両者で挙動が変わりうる。実際 `ProjectController::index()` のステータス表示はこの影響を受けている（後述）。
 
+## アプリケーション構造 (Laravel 11+ の新形式)
+
+Laravel 11 で導入された skeleton に合わせてある。**`app/Http/Kernel.php` や `app/Console/Kernel.php` は存在しない。**
+
+- **ミドルウェアの登録は `bootstrap/app.php`**。`withMiddleware()` の中で、web グループへの `AddResponseHeaders` の append と、`login` エイリアス (`LoginMiddleware`) の登録を行う
+- **ルーティングも `bootstrap/app.php`** の `withRouting(web:, api:, commands:)`。旧 `RouteServiceProvider` は無い
+- **例外ハンドリングは `withExceptions()`**。旧 `app/Exceptions/Handler.php` は無い
+- **サービスプロバイダの登録は `bootstrap/providers.php`**。`config/app.php` に `providers` 配列は無い。現在は `AppServiceProvider` だけで、api の RateLimiter 定義もここに置いている
+- **フレームワーク標準のミドルウェアはファイルとして持たない**。`TrustProxies` / `TrimStrings` / `EncryptCookies` などはすべて標準値のままだったので削除した。除外設定を足したくなったら `bootstrap/app.php` の `withMiddleware()` で行う（例: `$middleware->validateCsrfTokens(except: [...])`）
+- **残しているカスタムミドルウェアは 2 つだけ**: `LoginMiddleware`（独自セッション認証）と `AddResponseHeaders`（`Server` ヘッダ）
+- **翻訳ファイルは `lang/`**（`resources/lang/` ではない。Laravel 9 以降の配置）
+- **config は必要なものだけ**。`cors` / `hashing` / `view` / `broadcasting` は全て標準値だったので削除し、フレームワークの既定に任せている
+
+### フロントエンドの環境変数
+
+Vite はビルド時に `import.meta.env.VITE_*` を値へ埋め込む。**`process.env.MIX_*` は解決されない**（Mix 時代の書き方が残っていると常に `undefined` になる）。
+
+`VITE_APP_ENV` は `nfc-auth.ts` / `metamask-auth.ts` がベースパスの判定に使っている。**本番ビルド時にこの変数が設定されていないと、`/docs-manager` プレフィックスの判定が意図せず本番側に倒れる**ので注意。
+
 ## Laravel 13 で入れた設定
 
 - **CSRF ミドルウェアは `PreventRequestForgery`**: Laravel 13 で `VerifyCsrfToken` からリネームされ、`Sec-Fetch-Site` ヘッダによるリクエスト元検証が加わった。`app/Http/Middleware/PreventRequestForgery.php` がそれを継承し、Kernel と `config/sanctum.php` から参照している。`VerifyCsrfToken` / `ValidateCsrfToken` は非推奨エイリアスとして残っているが使わないこと
