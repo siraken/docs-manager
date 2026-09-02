@@ -15,46 +15,21 @@ $(() => {
   // 初期状態の行数
   let rowNumber = $(".main_tbody").children().length;
 
-  // 行追加
+  // 行追加。行のマークアップは Blade 側の <template id="order-row-template">
+  // (x-order-row コンポーネント) が唯一の定義で、ここでは添字だけを差し替える。
   function addCustomRow(num: number) {
+    const template = document.getElementById(
+      "order-row-template"
+    ) as HTMLTemplateElement | null;
+
+    if (!template) {
+      return;
+    }
+
     rowNumber++;
-    $(".main_tbody").append(`
-        <tr class="sortable-tr">
-            <td class="action-cell"><span class="delete-row-button">×</span></td>
-            <td class="item-cell">
-                <input type="text" name="item_name[]" class="form-control">
-                <div class="items_box">
-                    <ul class="items">
-                    <?php foreach ($items as $item): ?>
-                        <li class="items_name" data-name="<?= $item['Item']['item_name']; ?>" data-unit="<?= $item['Item']['unit']; ?>" data-cost="<?= $item['Item']['cost']; ?>" data-tax="<?= $item['Item']['tax']; ?>"><?= $item['Item']['item_name']; ?> @<?= number_format($item['Item']['cost']); ?>円</li>
-                    <?php endforeach; ?>
-                    </ul>
-                </div>
-            </td>
-            <td>
-                <input type="text" name="qty[]" id="qty_${num}" class="form-control text-end calc">
-            </td>
-            <td>
-                <input type="text" name="unit[]" class="form-control text-center" placeholder="単位" value="">
-            </td>
-            <td>
-                <input type="text" name="cost[]" id="cost_${num}" class="form-control text-end calc" value="">
-            </td>
-            <td>
-                <select name="tax[]" id="tax_${num}" class="form-select calc">
-                    <option value="1">10%</option>
-                    <option value="2">軽減8%</option>
-                    <option value="3">8%</option>
-                    <option value="4">5%</option>
-                    <option value="5">対象外</option>
-                </select>
-            </td>
-            <td>
-                <input type="text" name="price[]" id="price_${num}" class="form-control text-end readonly" tabindex="-1" readonly>
-                <input type="hidden" id="tax_price_${num}" readonly>
-            </td>
-        </tr>
-        `);
+    $(".main_tbody").append(
+      template.innerHTML.split("__INDEX__").join(String(num))
+    );
   }
 
   // 明細部分計算

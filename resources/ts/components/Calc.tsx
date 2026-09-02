@@ -1,128 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { createRoot } from "react-dom/client";
 
-// {/* website */}
-// <section id="website" className="row">
-// <div className="col-12">
-//   <h2>Webサイト制作</h2>
-//   {/* サイト設計 */}
-//   <h3>サイト設計</h3>
-//   <div className="row mb-3">
-//     <div className="col-md-6">
-//       <label>サイトマップ</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//     <div className="col-md-6">
-//       <label>ワイヤーフレーム</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//     <div className="col-md-6">
-//       <label>コンテンツ案</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//     <div className="col-md-6">
-//       <label>コンテンツ制作</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//     <div className="col-md-6">
-//       <label>コンテンツ流し込み</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//   </div>
-//   {/* SEO */}
-//   <h3>SEO</h3>
-//   <div className="row mb-3">
-//     <div className="col-md-6">
-//       <label>分析</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//     <div className="col-md-6">
-//       <label>マーケティング戦略</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//   </div>
-//   {/* デザイン */}
-//   <h3>デザイン</h3>
-//   <div className="row mb-3">
-//     <div className="col-md-6">
-//       <label>デザイン</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//   </div>
-//   {/* コーディング */}
-//   <h3>コーディング</h3>
-//   <div className="row mb-3">
-//     <div className="col-md-6">
-//       <label>コーディング</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//   </div>
-//   {/* 環境構築 */}
-//   <h3>環境構築</h3>
-//   <div className="row mb-3">
-//     <div className="col-md-6">
-//       <label>サーバー</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//     <div className="col-md-6">
-//       <label>ドメイン</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//     <div className="col-md-6">
-//       <label>CMS</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//     <div className="col-md-6">
-//       <label>お問い合わせ</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//     <div className="col-md-6">
-//       <label>セキュリティ</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//     <div className="col-md-6">
-//       <label>リダイレクト</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//   </div>
-//   {/* テスト */}
-//   <h3>テスト</h3>
-//   <div className="row mb-3">
-//     <div className="col-md-6">
-//       <label>テスト</label>
-//       <input type="number" className="form-control" placeholder="" />
-//     </div>
-//   </div>
-//   {/* サポート */}
-//   <h3>サポート</h3>
-//   <div className="row mb-3">
-//     <div className="col-md-6">
-//       <label>年間サポート</label>
-//       <select className="form-control">
-//         <option value="" selected disabled>
-//           選択してください
-//         </option>
-//         <option v-for="webSupportOption in webSupportOptions"></option>
-//       </select>
-//     </div>
-//   </div>
-//   <hr />
-//   {/* total */}
-//   <div className="row">
-//     <div className="col">
-//       <p className="h3 mb-0">
-//         合計金額：
-//         <span className="font-weight-bold">¥ @</span>
-//       </p>
-//       <p className="h5 mb-0">
-//         消費税：
-//         <span className="font-weight-bold">¥ </span>
-//       </p>
-//     </div>
-//   </div>
-// </div>
-// </section>
-
 const webOptions = [
   { text: "Basic - ¥35,400", value: 35400 },
   { text: "Standard - ¥72,400", value: 72400 },
@@ -157,6 +35,12 @@ type unitProps = {
   month: number;
 };
 
+const labelClass = "mb-1.5 block text-sm font-medium text-slate-700";
+const inputClass =
+  "block w-full rounded-lg border-0 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm" +
+  " ring-1 ring-inset ring-slate-300 placeholder:text-slate-400" +
+  " focus:ring-2 focus:ring-inset focus:ring-brand-600 disabled:bg-slate-50 disabled:text-slate-400";
+
 function Calc() {
   // states
   const [website, setWebsite] = useState<websiteProps>({ price: 0 });
@@ -173,16 +57,23 @@ function Calc() {
 
   return (
     <>
-      {/* system */}
-      <h1>料金計算</h1>
-      <div className="row">
-        <div className="col-md-6">
-          <label>人日単位</label>
-          <div className="input-group mb-3">
-            <span className="input-group-text">¥</span>
+      <h1 className="mb-6 text-xl font-semibold tracking-tight text-slate-900">
+        料金計算
+      </h1>
+
+      <div className="mb-6 grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="unit-day" className={labelClass}>
+            人日単位
+          </label>
+          <div className="flex">
+            <span className="inline-flex items-center rounded-l-lg bg-slate-100 px-3 text-sm text-slate-500 ring-1 ring-inset ring-slate-300">
+              ¥
+            </span>
             <input
+              id="unit-day"
               type="number"
-              className="form-control"
+              className={`${inputClass} rounded-l-none`}
               value={unit.day}
               disabled={unit.month !== 0}
               onChange={(e) =>
@@ -191,13 +82,19 @@ function Calc() {
             />
           </div>
         </div>
-        <div className="col-md-6">
-          <label>人月単位</label>
-          <div className="input-group mb-3">
-            <span className="input-group-text">¥</span>
+
+        <div>
+          <label htmlFor="unit-month" className={labelClass}>
+            人月単位
+          </label>
+          <div className="flex">
+            <span className="inline-flex items-center rounded-l-lg bg-slate-100 px-3 text-sm text-slate-500 ring-1 ring-inset ring-slate-300">
+              ¥
+            </span>
             <input
+              id="unit-month"
               type="number"
-              className="form-control"
+              className={`${inputClass} rounded-l-none`}
               value={unit.month}
               disabled={unit.day !== 0}
               onChange={(e) =>
@@ -207,20 +104,20 @@ function Calc() {
           </div>
         </div>
       </div>
-      <div className="row">
-        <div className="col-12">
-          <label>タスク</label>
+
+      <div>
+        <span className={labelClass}>タスク</span>
+        <div className="space-y-2">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div className="input-group mb-1">
-              {/* <span className="input-group-text">¥</span> */}
+            <div key={i} className="flex gap-2">
               <input
                 type="text"
-                className="form-control w-75"
+                className={`${inputClass} basis-3/4`}
                 placeholder="内容"
               />
               <input
                 type="text"
-                className="form-control w-25"
+                className={`${inputClass} basis-1/4`}
                 placeholder="工数"
               />
             </div>

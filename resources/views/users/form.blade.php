@@ -2,60 +2,57 @@
 @section('page')
 
 <form method="post" action="" autocomplete="off" id="MainForm">
-    <div class="row mb-3">
-        <div class="col-12">
-            <a href="{{ route('users.index') }}" class="btn btn-secondary">戻る</a>
-            <button class="btn btn-secondary" type="submit">保存する</button>
-            <a href="{{ route('users.2fa', ["id" => $user->id]) }}" class="btn btn-secondary {{
-                $user->isSet2FA() ? "" : ""
-            }}">2FA</a>
-        </div>
-    </div>
+    <x-page-header title="ユーザーの編集">
+        <x-slot:actions>
+            <x-button :href="route('users.index')" icon="arrow-left">戻る</x-button>
+            <x-button :href="route('users.2fa', ['id' => $user->id])" icon="shield-lock">2FA</x-button>
+            <x-button type="submit" variant="primary" icon="check-lg">保存する</x-button>
+        </x-slot:actions>
+    </x-page-header>
 
-    <div class="row">
-        <div class="col-6">
+    <div class="max-w-2xl">
+        <x-card class="space-y-5">
             @csrf
 
-            <div class="mb-3">
-                <label class="form-label">名前<span class="badge bg-danger ms-1">必須</span></label>
-                <input type="text" name="name" class="form-control" value="{{ old('name', $user['name']) }}" required>
+            <div>
+                <x-label for="name" required>名前</x-label>
+                <x-input id="name" name="name" value="{{ old('name', $user['name']) }}" required />
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">メールアドレス<span class="badge bg-danger ms-1">必須</span></label>
-                <input type="email" name="email" class="form-control" value="{{ old('email', $user['email']) }}">
+            <div>
+                <x-label for="email" required>メールアドレス</x-label>
+                <x-input type="email" id="email" name="email" value="{{ old('email', $user['email']) }}" />
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">パスワード<span class="badge bg-danger ms-1">必須</span></label>
-                <input type="password" name="password" class="form-control">
+            <div>
+                <x-label for="password" required>パスワード</x-label>
+                <x-input type="password" id="password" name="password" autocomplete="new-password" />
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">NFC Card</label>
-                <div class="input-group">
-                    <button type="button" class="btn btn-secondary"
-                        onclick="novalumo.setNfcNumber(document.getElementById('nfc_number'))">Scan</button>
-                    <input type="password" name="nfc_serial_number" id="nfc_number" class="form-control"
-                        value="{{ old('nfc_serial_number', $user['nfc_serial_number']) }}">
+            <div>
+                <x-label for="nfc_number">NFC Card</x-label>
+                <div class="flex">
+                    <x-button class="rounded-r-none"
+                              onclick="novalumo.setNfcNumber(document.getElementById('nfc_number'))">Scan</x-button>
+                    <x-input type="password" id="nfc_number" name="nfc_serial_number" class="rounded-l-none"
+                             value="{{ old('nfc_serial_number', $user['nfc_serial_number']) }}" />
                 </div>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">NFC PIN</label>
-                <input type="password" name="nfc_pin" class="form-control">
+            <div>
+                <x-label for="nfc_pin">NFC PIN</x-label>
+                <x-input type="password" id="nfc_pin" name="nfc_pin" autocomplete="new-password" />
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">ウォレットアドレス</label>
-                <div class="input-group">
-                    <button type="button" class="btn btn-secondary"
-                    onclick="alert('TODO')">Scan</button>
-                    <input type="text" name="wallet_address" class="form-control" value="{{ $user['wallet_address'] }}" placeholder="0x...">
+            <div>
+                <x-label for="wallet_address">ウォレットアドレス</x-label>
+                <div class="flex">
+                    <x-button class="rounded-r-none" onclick="alert('TODO')">Scan</x-button>
+                    <x-input id="wallet_address" name="wallet_address" class="rounded-l-none" placeholder="0x..."
+                             value="{{ $user['wallet_address'] }}" />
                 </div>
             </div>
-
-        </div>
+        </x-card>
     </div>
 </form>
 

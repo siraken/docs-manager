@@ -2,27 +2,28 @@
 @section('page')
 
 <form method="post" action="" autocomplete="off" id="MainForm">
-    <div class="row mb-3">
-        <div class="col-12">
-            <a href="{{ route('users.edit', ["id" => $user->id]) }}" class="btn btn-secondary">戻る</a>
-            <button class="btn btn-secondary" type="submit">保存する</button>
-        </div>
-    </div>
+    <x-page-header title="二段階認証の設定">
+        <x-slot:actions>
+            <x-button :href="route('users.edit', ['id' => $user->id])" icon="arrow-left">戻る</x-button>
+            <x-button type="submit" variant="primary" icon="check-lg">保存する</x-button>
+        </x-slot:actions>
+    </x-page-header>
 
-    <div class="row">
-        <div class="col-6">
+    <div class="max-w-md">
+        <x-card class="space-y-5">
             @csrf
 
-            <div class="mb-3">
-                <label class="form-label">QR Code</label>
-                <img src="{{ $qrCodeUrl }}" alt="">
+            <div>
+                <x-label>QR Code</x-label>
+                <img src="{{ $qrCodeUrl }}" alt="二段階認証用の QR コード"
+                     class="rounded-lg bg-white p-2 ring-1 ring-slate-200">
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">OTP</label>
-                <input type="text" name="code" class="form-control" value="" required>
+            <div>
+                <x-label for="code">OTP</x-label>
+                <x-input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" required />
             </div>
-        </div>
+        </x-card>
     </div>
 </form>
 

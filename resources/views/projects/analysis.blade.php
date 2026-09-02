@@ -4,73 +4,66 @@
 <script>
     const url = new URL(location);
 
-function searchQuery(name, value) {
-    const params = new URLSearchParams(url.search);
-    params.set(name, value);
-    url.search = params.toString();
-    location.href = url.toString();
-}
+    function searchQuery(name, value) {
+        const params = new URLSearchParams(url.search);
+        params.set(name, value);
+        url.search = params.toString();
+        location.href = url.toString();
+    }
 </script>
 
-<div class="row">
-    <div class="col-12">
-        <a href="{{ route('projects.index') }}" class="btn btn-secondary">
-            戻る
-        </a>
-    </div>
-</div>
+<x-page-header title="売上分析">
+    <x-slot:actions>
+        <x-button :href="route('projects.index')" icon="arrow-left">戻る</x-button>
+    </x-slot:actions>
+</x-page-header>
 
-<div class="row">
-    <div class="col-12">
-        <h1>売上分析</h1>
-        <div class="row mb-3">
-            <div class="col-4">
-                <label>検索条件</label>
-                <select id="" name="year" class="form-select" onchange="searchQuery('type', this.value)">
-                    @foreach ($columns as $column)
-                    <option value="{{ $column['field'] }}" {{ $column['field']==$search_column ? 'selected' : '' }}>{{
-                        $column['name'] }}</option>
-                    @endforeach
-                </select>
-            </div>
+<x-card class="mb-6">
+    <div class="grid gap-4 sm:grid-cols-3">
+        <div>
+            <x-label for="search-column">検索条件</x-label>
+            <x-select id="search-column" name="type" onchange="searchQuery('type', this.value)">
+                @foreach ($columns as $column)
+                    <option value="{{ $column['field'] }}" @selected($column['field'] == $search_column)>{{ $column['name'] }}</option>
+                @endforeach
+            </x-select>
         </div>
-        <div class="row">
-            <div class="col-8">
-                <label>日付</label>
-                <div class="input-group mb-3">
-                    <select id="" name="year" class="form-select" onchange="searchQuery('year', this.value)">
-                        @for ($i = 2020; $i < (intval(date('Y', strtotime('+2 years')))); $i++) <option value="{{ $i }}"
-                            {{ $i==$year ? 'selected' : '' }}>{{ $i }}年</option>
-                            @endfor
-                    </select>
-                    <select id="" name="month" class="form-select" onchange="searchQuery('month', this.value)">
-                        @for ($i = 1; $i < 13; $i++) <option value="{{ $i }}" {{ $i==$month ? 'selected' : '' }}>{{ $i
-                            }}月</option>
-                            @endfor
-                    </select>
-                </div>
-            </div>
+        <div>
+            <x-label for="search-year">年</x-label>
+            <x-select id="search-year" name="year" onchange="searchQuery('year', this.value)">
+                @for ($i = 2020; $i < intval(date('Y', strtotime('+2 years'))); $i++)
+                    <option value="{{ $i }}" @selected($i == $year)>{{ $i }}年</option>
+                @endfor
+            </x-select>
         </div>
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>案件名</th>
-                        <th>請求金額</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($projects as $row)
-                    <tr>
-                        <td>{{ $row['name'] }}</td>
-                        <td>￥{{ number_format($row['price']) }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            <p>Total: ￥{{ number_format($total_price) }}</p>
+        <div>
+            <x-label for="search-month">月</x-label>
+            <x-select id="search-month" name="month" onchange="searchQuery('month', this.value)">
+                @for ($i = 1; $i < 13; $i++)
+                    <option value="{{ $i }}" @selected($i == $month)>{{ $i }}月</option>
+                @endfor
+            </x-select>
         </div>
     </div>
-</div>
+</x-card>
+
+<x-table>
+    <x-slot:head>
+        <th class="px-4 py-3">案件名</th>
+        <th class="px-4 py-3 text-right">請求金額</th>
+    </x-slot:head>
+
+    @foreach ($projects as $row)
+        <tr class="transition hover:bg-slate-50">
+            <td class="px-4 py-3 text-slate-700">{{ $row['name'] }}</td>
+            <td class="px-4 py-3 text-right font-medium whitespace-nowrap text-slate-900 tabular">￥{{ number_format($row['price']) }}</td>
+        </tr>
+    @endforeach
+
+    <tr class="bg-slate-50 font-semibold">
+        <td class="px-4 py-3 text-slate-700">合計</td>
+        <td class="px-4 py-3 text-right whitespace-nowrap text-slate-900 tabular">￥{{ number_format($total_price) }}</td>
+    </tr>
+</x-table>
 
 @endsection

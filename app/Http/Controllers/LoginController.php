@@ -34,7 +34,7 @@ class LoginController extends Controller
             return redirect('/login')->with([
                 'flash_message' => 'The user does not exist.',
                 'flash_status' => 'danger',
-                'flash_icon' => 'times-circle',
+                'flash_icon' => 'x-circle-fill',
             ]);
         }
 
@@ -60,7 +60,7 @@ class LoginController extends Controller
             return redirect('/login')->with([
                 'flash_message' => 'Failed to login.',
                 'flash_status' => 'danger',
-                'flash_icon' => 'times-circle',
+                'flash_icon' => 'x-circle-fill',
             ]);
         }
     }
@@ -140,7 +140,7 @@ class LoginController extends Controller
             return redirect('/login')->with([
                 'flash_message' => 'Failed to login.',
                 'flash_status' => 'danger',
-                'flash_icon' => 'times-circle',
+                'flash_icon' => 'x-circle-fill',
             ]);
         }
     }
@@ -183,7 +183,7 @@ class LoginController extends Controller
             return redirect('/login')->with([
                 'flash_message' => 'Failed to login.',
                 'flash_status' => 'danger',
-                'flash_icon' => 'times-circle',
+                'flash_icon' => 'x-circle-fill',
             ]);
         }
     }

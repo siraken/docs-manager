@@ -1,40 +1,38 @@
 @extends('layouts/default')
 @section('page')
 
-<div class="row">
-    <div class="col-12">
-        <a href="{{ route('users.create') }}" class="btn btn-secondary">ユーザーの新規登録</a>
-    </div>
-</div>
+<x-page-header title="ユーザー管理">
+    <x-slot:actions>
+        <x-button :href="route('users.create')" variant="primary" icon="plus-lg">ユーザーの新規登録</x-button>
+    </x-slot:actions>
+</x-page-header>
 
-<div class="row">
-    <div class="col-12">
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th style="width: 30%;">名前</th>
-                        <th style="width: 30%;">メールアドレス</th>
-                        <th style="width: 30%;">変更日</th>
-                        <th style="width: 10%;">操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($users as $row)
-                    <tr>
-                        <td>{{ $row['name'] }}</td>
-                        <td>{{ $row['email'] }}</td>
-                        <td>{{ $row['updated_at'] }}</td>
-                        <td>
-                            <a class="btn btn-secondary btn-sm" href="{{ route('users.edit', ['id' => $row['id']]) }}">編集</a>
-                            <a class="btn btn-secondary btn-sm" href="javascript:void(0);" onclick="deleteItem({{ $row['id'] }});">削除</a>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+@if (count($users) === 0)
+    <x-empty-state>ユーザーがまだ登録されていません</x-empty-state>
+@else
+    <x-table>
+        <x-slot:head>
+            <th class="px-4 py-3">名前</th>
+            <th class="px-4 py-3">メールアドレス</th>
+            <th class="px-4 py-3">変更日</th>
+            <th class="px-4 py-3"><span class="sr-only">操作</span></th>
+        </x-slot:head>
+
+        @foreach ($users as $row)
+            <tr class="transition hover:bg-slate-50">
+                <td class="px-4 py-3 align-middle font-medium text-slate-900">{{ $row['name'] }}</td>
+                <td class="px-4 py-3 align-middle text-slate-600">{{ $row['email'] }}</td>
+                <td class="px-4 py-3 align-middle whitespace-nowrap text-slate-600 tabular">{{ $row['updated_at'] }}</td>
+                <td class="px-4 py-3 text-right align-middle">
+                    <div class="flex justify-end gap-2">
+                        <x-button :href="route('users.edit', ['id' => $row['id']])" size="sm" icon="pencil">編集</x-button>
+                        <x-button size="sm" variant="danger" icon="trash"
+                                  onclick="deleteItem({{ $row['id'] }});">削除</x-button>
+                    </div>
+                </td>
+            </tr>
+        @endforeach
+    </x-table>
+@endif
 
 @endsection

@@ -1,5 +1,8 @@
+/**
+ * Laravel 標準の「アプリ初期化」ファイル。名前は Laravel の慣習に由来するもので
+ * CSS フレームワークの Bootstrap とは無関係 (そちらは Tailwind に置き換え済み)。
+ */
 import axios from "axios";
-import "bootstrap";
 
 
 /**

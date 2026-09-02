@@ -180,7 +180,7 @@ class TravelController extends Controller
             return redirect('/trips')->with([
                 'flash_message' => 'Failed',
                 'flash_status' => 'danger',
-                'flash_icon' => 'times-circle-fill',
+                'flash_icon' => 'x-circle-fill',
             ]);
 
         }
@@ -188,7 +188,7 @@ class TravelController extends Controller
         return redirect('/trips')->with([
             'flash_message' => 'Failed',
             'flash_status' => 'danger',
-            'flash_icon' => 'times-circle-fill',
+            'flash_icon' => 'x-circle-fill',
         ]);
 
     }

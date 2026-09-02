@@ -5,6 +5,7 @@ import DashboardPage from "./pages/Dashboard";
 import LoginPage from "./pages/Login";
 
 import "./lib/bootstrap";
+import "./lib/alpine";
 import "./lib/jquery/jquery";
 import "./lib/nfc-auth";
 import "./lib/metamask-auth";

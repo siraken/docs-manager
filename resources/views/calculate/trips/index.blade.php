@@ -1,101 +1,66 @@
 @extends('layouts/default')
 @section('page')
 
-<div class="row mb-3">
-    <div class="col-12">
-        <h4 class="heading">出張申請</h4>
-        <a class="btn btn-secondary" href="{{ route('trips.create') }}">出張申請をする</a>
-        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#csvImportModal">
-            CSV取り込み
-        </button>
-        <div class="modal fade" id="csvImportModal" tabindex="-1" aria-labelledby="csvImportModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog">
-                <form action="{{ route('trips.import') }}" method="post" enctype="multipart/form-data">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="csvImportModalLabel">CSV取り込み</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            @csrf
-                            <div class="form-group">
-                                <label for="csvFormFile" class="form-label">CSVを選択してください</label>
-                                <input id="csvFormFile" name="csv" class="form-control" type="file" accept=".csv"
-                                    required>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <div class="form-check form-switch">
-                                <input type="hidden" name="header" value="0">
-                                <input class="form-check-input" type="checkbox" role="switch" id="toggleCsvHeader"
-                                    name="header" value="1" checked>
-                                <label class="form-check-label" for="toggleCsvHeader">ヘッダーあり</label>
-                            </div>
-                            <button type="submit" class="btn btn-secondary">Import</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
+<x-page-header title="出張申請">
+    <x-slot:actions>
+        <x-button :href="route('trips.create')" variant="primary" icon="plus-lg">出張申請をする</x-button>
 
-    </div>
-</div>
+        <x-modal title="CSV取り込み">
+            <x-slot:trigger>
+                <x-button icon="upload">CSV取り込み</x-button>
+            </x-slot:trigger>
 
-<div class="row">
-    <div class="col-12">
+            <form id="csv-import-form" action="{{ route('trips.import') }}" method="post"
+                  enctype="multipart/form-data" class="space-y-4">
+                @csrf
+                <div>
+                    <x-label for="csvFormFile">CSVを選択してください</x-label>
+                    <x-input type="file" id="csvFormFile" name="csv" accept=".csv" required />
+                </div>
+                <input type="hidden" name="header" value="0">
+                <x-toggle name="header" value="1" checked label="ヘッダーあり" />
+            </form>
 
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>申請日</th>
-                    <th>出張先</th>
-                    <th class="hide-on-small-only">目的</th>
-                    <th class="hide-on-small-only">出発日</th>
-                    <th>申請者</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($trips as $row)
-                <tr>
-                    <td class="align-middle">
-                        <?= $row->apply_date ?>
-                    </td>
-                    <td class="align-middle">
-                        <?= ($row->dir) ?>
-                    </td>
-                    <td class="align-middle" class="hide-on-small-only">
-                        <?= mb_strimwidth($row->purpose, 0, 30, "...") ?>
-                    </td>
-                    <td class="align-middle" class="hide-on-small-only">
-                        <?= $row->date_from ?>
-                    </td>
-                    <td class="align-middle">
-                        <?= ($row->apply_person) ?>
-                    </td>
-                    <td>
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-gear-fill"></i>
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                <li><a class="dropdown-item"
-                                        href="{{ route('trips.pdf', ['id' => $row['id']]) }}">PDF</a></li>
-                                <li><a class="dropdown-item"
-                                        href="{{ route('orders.delete', ['id' => $row['id']]) }}">ごみ箱に入れる</a></li>
-                            </ul>
-                        </div>
-                    </td>
+            <x-slot:footer>
+                <p class="text-xs text-slate-500">1行目を見出しとして読み飛ばすかを選べます</p>
+                <x-button type="submit" form="csv-import-form" variant="primary">取り込み</x-button>
+            </x-slot:footer>
+        </x-modal>
+    </x-slot:actions>
+</x-page-header>
 
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+@if (count($trips) === 0)
+    <x-empty-state>申請がまだありません</x-empty-state>
+@else
+    <x-table>
+        <x-slot:head>
+            <th class="px-4 py-3">申請日</th>
+            <th class="px-4 py-3">出張先</th>
+            <th class="hidden px-4 py-3 sm:table-cell">目的</th>
+            <th class="hidden px-4 py-3 sm:table-cell">出発日</th>
+            <th class="px-4 py-3">申請者</th>
+            <th class="px-4 py-3"><span class="sr-only">操作</span></th>
+        </x-slot:head>
 
-    </div>
-
-</div>
+        @foreach ($trips as $row)
+            <tr class="transition hover:bg-slate-50">
+                <td class="px-4 py-3 align-middle whitespace-nowrap text-slate-600 tabular">{{ $row->apply_date }}</td>
+                <td class="px-4 py-3 align-middle font-medium text-slate-900">{{ $row->dir }}</td>
+                <td class="hidden px-4 py-3 align-middle text-slate-600 sm:table-cell">{{ mb_strimwidth($row->purpose, 0, 30, '...') }}</td>
+                <td class="hidden px-4 py-3 align-middle whitespace-nowrap text-slate-600 tabular sm:table-cell">{{ $row->date_from }}</td>
+                <td class="px-4 py-3 align-middle text-slate-600">{{ $row->apply_person }}</td>
+                <td class="px-4 py-3 text-right align-middle">
+                    <x-dropdown>
+                        <x-slot:trigger>
+                            <x-button size="sm" icon="gear-fill" aria-label="操作" />
+                        </x-slot:trigger>
+                        <x-dropdown-item :href="route('trips.pdf', ['id' => $row['id']])">PDF出力</x-dropdown-item>
+                        <x-dropdown-item :href="route('orders.delete', ['id' => $row['id']])">ごみ箱に入れる</x-dropdown-item>
+                    </x-dropdown>
+                </td>
+            </tr>
+        @endforeach
+    </x-table>
+@endif
 
 @endsection

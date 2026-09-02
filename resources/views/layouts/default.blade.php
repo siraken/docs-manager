@@ -1,135 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja" class="h-full">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="robots" content="noindex" />
     <meta name="googlebot" content="nofollow" />
     <title>管理ツール</title>
     @viteReactRefresh
-    @vite(['resources/sass/app.scss', 'resources/ts/app.tsx'])
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    @vite(['resources/css/app.css', 'resources/ts/app.tsx'])
 </head>
 
-<body class="bg-light">
-    {{-- flash --}}
-    @if (session('flash_message'))
-    <div class="toast-container m-3 fixed-top top-0 start-50 translate-middle-x">
-        <div class="toast align-items-center text-white bg-{{ session('flash_status') }} border-0 fade show"
-            role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i
-                        class="bi bi-{{ session('flash_icon') ? session('flash_icon') : 'exclamation-circle-fill' }} me-2"></i>{{
-                    session('flash_message') }}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                    aria-label="Close"></button>
-            </div>
-        </div>
-    </div>
-    {{-- <script>
-        Toast.show()
-    </script> --}}
-    @endif
-    {{-- navigation --}}
-    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary shadow-sm">
-        <div class="container">
-            <a class="navbar-brand" href="{{ route('dashboard.index') }}">Novalumo Console</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->route()->named('trips.*') ? 'active fw-bold' : '' }}"
-                            href="{{ route('trips.index') }}">
-                            <span class="ml-2">出張申請</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->route()->named('expenses.*') ? 'active fw-bold' : '' }}"
-                            href="{{ route('expenses.index') }}">
-                            <span class="ml-2">出張旅費精算</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->route()->named('orders.*') ? 'active fw-bold' : '' }}"
-                            href="{{ route('orders.index') }}">
-                            <span class="ml-2">発注書</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->route()->named('projects.*') ? 'active fw-bold' : '' }}"
-                            href="{{ route('projects.index') }}">
-                            <span class="ml-2">案件管理</span>
-                        </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ session('name') }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li>
-                                <p class="dropdown-item disabled text-center m-0">
-                                    <img src="https://www.gravatar.com/avatar/{{ md5(session('email')) }}"
-                                        class="img-fluid rounded-circle" alt="profile">
-                                </p>
-                            </li>
-                            <li>
-                                <small class="dropdown-item disabled text-center">
-                                    {{ session('name') }}<br>
-                                    {{ session('email') }}
-                                </small>
-                            </li>
-                            <li class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item {{ request()->route()->named('files.*') ? 'active' : '' }}"
-                                    href="{{ route('files.index') }}">
-                                    <span class="ml-2">Files</span>
-                                </a>
-                            </li>
-                            <li class="dropdown-divider"></li>
-                            <li>
-                                <small class="dropdown-item disabled">Settings</small>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {{ request()->route()->named('users.*') ? 'active' : '' }}"
-                                    href="{{ route('users.index') }}">
-                                    <span class="ml-2">User Management</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {{ request()->route()->named('customers.*') ? 'active' : '' }}"
-                                    href="{{ route('customers.index') }}">
-                                    <span class="ml-2">Customer Management</span>
-                                </a>
-                            </li>
-                            <li><a class="dropdown-item" href="{{ route('settings.index') }}">Settings</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item" href="javascript:toBeLoggedOut.submit()">Logout</a></li>
-                        </ul>
-                    </li>
+<body class="flex min-h-full flex-col">
+    <x-flash />
+
+    @php
+        $navigation = [
+            ['label' => '出張申請', 'route' => 'trips.index', 'pattern' => 'trips.*'],
+            ['label' => '出張旅費精算', 'route' => 'expenses.index', 'pattern' => 'expenses.*'],
+            ['label' => '発注書', 'route' => 'orders.index', 'pattern' => 'orders.*'],
+            ['label' => '案件管理', 'route' => 'projects.index', 'pattern' => 'projects.*'],
+        ];
+    @endphp
+
+    <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur">
+        <nav x-data="{ open: false }" class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex h-16 items-center justify-between gap-4">
+                <a href="{{ route('dashboard.index') }}"
+                   class="flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-900">
+                    <span class="grid h-7 w-7 place-items-center rounded-lg bg-brand-600 text-xs font-bold text-white">N</span>
+                    Novalumo Console
+                </a>
+
+                {{-- デスクトップ --}}
+                <ul class="hidden items-center gap-1 lg:flex">
+                    @foreach ($navigation as $item)
+                        @php $active = request()->route()->named($item['pattern']); @endphp
+                        <li>
+                            <a href="{{ route($item['route']) }}"
+                               @class([
+                                   'rounded-lg px-3 py-2 text-sm transition',
+                                   'bg-brand-50 font-semibold text-brand-800' => $active,
+                                   'text-slate-600 hover:bg-slate-100 hover:text-slate-900' => ! $active,
+                               ])>{{ $item['label'] }}</a>
+                        </li>
+                    @endforeach
                 </ul>
+
+                <div class="flex items-center gap-2">
+                    <x-dropdown class="hidden lg:inline-block">
+                        <x-slot:trigger>
+                            <button type="button"
+                                    class="flex items-center gap-2 rounded-lg py-1.5 pr-2 pl-1.5 text-sm text-slate-700 transition hover:bg-slate-100">
+                                <img src="https://www.gravatar.com/avatar/{{ md5(session('email')) }}?s=56&d=mp"
+                                     alt="" class="h-7 w-7 rounded-full bg-slate-200" width="28" height="28">
+                                <span class="hidden max-w-32 truncate sm:block">{{ session('name') }}</span>
+                                <i class="bi bi-chevron-down text-[10px] text-slate-400" aria-hidden="true"></i>
+                            </button>
+                        </x-slot:trigger>
+
+                        <div class="border-b border-slate-100 px-4 py-3">
+                            <p class="truncate text-sm font-medium text-slate-900">{{ session('name') }}</p>
+                            <p class="truncate text-xs text-slate-500">{{ session('email') }}</p>
+                        </div>
+
+                        <x-dropdown-item :href="route('files.index')">Files</x-dropdown-item>
+                        <x-dropdown-divider />
+                        <p class="px-4 pt-2 pb-1 text-[10px] font-semibold tracking-wide text-slate-400 uppercase">Settings</p>
+                        <x-dropdown-item :href="route('users.index')">User Management</x-dropdown-item>
+                        <x-dropdown-item :href="route('customers.index')">Customer Management</x-dropdown-item>
+                        <x-dropdown-item :href="route('settings.index')">Settings</x-dropdown-item>
+                        <x-dropdown-divider />
+                        <x-dropdown-item href="javascript:toBeLoggedOut.submit()">Logout</x-dropdown-item>
+                    </x-dropdown>
+
+                    {{-- モバイル: Bootstrap の navbar-toggler / collapse の置き換え --}}
+                    <button type="button" @click="open = ! open" :aria-expanded="open" aria-label="メニューを開く"
+                            class="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 lg:hidden">
+                        <i class="bi text-lg" :class="open ? 'bi-x-lg' : 'bi-list'" aria-hidden="true"></i>
+                    </button>
+                </div>
             </div>
-        </div>
-    </nav>
-    {{-- container --}}
-    <div class="container">
-        <div class="row">
-            <main class="col-12 py-5">
-                @yield('page')
-                <div id="app"></div>
-            </main>
-        </div>
-    </div>
+
+            <div x-show="open" x-cloak x-transition class="border-t border-slate-200 py-3 lg:hidden">
+                <ul class="space-y-1">
+                    @foreach ($navigation as $item)
+                        @php $active = request()->route()->named($item['pattern']); @endphp
+                        <li>
+                            <a href="{{ route($item['route']) }}"
+                               @class([
+                                   'block rounded-lg px-3 py-2 text-sm',
+                                   'bg-brand-50 font-semibold text-brand-800' => $active,
+                                   'text-slate-600 hover:bg-slate-100' => ! $active,
+                               ])>{{ $item['label'] }}</a>
+                        </li>
+                    @endforeach
+                </ul>
+
+                <div class="mt-3 border-t border-slate-200 pt-3">
+                    <p class="px-3 pb-2 text-xs text-slate-500">{{ session('name') }}</p>
+                    <ul class="space-y-1">
+                        <li><a href="{{ route('files.index') }}" class="block rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-100">Files</a></li>
+                        <li><a href="{{ route('users.index') }}" class="block rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-100">User Management</a></li>
+                        <li><a href="{{ route('customers.index') }}" class="block rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-100">Customer Management</a></li>
+                        <li><a href="{{ route('settings.index') }}" class="block rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-100">Settings</a></li>
+                        <li><a href="javascript:toBeLoggedOut.submit()" class="block rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-100">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+        @yield('page')
+        <div id="app"></div>
+    </main>
+
     <form name="toBeLoggedOut" method="POST" action="{{ route('logout') }}">
         @csrf
     </form>

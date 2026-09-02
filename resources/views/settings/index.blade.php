@@ -3,10 +3,8 @@
 
 @csrf
 
-<div class="row">
-    <div class="col-12">
+<x-page-header title="Settings" />
 
-    </div>
-</div>
+<x-empty-state>設定項目はまだありません</x-empty-state>
 
 @endsection

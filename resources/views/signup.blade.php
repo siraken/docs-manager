@@ -1,84 +1,33 @@
 @extends('layouts/auth')
 @section('page')
-<style>
-    .bd-placeholder-img {
-        font-size: 1.125rem;
-        text-anchor: middle;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        user-select: none;
-    }
 
-    @media (min-width: 768px) {
-        .bd-placeholder-img-lg {
-            font-size: 3.5rem;
-        }
-    }
+<main class="w-full max-w-sm">
+    <div class="mb-6 flex flex-col items-center gap-3">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-brand-600 text-lg font-bold text-white">N</span>
+        <h1 class="text-lg font-semibold tracking-tight text-slate-900">アカウント登録</h1>
+    </div>
 
-    html,
-    body {
-        height: 100%;
-    }
+    <x-card class="space-y-4">
+        <form method="post" class="space-y-4">
+            @csrf
 
-    body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding-top: 40px;
-        padding-bottom: 40px;
-        background-color: #f5f5f5;
-    }
+            <div>
+                <x-label for="email">メールアドレス</x-label>
+                <x-input type="email" id="email" name="email" autocomplete="username" placeholder="name@example.com" />
+            </div>
 
-    .form-signin {
-        width: 100%;
-        max-width: 330px;
-        padding: 15px;
-        margin: auto;
-    }
+            <div>
+                <x-label for="password">パスワード</x-label>
+                <x-input type="password" id="password" name="password" autocomplete="new-password" />
+            </div>
 
-    .form-signin .checkbox {
-        font-weight: 400;
-    }
+            <x-toggle name="remember" value="remember-me" label="ログイン状態を保持する" />
 
-    .form-signin .form-floating:focus-within {
-        z-index: 2;
-    }
+            <x-button type="submit" variant="primary" size="lg">登録する</x-button>
+        </form>
+    </x-card>
 
-    .form-signin input[type="email"] {
-        margin-bottom: -1px;
-        border-bottom-right-radius: 0;
-        border-bottom-left-radius: 0;
-    }
-
-    .form-signin input[type="password"] {
-        margin-bottom: 10px;
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
-    }
-</style>
-<main class="form-signin">
-    <form method="post">
-        @csrf
-        {{-- <img class="mb-4" src="/docs/5.1/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57"> --}}
-        <h1 class="h3 mb-3 fw-normal">Sign In</h1>
-
-        <div class="form-floating">
-            <input type="email" name="email" class="form-control" id="floatingInput" placeholder="name@example.com">
-            <label for="floatingInput">Email address</label>
-        </div>
-        <div class="form-floating">
-            <input type="password" name="password" class="form-control" id="floatingPassword" placeholder="Password">
-            <label for="floatingPassword">Password</label>
-        </div>
-
-        <div class="checkbox mb-3">
-            <label>
-                <input type="checkbox" value="remember-me"> Remember me
-            </label>
-        </div>
-        <button class="w-100 btn btn-lg btn-secondary" type="submit">Sign In</button>
-        <p class="mt-5 mb-3 text-muted">&copy; Novalumo</p>
-    </form>
+    <p class="mt-6 text-center text-xs text-slate-400">&copy; Novalumo</p>
 </main>
+
 @endsection
