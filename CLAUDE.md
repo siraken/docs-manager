@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 12 + Blade + Bootstrap 5 のサーバーサイドレンダリング構成で、一部に React/TypeScript を後付けしている。UI・コード内コメントは日本語。
+Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 13 + Blade + Bootstrap 5 のサーバーサイドレンダリング構成で、一部に React/TypeScript を後付けしている。UI・コード内コメントは日本語。
 
-**Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げている途中**（1 メジャー = 1 PR）。現在 12。
+Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げてきた（1 メジャー = 1 PR）。**現在 13 で、アップグレードは完了している。**
 
 ## 開発環境 (nix flake)
 
@@ -14,7 +14,7 @@ Novalumo 社内向けの業務管理ツール（発注書・出張申請・出�
 
 | ツール | バージョン |
 | --- | --- |
-| php | 8.2.33 |
+| php | 8.3.33 |
 | composer | 2.10.2 |
 | node | 22.23.2 |
 | pnpm | 11.22.0 |
@@ -50,13 +50,22 @@ php81 はデフォルトで `gd` / `pdo_mysql` / `pdo_sqlite` / `mbstring` / `ic
 
 vendor が無い状態からの初回セットアップは `./runner composer:init`（ホストの Docker で `composer install --ignore-platform-reqs`）。
 
-### テスト単体実行
+### テスト
+
+**Pest 4**。`artisan test` も Pest を使う。
 
 ```bash
-./runner test:php --filter <TestName>
-./vendor/bin/sail test tests/Feature/ExampleTest.php
-./vendor/bin/phpunit --testsuite Unit   # sail 無しの場合
+./vendor/bin/pest                              # 全件
+./vendor/bin/pest tests/Feature/AuthTest.php   # ファイル指定
+./vendor/bin/pest --filter 'ログイン'           # 名前で絞る
+./runner test:php                              # Sail 経由
 ```
+
+テストは Pest の関数記法（`test()` / `beforeEach()` / `expect()`）で書く。
+
+**共通のフィクスチャは `tests/Pest.php` に置く**。Pest ではテストファイル内で定義した関数もグローバルスコープに入るため、複数ファイルで同名の関数を定義すると再宣言エラーになる。`createUser()` / `actingAsUser()` / `createCustomer()` / `createHeader()` / `orderPayload()` がここにある。
+
+`uses(TestCase::class)->in('Feature')` と `uses(RefreshDatabase::class)->in('Feature')` も `tests/Pest.php` で設定している。Unit テストはフレームワークを起動しない素の PHPUnit TestCase で動く。
 
 **PHPUnit 10**。`phpunit.xml` で `DB_CONNECTION=sqlite` / `DB_DATABASE=:memory:` を指定しているため、テストは MySQL を必要とせず Sail を起動しなくても回る。DB を使うテストは `RefreshDatabase` を付ける。設定は PHPUnit 10 スキーマ（`<coverage>` ではなく `<source>`）に移行済み。
 
@@ -84,13 +93,20 @@ Vite は ESM 前提なので `require()` は使えない。`jquery-ui` は `wind
 
 ## PHP バージョンの注意
 
-**PHP 8.2**（`composer.json` は `^8.2`、nix devShell は 8.2.33）。
+**PHP 8.3**（`composer.json` は `^8.3`、nix devShell は 8.3.33）。
 
-Sail のイメージは **`vendor/laravel/sail/runtimes/8.2` を直接参照**している。以前はリポジトリ内の `docker/{7.4,8.0,8.1}` に Sail のコピーを抱えていたが、Ubuntu 21.10（EOL）ベースで独自カスタマイズも無かったため、Laravel 11 化の際に削除して公式の runtime に委譲した。PHP を上げるときは `docker-compose.yml` の `context` と `image` のバージョンを変えるだけでよい（vendor 内には 8.0〜8.5 が揃っている）。
+Sail のイメージは **`vendor/laravel/sail/runtimes/8.2` を直接参照**している（PHP 8.3 に揃えるなら `8.3` に変えるだけでよい）。以前はリポジトリ内の `docker/{7.4,8.0,8.1}` に Sail のコピーを抱えていたが、Ubuntu 21.10（EOL）ベースで独自カスタマイズも無かったため、Laravel 11 化の際に削除して公式の runtime に委譲した。PHP を上げるときは `docker-compose.yml` の `context` と `image` のバージョンを変えるだけでよい（vendor 内には 8.0〜8.5 が揃っている）。
 
 `vendor/` は gitignore されているので、`sail up` の前に `composer install` が必要。
 
 PHP 8.1 で **PDO SQLite が integer / float を native type で返すようになった**（7.4 までは文字列）。テストは sqlite、本番は MySQL なので、型に依存するコードは両者で挙動が変わりうる。実際 `ProjectController::index()` のステータス表示はこの影響を受けている（後述）。
+
+## Laravel 13 で入れた設定
+
+- **CSRF ミドルウェアは `PreventRequestForgery`**: Laravel 13 で `VerifyCsrfToken` からリネームされ、`Sec-Fetch-Site` ヘッダによるリクエスト元検証が加わった。`app/Http/Middleware/PreventRequestForgery.php` がそれを継承し、Kernel と `config/sanctum.php` から参照している。`VerifyCsrfToken` / `ValidateCsrfToken` は非推奨エイリアスとして残っているが使わないこと
+- **`config/session.php` の `serialization` は `json`**: PHP の unserialize による gadget chain 攻撃を避けるため。このアプリはセッションに `user_id` / `name` / `email` の文字列しか入れていないので json で足りる
+- **`config/cache.php` の `serializable_classes` は `false`**: キャッシュから PHP オブジェクトを復元しない設定。キャッシュにオブジェクトを入れていないため false のままでよい
+- **`composer.json` の `allow-plugins` に `pestphp/pest-plugin`**: composer 2.2 以降はプラグインの実行に明示的な許可が要る。増やすときは必要最小限にする
 
 ## 既知の不具合（アップグレード前から壊れている）
 
