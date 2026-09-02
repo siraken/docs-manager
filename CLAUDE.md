@@ -18,6 +18,7 @@ Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げてき
 | composer | 2.10.2 |
 | node | 22.23.2 |
 | pnpm | 11.22.0 |
+| just | 1.58.0 |
 
 すべて `nixpkgs-unstable` の単一 input から取っている。
 
@@ -29,30 +30,45 @@ devShell が担うのはホスト側ツールチェーンのみ。**アプリの
 
 php83 はデフォルトで `gd` / `pdo_mysql` / `pdo_sqlite` / `mbstring` / `iconv` / `curl` / `zip` / `bcmath` / `exif` が有効で、追加設定なしで TCPDF の PDF 生成・freee API の cURL・sqlite でのテストまで動く。
 
-この devShell がある場合、Docker 越しに composer を回す `./runner composer:init` は不要で、`composer install` を直接叩ける。
+この devShell がある場合、Docker 越しに composer を回す `just composer-init` は不要で、`composer install`（または `just install`）を直接叩ける。
 
 ## 開発コマンド
 
-すべて Laravel Sail (Docker) 前提。`./runner` がラッパー。
+**`just`**（レシピは `justfile`）。引数なしで叩くとレシピ一覧が出る。以前は `runner` という bash スクリプトだったが、just に置き換えて削除した。
+
+**Docker (Sail) が要るのはアプリサーバーと MySQL だけ**。テストもビルドも型チェックも devShell のツールでホストのまま回る。Sail 越しに動かしたいものには `sail-` を頭に付けたレシピを用意してある。
 
 ```bash
-./runner init          # .env 作成 + sail up  ※現在は壊れている（後述）
-./runner up            # sail up
-./runner down
-./runner build         # sail build
-./runner artisan <cmd> # sail artisan
-./runner composer <cmd>
-./runner pnpm <cmd>    # sail pnpm
-./runner npx <cmd>     # sail npx
-./runner db:reset      # migrate:reset → migrate → db:seed
-./runner test          # test:php を呼ぶだけ（JS のテストは無い）
-./runner test:php      # sail test (Pest)
-./runner prod:migrate  # 絶対に使わないこと（「デプロイ / CI」を参照）
+# ホストで動く (devShell)
+just test [args]       # ./vendor/bin/pest
+just tsc               # tsc --noEmit
+just check             # test → tsc
+just dev               # pnpm dev (HMR)
+just build             # pnpm build
+just artisan <cmd>     # php artisan
+just composer <cmd>
+just pnpm <cmd>
+
+# Docker (Laravel Sail)
+just up                # sail up
+just down              # sail down
+just sail-build [args]
+just sail-artisan <cmd>
+just sail-composer <cmd>
+just sail-pnpm <cmd>
+just sail-npx <cmd>
+just sail-test [args]  # MySQL でテストを回したいとき
+just db-reset          # migrate:reset → migrate → db:seed
+
+# セットアップ
+just init              # .env 作成 + APP_KEY 発行
+just install           # composer install + pnpm install
+just composer-init     # devShell が使えないときの退避路 (Docker 内の composer)
 ```
 
-**`yarn` / `test:js` のサブコマンドは無い**。パッケージマネージャは pnpm で、jest のテストファイルも存在しない。
+`set positional-arguments` を使い、レシピ側では `"$@"` で受けている。そのため `just artisan make:model "My Model"` のように**空白を含む引数もそのまま渡せる**（旧 `runner` は `ARGS=${@:2}` を単語分割される形で展開していたため、空白入りの引数が分裂した）。
 
-vendor が無い状態からの初回セットアップは `./runner composer:init`（ホストの Docker で `composer install --ignore-platform-reqs`）。
+**`prod:migrate` は移していない**。`ssh` 先で `migrate:fresh`（＝全テーブル削除）を走らせるうえ、接続先のサーバーは廃止済みだった（「デプロイ / CI」を参照）。
 
 ### テスト
 
@@ -62,7 +78,8 @@ vendor が無い状態からの初回セットアップは `./runner composer:in
 ./vendor/bin/pest                              # 全件
 ./vendor/bin/pest tests/Feature/AuthTest.php   # ファイル指定
 ./vendor/bin/pest --filter 'ログイン'           # 名前で絞る
-./runner test:php                              # Sail 経由
+just test                                      # ホスト (sqlite)
+just sail-test                                 # Sail 経由 (MySQL)
 ```
 
 テストは Pest の関数記法（`test()` / `beforeEach()` / `expect()`）で書く。
@@ -84,8 +101,8 @@ vendor が無い状態からの初回セットアップは `./runner composer:in
 **バンドル対象に `.js` は 1 つも無い**。`tsconfig.json` の `include` は `resources/ts/**/*` と `vite.config.ts` で、**`tsc --noEmit` は現在 0 件で通る**。壊したくないので、型エラーを増やしたまま放置しないこと。
 
 ```bash
-./runner pnpm dev      # 開発サーバ (HMR)
-./runner pnpm build    # 本番ビルド
+just dev       # 開発サーバ (HMR)
+just build     # 本番ビルド
 ```
 
 **pnpm 10 以降は依存パッケージの postinstall を既定でブロックする**（サプライチェーン対策）。許可は `pnpm-workspace.yaml` の `allowBuilds` に書く。値はリストではなく「パッケージ名 → bool」のマップである点に注意。設定を足すときは `pnpm approve-builds <pkg> '!<pkg>'` を使うと正しい書式で書き込まれる。現在は Vite の中核である `esbuild` のみ許可している。
@@ -219,11 +236,6 @@ Tailwind 移行時にブラウザで触って追加で判明したもの。
 - **`orders/view.blade.php` は CakePHP のまま**: `$this->Html->url()` / `WWW_ROOT` / `APP` を使っており Laravel では 1 行目で落ちる。`OrderController::view()` が無いのでそもそも到達しない。Bootstrap のクラスと jQuery 前提の inline スクリプトが残っているが、到達しないため Tailwind 移行の対象外にしてある
 - **`nfc-auth.ts` が Bootstrap のクラスを付けている**: `createElement` で作る要素に `form-control` / `btn btn-primary` を付けるが、Bootstrap の CSS はもう無いのでスタイルの当たらない裸の要素になる（機能自体は動く）
 
-`runner` スクリプトにあるもの。
-
-- **`./runner init` が動かない**: 1 行目の `cp ./env.example .env` が参照するファイル名が違う（実際は `.env.example`）。`runner` は `set -Ceux` なのでここで即座に終了し、`sail up` まで到達しない。手で `cp .env.example .env` すればよい
-- **`./runner composer:init` の Docker イメージが古い**: `laravelsail/php74-composer:latest` を使う。`--ignore-platform-reqs` 付きなので動きはするが、PHP 7.4 の composer で 8.3 前提の依存を解決することになる。**devShell があるならこれは不要**で、`composer install` を直接叩けばよい
-
 ### テストしにくい箇所
 
 - `OrderController::setStatus()` は `file_get_contents("php://input")` を直接読むため、Laravel のテストからは検証できない
@@ -309,7 +321,7 @@ Laravel の `SoftDeletes` は使わず、`order_headers.is_deleted` (integer) �
 作り直す場合、旧ワークフローが抱えていた問題を引き継がないよう注意する。
 
 - 旧デプロイは SSH 先で `git reset --hard origin/main` → `yarn install && yarn prod` を実行するだけで、**`composer install` を実行しなかった**
-- **マイグレーションも自動実行されなかった**。`./runner prod:migrate` は `migrate:fresh`（＝全テーブル削除）なので本番では絶対に使わないこと
+- **マイグレーションも自動実行されなかった**。旧 `runner` にあった `prod:migrate` は `ssh` 先で `migrate:fresh`（＝全テーブル削除）を走らせるものだったので、justfile には移していない
 - Node.js のテストジョブはコメントアウトされていた（jest のテストファイル自体が未作成）
 
 ## コーディング規約

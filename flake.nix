@@ -42,6 +42,9 @@
               php.packages.composer
               nodejs
               pkgs.pnpm
+
+              # 開発コマンドのランナー。レシピは justfile にある
+              pkgs.just
             ];
 
             shellHook = ''
@@ -52,10 +55,12 @@
               echo "  php   $(php -r "echo PHP_VERSION;")  (Laravel 13 要件: 8.3+)"
               echo "  node  $(node --version)"
               echo "  pnpm  $(pnpm --version)"
+              echo "  just  $(just --version | cut -d' ' -f2)"
               echo ""
-              echo "  アプリの実行と MySQL は Sail 側: ./runner up"
+              echo "  コマンドの一覧: just"
+              echo "  アプリの実行と MySQL は Sail 側: just up"
               if [ ! -f .env ]; then
-                echo "  ! .env がありません: cp .env.example .env && php artisan key:generate"
+                echo "  ! .env がありません: just init"
               fi
             '';
           };
