@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex" />
     <title>管理ツール</title>
-    @viteReactRefresh
-    @vite(['resources/css/app.css', 'resources/ts/app.tsx'])
+    @vite(['resources/css/app.css', 'resources/ts/app.ts'])
 </head>
 
 {{-- 旧レイアウトには <script>Toast.show()</script> があったが、Toast は

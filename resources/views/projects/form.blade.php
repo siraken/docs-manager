@@ -18,7 +18,7 @@
     <x-page-header title="案件の編集">
         <x-slot:actions>
             <x-button :href="route('projects.index')" icon="arrow-left">戻る</x-button>
-            {{-- 受注前確認モーダル (React) を開く。Bootstrap の data-bs-toggle の置き換え --}}
+            {{-- 受注前確認モーダル (Svelte) を開く。Bootstrap の data-bs-toggle の置き換え --}}
             <x-button variant="primary" icon="check-lg"
                       onclick="window.dispatchEvent(new CustomEvent('open-projects-modal'))">保存する</x-button>
         </x-slot:actions>
@@ -72,7 +72,7 @@
         </x-card>
     </div>
 
-    {{-- 受注前確認モーダル (ProjectsModal.tsx がここにマウントする) --}}
+    {{-- 受注前確認モーダル。app.ts の ISLANDS が ProjectsModal.svelte をここにマウントする --}}
     <div id="projects-modal"></div>
 </form>
 

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 13 + Blade + Tailwind CSS v4 のサーバーサイドレンダリング構成で、一部に React/TypeScript を後付けしている。UI・コード内コメントは日本語。
+Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 13 + Blade + Tailwind CSS v4 のサーバーサイドレンダリング構成で、一部に Svelte/TypeScript を後付けしている。UI・コード内コメントは日本語。
 
 Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げてきた（1 メジャー = 1 PR）。**現在 13 で、アップグレードは完了している。**
 
@@ -41,8 +41,9 @@ php83 はデフォルトで `gd` / `pdo_mysql` / `pdo_sqlite` / `mbstring` / `ic
 ```bash
 # ホストで動く (devShell)
 just test [args]       # ./vendor/bin/pest
-just tsc               # tsc --noEmit
-just check             # test → tsc
+just tsc               # tsc --noEmit (.ts)
+just svelte-check      # svelte-check (.svelte)
+just check             # test → tsc → svelte-check
 just dev               # pnpm dev (HMR)
 just build             # pnpm build
 just artisan <cmd>     # php artisan
@@ -98,7 +99,7 @@ just sail-test                                 # Sail 経由 (MySQL)
 
 **Vite 6**（Laravel Mix から移行済み）。パッケージマネージャは **pnpm**（`pnpm-lock.yaml`）。TypeScript は **6.0**。
 
-**バンドル対象に `.js` は 1 つも無い**。`tsconfig.json` の `include` は `resources/ts/**/*` と `vite.config.ts` で、**`tsc --noEmit` は現在 0 件で通る**。壊したくないので、型エラーを増やしたまま放置しないこと。
+**バンドル対象に `.js` は 1 つも無い**。`tsconfig.json` の `include` は `resources/ts/**/*` と `vite.config.ts`。**`tsc --noEmit` も `svelte-check` も現在 0 件で通る**ので、型エラーを増やしたまま放置しないこと（`just check` で両方走る）。
 
 ```bash
 just dev       # 開発サーバ (HMR)
@@ -109,16 +110,24 @@ just build     # 本番ビルド
 
 **TypeScript 6 は `moduleResolution: "node"` (node10) を非推奨エラーにする**。TS 7 で機能停止するため、`tsconfig.json` は `module: "esnext"` + `moduleResolution: "bundler"` に移行済み。`import.meta.env` の型は `types` に `vite/client` を足して解決している（無いと `ImportMeta` に `env` が生えず `nfc-auth.ts` / `metamask-auth.ts` が型エラーになる）。なお **tsc は emit に使っていない**（`--noEmit` のみ）。実際のトランスパイルは esbuild が行い、esbuild は `module` / `moduleResolution` を読まないので、この変更でビルド成果物は 1 バイトも変わらない。
 
-エントリは `vite.config.ts` の `input` に定義（`resources/css/app.css` と `resources/ts/app.tsx`）。出力は `public/build/`（gitignore 済み）で、`manifest.json` を Blade の `@vite` が読む。
+エントリは `vite.config.ts` の `input` に定義（`resources/css/app.css` と `resources/ts/app.ts`）。出力は `public/build/`（gitignore 済み）で、`manifest.json` を Blade の `@vite` が読む。
 
 **Tailwind v4 はネイティブバイナリ (`@tailwindcss/oxide`) を使い、Node 20+ を要求する**。ホストの Node が古いまま `pnpm install` すると、プラットフォーム別の optional dependency（`@tailwindcss/oxide-darwin-arm64` など）が engines 不一致でスキップされ、ビルド時に `Cannot find native binding` で落ちる。`node_modules` を消して **devShell の中で** 入れ直すこと。
 
-Blade 側は `layouts/default.blade.php` と `layouts/auth.blade.php` で
-`@viteReactRefresh` → `@vite([...])` の順に書く（React Refresh は `@vite` より前でないと動かない）。
+Blade 側は `layouts/default.blade.php` と `layouts/auth.blade.php` が `@vite([...])` を書く。**`@viteReactRefresh` は削除済み**（React を剥がしたため）。
 
 **テストでは `withoutVite()` が必須**。`tests/TestCase.php` の `setUp()` で呼んでいる。これがないと `@vite` がビルド成果物を探しに行き、テスト前に `pnpm build` が必要になる。
 
 Vite は ESM 前提なので `require()` は使えない。バンドル対象の JS/TS は全て ESM で書く。
+
+### Svelte
+
+**Svelte 5**（runes）。**SvelteKit は使っていない** —— ルーティングは Laravel が持ち、Svelte は Blade が描いた DOM に差し込む「島」として使う（「フロントエンドの構成」を参照）。
+
+- ビルドは `@sveltejs/vite-plugin-svelte`。**バージョンを上げるときは Vite との対応に注意**: 7.x の peer は `vite ^8` なので、Vite 6 のこのプロジェクトでは **6.2.4 に固定**している。上げるなら Vite ごと（`laravel-vite-plugin` の最新 3.x も Vite 8 要求）
+- `svelte.config.js` は `vitePreprocess()` だけ。`<script lang="ts">` はこれを通して Vite (esbuild) が処理する
+- **`tsc` は `.svelte` の中身を見ない**。型を担保するのは `svelte-check` なので、`just check` は両方走らせる。`resources/ts/types/svelte.d.ts` の `declare module "*.svelte"` は「import できること」を tsc に教えるだけのもの（SvelteKit を使っていないと降ってこないため自前で置いている）
+- **`svelte-check` は `vendor/laravel/ui` の preset スタブ（React / Vue 用の `vite.config.js`）を読もうとして数行のエラーを吐く**。`ERR_MODULE_NOT_FOUND` が出るが検査自体は完走し終了コードは 0。`--ignore` は `--no-tsconfig` と併用しないと効かないため抑制できていない。**追いかけなくてよい**
 
 ### 発注書の明細テーブル (order-form.ts)
 
@@ -152,7 +161,7 @@ Tailwind は CSS しか提供しないので、Bootstrap の JS コンポーネ�
 2. **フラッシュのトーストはヘッダーと重なる**。`x-flash` は `top` プロパティで位置を受け取り、`layouts/default` では既定の `top-20`（h-16 のヘッダーの下）、`layouts/auth` では `top-4` を渡している
 3. **発注書の明細行のマークアップは `x-order-row` が唯一の定義**。`orders/form.blade.php` は 5 行を描画したうえで、同じコンポーネントを `<template id="order-row-template">` にも入れておき、`order-form.ts` の行追加処理が `template.content` を複製して足す。コンポーネントは引数を取らない（行ごとの id が無くなったため、添字を渡す必要もなくなった）。以前は同じ HTML が jquery.ts の文字列テンプレートにも書かれていて、しかもその中に CakePHP 時代の `<?php foreach ... ?>` が生のまま残っていた
 
-React 側との連携は DOM の CustomEvent で行う。案件フォームの「保存する」ボタン（Blade）が `open-projects-modal` を投げ、`ProjectsModal.tsx` がそれを拾って開く。Bootstrap の `data-bs-toggle` を使っていた箇所の置き換え。
+Svelte 側との連携は DOM の CustomEvent で行う。案件フォームの「保存する」ボタン（Blade）が `open-projects-modal` を投げ、`ProjectsModal.svelte` がそれを拾って開く。Bootstrap の `data-bs-toggle` を使っていた箇所の置き換え。
 
 ### ローカルでの動作確認 (sqlite)
 
@@ -232,7 +241,6 @@ Vite はビルド時に `import.meta.env.VITE_*` を値へ埋め込む。**`proc
 Tailwind 移行時にブラウザで触って追加で判明したもの。
 
 - **ユーザーの新規登録画面が 500**: `users/form.blade.php` の 2FA リンクが `route('users.2fa', ['id' => $user->id])` を呼ぶが、`UserController::create()` は未保存の `new User()` を渡すため `id` が null で `Missing required parameter` になる。編集画面 (`/users/edit/{id}`) は動く
-- **ダッシュボードが二重に描画される**: `layouts/default.blade.php` の `<div id="app">` に react-router の `<App />` がマウントされ、`/` のとき `pages/Dashboard.tsx` が Blade 版のすぐ下にもう 1 つ描画される。この React 版は `href` に `{{ route(...) }}` という Blade の文字列がそのまま入っていた名残で、実質使われていない
 - **`orders/view.blade.php` は CakePHP のまま**: `$this->Html->url()` / `WWW_ROOT` / `APP` を使っており Laravel では 1 行目で落ちる。`OrderController::view()` が無いのでそもそも到達しない。Bootstrap のクラスと jQuery 前提の inline スクリプトが残っているが、到達しないため Tailwind 移行の対象外にしてある
 - **`nfc-auth.ts` が Bootstrap のクラスを付けている**: `createElement` で作る要素に `form-control` / `btn btn-primary` を付けるが、Bootstrap の CSS はもう無いのでスタイルの当たらない裸の要素になる（機能自体は動く）
 
@@ -303,16 +311,17 @@ Laravel の `SoftDeletes` は使わず、`order_headers.is_deleted` (integer) �
 - **Google Sheets** (`App\Models\SpreadSheet`): `resources/json/credentials.json`（gitignore 済み、`credentials.example.json` が雛形）+ `.env` の `GOOGLE_SPREADSHEET_ID`。Eloquent モデルではなく static ユーティリティとして使われている
 - **CSV インポート**: `SplFileObject` + `READ_CSV` で読み、`header` パラメータが真なら 1 行目を捨てる（`TravelController` / `TravelExpenseController` の `csvImport`）
 
-### フロントエンドの二重構造
+### フロントエンドの構成
 
-主体は Blade + Tailwind + Alpine。React は「特定 DOM に自己マウントする部品」として同居している。
+主体は **Blade + Tailwind + Alpine**。**Svelte 5** は「Blade が描いた DOM の特定の場所に差し込む島」として同居している。SvelteKit は使っていない（SPA ではなく、ルーティングは Laravel が持つ）。
 
-- 各コンポーネントがファイル末尾で `document.getElementById(...)` を見て自分で `ReactDOM.render` する（例: `Calc.tsx`、`ProjectsModal.tsx` → Blade 側の `<div id="projects-modal">`）
-- `app.tsx` は react-router の `<App />` を `#app` にマウントするが、`#app` は `layouts/default.blade.php` 内にあるため全ページに存在する。**その結果 `/` ではダッシュボードが二重に描画される**（既知の不具合を参照）
-- `Calc.tsx` (`#calc`) と `Example.tsx` (`#example`) のマウント先はどの Blade にも存在せず、実際には描画されない
+- **マウントは `resources/ts/app.ts` の `ISLANDS` に集約する**。マウント先が無い画面では何もしない。以前は React コンポーネントが各ファイル末尾で自分をマウントしていたが、どこに何が生えるのか追えなかったため一箇所にまとめた
+- 現在の島は `ProjectsModal.svelte`（`#projects-modal`、案件フォームの受注前確認）**1 つだけ**
+- Svelte コンポーネントは `resources/ts/components/` に置く。`resources/ts/` の外に出すと Tailwind の `@source` を足す必要が出る
+- **Svelte 5 は runes で書く**（`$state` / `$derived` / `$effect`）。DOM の更新はマイクロタスクにまとめられるため、**テストやコンソールから状態を変えた直後に同期で DOM を読むと更新前の値が返る**（`await tick()` 相当の待機を挟むこと）
 - `resources/ts/lib/novalumo.ts` は `window.novalumo` として公開され、Blade の inline スクリプトから呼ばれる
+- **React は削除済み**: 生きていたのは `ProjectsModal` 1 つだけで、react-router の `<App />`（ダッシュボードの二重描画の原因）と `Calc` / `Example`（マウント先が存在しない）は死にコードだった
 - **Inertia は削除済み**: 一度も使われていなかったため、Laravel 11 化の際に composer の `inertiajs/inertia-laravel` と `HandleInertiaRequests` ミドルウェアごと削除した（npm 側の `@inertiajs/*` は Vite 移行時に削除済み）
-- React 18（`react-dom/client` の `createRoot`）。react-router-dom も v7
 
 ## デプロイ / CI
 

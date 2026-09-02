@@ -46,14 +46,19 @@ composer-init:
 test *args:
     @./vendor/bin/pest "$@"
 
-# 型チェック。現在 0 件で通るので、増やしたまま放置しないこと
+# .ts の型チェック。現在 0 件で通るので、増やしたまま放置しないこと
 [group('dev')]
 tsc:
     @./node_modules/.bin/tsc --noEmit
 
+# .svelte の型チェック (tsc は .svelte の中身を見ないため別に要る)
+[group('dev')]
+svelte-check:
+    @./node_modules/.bin/svelte-check --tsconfig ./tsconfig.json --output human
+
 # テストと型チェックをまとめて
 [group('dev')]
-check: test tsc
+check: test tsc svelte-check
 
 # Vite の開発サーバ (HMR)
 [group('dev')]
