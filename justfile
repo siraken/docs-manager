@@ -60,9 +60,13 @@ svelte-check:
 [group('dev')]
 check: test tsc svelte-check
 
-# Vite の開発サーバ (HMR)
+# Vite の開発サーバ (HMR)。**アセットだけ**なので、別途 `just up` が要る
 [group('dev')]
 dev:
+    @echo "Vite (アセット配信 + HMR) だけを起動します。"
+    @echo "アプリ本体は別のターミナルで 'just up' が必要です → http://localhost"
+    @echo "Vite が表示する http://localhost:5173 はアセット用で、開いても何も出ません。"
+    @echo ""
     @pnpm dev
 
 # 本番ビルド
@@ -84,7 +88,7 @@ pnpm *args:
 
 # --- Docker (Laravel Sail) --------------------------------------------------
 
-# アプリサーバーと MySQL を起動する
+# アプリ本体と MySQL を起動する (http://localhost)。画面を見るにはこれが要る
 [group('sail')]
 up:
     @{{ sail }} up
