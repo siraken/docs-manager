@@ -127,7 +127,6 @@ Vite は ESM 前提なので `require()` は使えない。バンドル対象の
 - ビルドは `@sveltejs/vite-plugin-svelte`。**バージョンを上げるときは Vite との対応に注意**: 7.x の peer は `vite ^8` なので、Vite 6 のこのプロジェクトでは **6.2.4 に固定**している。上げるなら Vite ごと（`laravel-vite-plugin` の最新 3.x も Vite 8 要求）
 - `svelte.config.js` は `vitePreprocess()` だけ。`<script lang="ts">` はこれを通して Vite (esbuild) が処理する
 - **`tsc` は `.svelte` の中身を見ない**。型を担保するのは `svelte-check` なので、`just check` は両方走らせる。`resources/ts/types/svelte.d.ts` の `declare module "*.svelte"` は「import できること」を tsc に教えるだけのもの（SvelteKit を使っていないと降ってこないため自前で置いている）
-- **`svelte-check` は `vendor/laravel/ui` の preset スタブ（React / Vue 用の `vite.config.js`）を読もうとして数行のエラーを吐く**。`ERR_MODULE_NOT_FOUND` が出るが検査自体は完走し終了コードは 0。`--ignore` は `--no-tsconfig` と併用しないと効かないため抑制できていない。**追いかけなくてよい**
 
 ### 発注書の明細テーブル (order-form.ts)
 
