@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 
 // {/* website */}
 // <section id="website" className="row">
@@ -233,6 +233,7 @@ function Calc() {
 
 export default Calc;
 
-if (document.getElementById("calc")) {
-  ReactDOM.render(<Calc />, document.getElementById("calc"));
+const rootElement = document.getElementById("calc");
+if (rootElement) {
+  createRoot(rootElement).render(<Calc />);
 }

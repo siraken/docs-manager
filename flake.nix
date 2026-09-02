@@ -2,10 +2,10 @@
   description = "docs-manager: Laravel が要求する PHP に揃えた開発ツールチェーン";
 
   inputs = {
-    # Laravel 11 の要件は PHP 8.2+ で、unstable の php82 で満たせるようになった。
+    # Laravel 12 の要件は PHP 8.2+ で、unstable の php82 で満たせる。
     # Laravel 10 までは php81 を nixos-22.11 から引く必要があったが
     # (unstable では php81 が EOL 扱いで評価が throw される)、
-    # その別 input は不要になったので単一 nixpkgs に戻している。
+    # 11 以降その別 input は不要になったので単一 nixpkgs に戻している。
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
 
@@ -49,7 +49,7 @@
               export PATH="$PWD/vendor/bin:$PWD/node_modules/.bin:$PATH"
 
               echo "docs-manager dev shell"
-              echo "  php   $(php -r "echo PHP_VERSION;")  (Laravel 11 要件: 8.2+)"
+              echo "  php   $(php -r "echo PHP_VERSION;")  (Laravel 12 要件: 8.2+)"
               echo "  node  $(node --version)"
               echo "  pnpm  $(pnpm --version)"
               echo ""

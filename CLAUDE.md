@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 11 + Blade + Bootstrap 5 のサーバーサイドレンダリング構成で、一部に React/TypeScript を後付けしている。UI・コード内コメントは日本語。
+Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 12 + Blade + Bootstrap 5 のサーバーサイドレンダリング構成で、一部に React/TypeScript を後付けしている。UI・コード内コメントは日本語。
 
-**Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げている途中**（1 メジャー = 1 PR）。現在 11。
+**Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げている途中**（1 メジャー = 1 PR）。現在 12。
 
 ## 開発環境 (nix flake)
 
@@ -92,20 +92,6 @@ Sail のイメージは **`vendor/laravel/sail/runtimes/8.2` を直接参照**�
 
 PHP 8.1 で **PDO SQLite が integer / float を native type で返すようになった**（7.4 までは文字列）。テストは sqlite、本番は MySQL なので、型に依存するコードは両者で挙動が変わりうる。実際 `ProjectController::index()` のステータス表示はこの影響を受けている（後述）。
 
-## composer の advisory を一時的に無視している
-
-`composer.json` の `config.policy.advisories.ignore-id` に 3 件の ID が入っている。
-
-composer 2.10 以降は、既知の脆弱性がある版のインストールを既定でブロックする。Laravel 11 は EOL でパッチが来ないため、**11 系のどのバージョンを選んでもこの 3 件に該当してインストールできない**。アップグレードを 1 メジャーずつ進める都合上、11 を通過するために一時的に無視している。
-
-| ID | 解消するバージョン |
-| --- | --- |
-| `PKSA-mdq4-51ck-6kdq` | Laravel 12.60.0 |
-| `PKSA-3r5d-mb8f-1qw9` | Laravel 12.60.0 |
-| `PKSA-m5cs-t1y6-qpcs` | Laravel 12.61.1 |
-
-**Laravel 12 に上げたらこの設定は削除すること。** 消し忘れると、以降ずっとこの 3 件を見逃すことになる。
-
 ## 既知の不具合（アップグレード前から壊れている）
 
 リグレッションテスト追加時に判明したもの。**Laravel のバージョンを上げて壊れたのではなく、元から壊れている**。該当テストは `markTestIncomplete()` で理由付きで残してあるので、直したら外すこと。
@@ -116,6 +102,8 @@ composer 2.10 以降は、既知の脆弱性がある版のインストールを
 - **案件のステータス表示が壊れている**: `ProjectController::index()` が `switch ($project->status) { case $project->status === 0: ... }` と書かれている（`switch (true)` の誤用）。sqlite では status 1・2 が「未知」になる。値の型が変わる MySQL では結果が変わりうる
 - **明細のない発注書は CSV 出力できない**: `OrderController::csv()` が `$details[0]` を無条件に参照する
 - **`OrderController::csv()` はカレントディレクトリにファイルを書く**: `'./' . $order_no . '.csv'` を作って `readfile()` 後に `unlink()` する。`order_no` は検証されていない
+
+- **`tsc --noEmit` が通らない**: `resources/ts/lib/jquery/jquery.ts` に型エラーが 6 件ある（`$(...).val()` の戻り値で算術演算している箇所、`jquery-ui` の `sortable` の型が無い箇所など）。Laravel Mix も Vite も型チェックを行わないため、ビルド自体は通る。型チェックを CI に入れるなら先に潰す必要がある
 
 ### テストしにくい箇所
 
@@ -192,7 +180,7 @@ Laravel の `SoftDeletes` は使わず、`order_headers.is_deleted` (integer) �
 - `app.tsx` は react-router の `<App />` を `#app` にマウントするが、`#app` は `layouts/default.blade.php` 内にあるため全ページに存在する
 - `resources/ts/lib/novalumo.ts` は `window.novalumo` として公開され、Blade の inline スクリプトから呼ばれる
 - **Inertia は削除済み**: 一度も使われていなかったため、Laravel 11 化の際に composer の `inertiajs/inertia-laravel` と `HandleInertiaRequests` ミドルウェアごと削除した（npm 側の `@inertiajs/*` は Vite 移行時に削除済み）
-- React 17（`ReactDOM.render`）。`@types/react` は 18 系で型がずれることがある
+- React 18（`react-dom/client` の `createRoot`）。react-router-dom も v7
 
 ## デプロイ / CI
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import type { ChangeEvent } from "react";
 
 function ProjectsModal() {
@@ -75,6 +75,7 @@ function ProjectsModal() {
 
 export default ProjectsModal;
 
-if (document.getElementById("projects-modal")) {
-  ReactDOM.render(<ProjectsModal />, document.getElementById("projects-modal"));
+const rootElement = document.getElementById("projects-modal");
+if (rootElement) {
+  createRoot(rootElement).render(<ProjectsModal />);
 }
