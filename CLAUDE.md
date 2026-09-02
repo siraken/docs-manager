@@ -73,7 +73,7 @@ vendor が無い状態からの初回セットアップは `./runner composer:in
 
 ### フロントエンドビルド
 
-**Vite 6**（Laravel Mix から移行済み）。パッケージマネージャは **pnpm**（`pnpm-lock.yaml`）。
+**Vite 6**（Laravel Mix から移行済み）。パッケージマネージャは **pnpm**（`pnpm-lock.yaml`）。TypeScript は **6.0**。
 
 ```bash
 ./runner pnpm dev      # 開発サーバ (HMR)
@@ -81,6 +81,8 @@ vendor が無い状態からの初回セットアップは `./runner composer:in
 ```
 
 **pnpm 10 以降は依存パッケージの postinstall を既定でブロックする**（サプライチェーン対策）。許可は `pnpm-workspace.yaml` の `allowBuilds` に書く。値はリストではなく「パッケージ名 → bool」のマップである点に注意。設定を足すときは `pnpm approve-builds <pkg> '!<pkg>'` を使うと正しい書式で書き込まれる。現在は Vite の中核である `esbuild` のみ許可している。
+
+**TypeScript 6 は `moduleResolution: "node"` (node10) を非推奨エラーにする**。TS 7 で機能停止するため、`tsconfig.json` は `module: "esnext"` + `moduleResolution: "bundler"` に移行済み。`import.meta.env` の型は `types` に `vite/client` を足して解決している（無いと `ImportMeta` に `env` が生えず `nfc-auth.ts` / `metamask-auth.ts` が型エラーになる）。なお **tsc は emit に使っていない**（`--noEmit` のみ）。実際のトランスパイルは esbuild が行い、esbuild は `module` / `moduleResolution` を読まないので、この変更でビルド成果物は 1 バイトも変わらない。
 
 エントリは `vite.config.js` の `input` に定義（`resources/css/app.css` と `resources/ts/app.tsx`）。出力は `public/build/`（gitignore 済み）で、`manifest.json` を Blade の `@vite` が読む。
 
@@ -179,7 +181,7 @@ Vite はビルド時に `import.meta.env.VITE_*` を値へ埋め込む。**`proc
 - **明細のない発注書は CSV 出力できない**: `OrderController::csv()` が `$details[0]` を無条件に参照する
 - **`OrderController::csv()` はカレントディレクトリにファイルを書く**: `'./' . $order_no . '.csv'` を作って `readfile()` 後に `unlink()` する。`order_no` は検証されていない
 
-- **`tsc --noEmit` が通らない**: `resources/ts/lib/jquery/jquery.ts` に型エラーが 6 件ある（`$(...).val()` の戻り値で算術演算している箇所、`jquery-ui` の `sortable` の型が無い箇所など）。Laravel Mix も Vite も型チェックを行わないため、ビルド自体は通る。型チェックを CI に入れるなら先に潰す必要がある
+- **`tsc --noEmit` が通らない**: 型エラーが 7 件残っている。内訳は `resources/ts/lib/jquery/jquery.ts` の 6 件（`$(...).val()` の戻り値で算術演算している箇所、`jquery-ui` の `sortable` の型が無い箇所）と、`alpinejs` に型定義が同梱されておらず `@types/alpinejs` も入れていないための 1 件。Vite (esbuild) は型チェックを行わないため、ビルド自体は通る。型チェックを CI に入れるなら先に潰す必要がある
 
 Tailwind 移行時にブラウザで触って追加で判明したもの。
 
