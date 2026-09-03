@@ -7,7 +7,7 @@ namespace App\Http\ViewModels;
 use App\Domain\Travel\Entity\Travel;
 use Illuminate\Support\Collection;
 
-final readonly class TravelView
+final readonly class TravelView implements \JsonSerializable
 {
     private function __construct(
         public ?int $id,
@@ -37,6 +37,34 @@ final readonly class TravelView
             applyDate: $travel->applyDate()->format('Y-m-d'),
             applyPerson: $travel->applyPerson(),
         );
+    }
+
+    /**
+     * Inertia の props 用。
+     *
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'relId' => $this->relId,
+            'destination' => $this->destination,
+            'purpose' => $this->purpose,
+            'price' => $this->price,
+            'priceLabel' => $this->priceLabel,
+            'dateFrom' => $this->dateFrom,
+            'dateTo' => $this->dateTo,
+            'applyDate' => $this->applyDate,
+            'applyPerson' => $this->applyPerson,
+
+            'shortPurpose' => $this->shortPurpose(),
+
+            'urls' => $this->id === null ? null : [
+                'show' => route('trips.view', ['id' => $this->id]),
+                'pdf' => route('trips.pdf', ['id' => $this->id]),
+            ],
+        ];
     }
 
     /**

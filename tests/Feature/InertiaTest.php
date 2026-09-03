@@ -71,9 +71,24 @@ test('未認証では Inertia の画面もログインへリダイレクトさ�
 });
 
 test('Blade のままの画面も動く', function () {
-    // 移行は発注書から始めているので、他の画面はまだ Blade を返す。
     // 混在している間はどちらも壊れていないことを見ておく。
-    foreach (['/customers', '/projects', '/users', '/trips', '/expenses', '/settings'] as $path) {
+    // 移行が済んだらこのテストごと消える。
+    foreach (['/', '/settings', '/downloader', '/lumo-academy'] as $path) {
         $this->get($path)->assertOk();
+    }
+});
+
+test('移行済みの画面は Inertia を返す', function () {
+    $expected = [
+        '/orders' => 'Orders/Index',
+        '/customers' => 'Customers/Index',
+        '/projects' => 'Projects/Index',
+        '/users' => 'Users/Index',
+        '/trips' => 'Trips/Index',
+        '/expenses' => 'Expenses/Index',
+    ];
+
+    foreach ($expected as $path => $component) {
+        $this->get($path)->assertInertia(fn (AssertableInertia $page) => $page->component($component));
     }
 });
