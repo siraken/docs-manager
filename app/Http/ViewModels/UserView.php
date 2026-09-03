@@ -7,7 +7,7 @@ namespace App\Http\ViewModels;
 use App\Domain\User\Entity\User;
 use Illuminate\Support\Collection;
 
-final readonly class UserView
+final readonly class UserView implements \JsonSerializable
 {
     private function __construct(
         public ?int $id,
@@ -31,6 +31,34 @@ final readonly class UserView
             hasTwoFactor: $user->hasTwoFactorEnabled(),
             updatedAt: $user->updatedAt()?->format('Y-m-d H:i') ?? '-',
         );
+    }
+
+    /**
+     * Inertia の props 用。
+     *
+     * 未保存のユーザー (id が null) には編集や 2FA の URL が作れない。
+     * 移行前のビューはこれを無条件に組み立てて新規登録画面を 500 にしていたので、
+     * ここで null を返し、画面側は urls の有無でボタンを出し分ける。
+     *
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'nfcSerialNumber' => $this->nfcSerialNumber,
+            'walletAddress' => $this->walletAddress,
+            'hasTwoFactor' => $this->hasTwoFactor,
+            'updatedAt' => $this->updatedAt,
+
+            'urls' => $this->id === null ? null : [
+                'edit' => route('users.edit', ['id' => $this->id]),
+                'twoFactor' => route('users.2fa', ['id' => $this->id]),
+                'delete' => route('users.delete', ['id' => $this->id]),
+            ],
+        ];
     }
 
     /** 新規作成フォーム用の空の入れ物 */

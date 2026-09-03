@@ -12,22 +12,27 @@ use App\Http\Requests\SaveCustomerRequest;
 use App\Support\Flash;
 use App\Http\ViewModels\CustomerView;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 final class CustomerController extends Controller
 {
-    public function index(ListCustomersUseCase $listCustomers): View
+    public function index(ListCustomersUseCase $listCustomers): InertiaResponse
     {
-        return view('customers.index', [
+        return Inertia::render('Customers/Index', [
             'customers' => CustomerView::collection($listCustomers->execute()),
+            'urls' => ['create' => route('customers.create')],
         ]);
     }
 
-    public function create(): View
+    public function create(): InertiaResponse
     {
-        return view('customers.form', [
-            'customer' => CustomerView::empty(),
-            'isNew' => true,
+        return Inertia::render('Customers/Form', [
+            'customer' => null,
+            'urls' => [
+                'submit' => route('customers.create'),
+                'back' => route('customers.index'),
+            ],
         ]);
     }
 
@@ -38,11 +43,14 @@ final class CustomerController extends Controller
         return redirect()->route('customers.index')->with(Flash::success('顧客を登録しました'));
     }
 
-    public function edit(int $id, GetCustomerUseCase $getCustomer): View
+    public function edit(int $id, GetCustomerUseCase $getCustomer): InertiaResponse
     {
-        return view('customers.form', [
+        return Inertia::render('Customers/Form', [
             'customer' => CustomerView::fromEntity($getCustomer->execute($id)),
-            'isNew' => false,
+            'urls' => [
+                'submit' => route('customers.edit', ['id' => $id]),
+                'back' => route('customers.index'),
+            ],
         ]);
     }
 

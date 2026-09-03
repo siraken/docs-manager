@@ -44,8 +44,10 @@ final readonly class CustomerView implements \JsonSerializable
     }
 
     /**
-     * Inertia の props 用。発注書フォームの取引先セレクトが使うので、
-     * 一覧に要る項目だけ出す。
+     * Inertia の props 用。フォームの初期値に使うので全項目を出す。
+     *
+     * 発注書フォームの取引先セレクトはこれではなく options() を使う
+     * (セレクトに要るのは id と名前だけで、全顧客の住所まで送る必要は無い)。
      *
      * @return array<string, mixed>
      */
@@ -56,7 +58,18 @@ final readonly class CustomerView implements \JsonSerializable
             'name' => $this->name,
             'isCompany' => $this->isCompany,
             'email' => $this->email,
+            'phone' => $this->phone,
+            'postCode' => $this->postCode,
+            'address' => $this->address,
+            'city' => $this->city,
+            'state' => $this->state,
+            'country' => $this->country,
+            'note' => $this->note,
             'location' => $this->location,
+
+            'urls' => $this->id === null ? null : [
+                'edit' => route('customers.edit', ['id' => $this->id]),
+            ],
         ];
     }
 
@@ -75,20 +88,20 @@ final readonly class CustomerView implements \JsonSerializable
         return collect($customers)->map(self::fromEntity(...))->values();
     }
 
-    /** フォームのテキスト項目を name => value で引くための対応表 */
-    public function formValue(string $field): ?string
+    /**
+     * セレクトの選択肢。発注書フォームが使う。
+     *
+     * @param list<Customer> $customers
+     * @return list<array{id: int|null, name: string}>
+     */
+    public static function options(array $customers): array
     {
-        return match ($field) {
-            'name' => $this->name,
-            'email' => $this->email,
-            'phone' => $this->phone,
-            'post_code' => $this->postCode,
-            'address' => $this->address,
-            'city' => $this->city,
-            'state' => $this->state,
-            'country' => $this->country,
-            'note' => $this->note,
-            default => null,
-        };
+        return array_map(
+            static fn (Customer $customer): array => [
+                'id' => $customer->id(),
+                'name' => $customer->name(),
+            ],
+            $customers,
+        );
     }
 }

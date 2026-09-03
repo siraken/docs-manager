@@ -4,9 +4,7 @@ import { mount } from "svelte";
 import "./lib/alpine";
 import "./lib/nfc-auth";
 import "./lib/metamask-auth";
-import * as novalumo from "./lib/novalumo";
 
-import ProjectsModal from "./components/ProjectsModal.svelte";
 import DefaultLayout from "./Layouts/Default.svelte";
 
 /**
@@ -17,9 +15,11 @@ import DefaultLayout from "./Layouts/Default.svelte";
  * どちらの世界かを判定する。
  *
  * - Inertia の画面: Pages/ 以下の Svelte がページ全体を描く
- * - Blade の画面: 従来どおり Alpine と「島」が動く
+ * - Blade の画面: 従来どおり Alpine が動く
  *
- * 全画面の移行が済んだら、下半分 (Blade 向けの読み込みと ISLANDS) は消える。
+ * 全画面の移行が済んだら、この分岐と Alpine の読み込みは消える。
+ * (Svelte の「島」は無くなった。案件フォームが Inertia に移り、
+ *  受注前確認モーダルがページの子要素になったため)
  */
 
 const inertiaRoot = document.getElementById("app");
@@ -49,22 +49,4 @@ if (inertiaRoot) {
     },
     progress: { color: "#00acc1" },
   });
-} else {
-  // --- ここから下は Blade の画面向け。移行が終われば不要になる ---
-
-  // Blade の inline スクリプトから window.novalumo として呼ばれる
-  window.novalumo = novalumo;
-
-  /**
-   * Svelte コンポーネントのマウント。マウント先が無い画面では何もしない。
-   */
-  const ISLANDS = [{ selector: "#projects-modal", component: ProjectsModal }];
-
-  for (const { selector, component } of ISLANDS) {
-    const target = document.querySelector(selector);
-
-    if (target) {
-      mount(component, { target });
-    }
-  }
 }

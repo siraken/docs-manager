@@ -19,14 +19,16 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Support\Flash;
 use App\Http\ViewModels\UserView;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 final class UserController extends Controller
 {
-    public function index(ListUsersUseCase $listUsers): View
+    public function index(ListUsersUseCase $listUsers): InertiaResponse
     {
-        return view('users.index', [
+        return Inertia::render('Users/Index', [
             'users' => UserView::collection($listUsers->execute()),
+            'urls' => ['create' => route('users.create')],
         ]);
     }
 
@@ -35,13 +37,16 @@ final class UserController extends Controller
      *
      * 移行前はここで未保存の User を渡していたため、ビューの 2FA リンクが
      * route('users.2fa', ['id' => null]) を組もうとして 500 になっていた。
-     * ビュー側は $user->id が null のときリンクを出さないようにしてある。
+     * いまは user を null で渡し、画面側が新規かどうかで出し分ける。
      */
-    public function create(): View
+    public function create(): InertiaResponse
     {
-        return view('users.form', [
-            'user' => UserView::empty(),
-            'isNew' => true,
+        return Inertia::render('Users/Form', [
+            'user' => null,
+            'urls' => [
+                'submit' => route('users.create'),
+                'back' => route('users.index'),
+            ],
         ]);
     }
 
@@ -52,11 +57,14 @@ final class UserController extends Controller
         return redirect()->route('users.index')->with(Flash::success('ユーザーを登録しました'));
     }
 
-    public function edit(int $id, GetUserUseCase $getUser): View
+    public function edit(int $id, GetUserUseCase $getUser): InertiaResponse
     {
-        return view('users.form', [
+        return Inertia::render('Users/Form', [
             'user' => UserView::fromEntity($getUser->execute($id)),
-            'isNew' => false,
+            'urls' => [
+                'submit' => route('users.edit', ['id' => $id]),
+                'back' => route('users.index'),
+            ],
         ]);
     }
 
@@ -88,14 +96,27 @@ final class UserController extends Controller
         return redirect()->route('users.index')->with(Flash::success('NFC カードを登録しました'));
     }
 
-    /** 二段階認証の設定画面 (シークレットを発行して QR 用の URI を出す) */
-    public function twoFactor(int $id, StartTwoFactorSetupUseCase $startSetup, GetUserUseCase $getUser): View
+    /**
+     * 二段階認証の設定画面 (シークレットを発行して QR 用の URI を出す)。
+     *
+     * TwoFactorSetup は Application 層の DTO なので、そのまま props にはしない。
+     * 画面が要る形へはここで組み替える。
+     */
+    public function twoFactor(int $id, StartTwoFactorSetupUseCase $startSetup, GetUserUseCase $getUser): InertiaResponse
     {
         $setup = $startSetup->execute($id);
 
-        return view('users.2fa', [
+        return Inertia::render('Users/TwoFactor', [
             'user' => UserView::fromEntity($getUser->execute($id)),
-            'setup' => $setup,
+            'setup' => [
+                'secret' => (string) $setup->secret,
+                'uri' => $setup->uri,
+                'alreadyEnabled' => $setup->alreadyEnabled,
+            ],
+            'urls' => [
+                'submit' => route('users.2fa', ['id' => $id]),
+                'back' => route('users.edit', ['id' => $id]),
+            ],
         ]);
     }
 

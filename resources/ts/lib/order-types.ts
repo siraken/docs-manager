@@ -55,12 +55,10 @@ export type OrderDetail = OrderListItem & {
   lines: OrderLineItem[];
 };
 
+/** 取引先セレクトの選択肢。CustomerView::options() が返す形 */
 export type CustomerOption = {
   id: number;
   name: string;
-  isCompany: boolean;
-  email: string | null;
-  location: string;
 };
 
 export type TaxOption = { value: number; label: string };
