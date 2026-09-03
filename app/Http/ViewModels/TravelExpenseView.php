@@ -7,7 +7,7 @@ namespace App\Http\ViewModels;
 use App\Domain\Travel\Entity\TravelExpense;
 use Illuminate\Support\Collection;
 
-final readonly class TravelExpenseView
+final readonly class TravelExpenseView implements \JsonSerializable
 {
     private function __construct(
         public ?int $id,
@@ -62,6 +62,45 @@ final readonly class TravelExpenseView
             null, date('Ymd') . '-Num', '', '', $today, $today, $today, $today, '',
             0, 0, 0, 0, 0, 0, 0, '0',
         );
+    }
+
+    /**
+     * Inertia の props 用。
+     *
+     * 費目は入力欄が金額そのままなので整形しない (フォームの value に入る)。
+     * 表示用に桁区切りが要る場所は画面側で組む。
+     *
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'relId' => $this->relId,
+            'destination' => $this->destination,
+            'purpose' => $this->purpose,
+            'applyDate' => $this->applyDate,
+            'dateFrom' => $this->dateFrom,
+            'dateTo' => $this->dateTo,
+            'payDate' => $this->payDate,
+            'applyPerson' => $this->applyPerson,
+            'transportationFee' => $this->transportationFee,
+            'accommodationFee' => $this->accommodationFee,
+            'gasFee' => $this->gasFee,
+            'dinnerFee' => $this->dinnerFee,
+            'lunchFee' => $this->lunchFee,
+            'dailyAllowance' => $this->dailyAllowance,
+            'totalFee' => $this->totalFee,
+            'totalFeeLabel' => $this->totalFeeLabel,
+
+            'shortPurpose' => $this->shortPurpose(),
+
+            'urls' => $this->id === null ? null : [
+                'show' => route('expenses.view', ['id' => $this->id]),
+                'edit' => route('expenses.edit', ['id' => $this->id]),
+                'pdf' => route('expenses.pdf', ['id' => $this->id]),
+            ],
+        ];
     }
 
     /**

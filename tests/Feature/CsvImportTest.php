@@ -3,6 +3,7 @@
 use App\Infrastructure\Persistence\Eloquent\Models\Travel;
 use App\Infrastructure\Persistence\Eloquent\Models\TravelExpense;
 use Illuminate\Http\UploadedFile;
+use Inertia\Testing\AssertableInertia;
 
 /**
  * CSV 取り込みのリグレッションテスト。
@@ -133,4 +134,27 @@ test('旅費精算の合計はCSVの申告ではなく内訳から計算され�
     $this->post('/expenses/import', ['csv' => csvFile($row)]);
 
     expect((int) TravelExpense::first()->total_fee)->toBe(8600);
+});
+
+test('取り込んだ出張申請が一覧の props に出る', function () {
+    $this->post('/trips/import', ['csv' => csvFile(travelRow('那覇', 'テスト太郎'))]);
+
+    $this->get('/trips')->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Trips/Index')
+        ->has('trips', 1)
+        ->where('trips.0.destination', '那覇')
+        ->where('trips.0.urls.pdf', url('/trips/pdf/' . Travel::first()->id)));
+});
+
+test('取り込んだ旅費精算が一覧の props に出る', function () {
+    $this->post('/expenses/import', ['csv' => csvFile(expenseRow())]);
+
+    $expense = TravelExpense::first();
+
+    $this->get('/expenses')->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Expenses/Index')
+        ->has('expenses', 1)
+        ->where('expenses.0.destination', '東京')
+        // 合計は CSV 末尾の申告 (8600) ではなく費目の合計
+        ->where('expenses.0.totalFee', (int) $expense->total_fee));
 });

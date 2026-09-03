@@ -18,22 +18,37 @@ use App\Support\Flash;
 use App\Http\ViewModels\TravelExpenseView;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 final class TravelExpenseController extends Controller
 {
-    public function index(ListTravelExpensesUseCase $listExpenses): View
+    public function index(ListTravelExpensesUseCase $listExpenses): InertiaResponse
     {
-        return view('calculate.expenses.index', [
+        return Inertia::render('Expenses/Index', [
             'expenses' => TravelExpenseView::collection($listExpenses->execute()),
+            'urls' => [
+                'create' => route('expenses.create'),
+                'import' => route('expenses.import'),
+            ],
         ]);
     }
 
-    public function create(): View
+    /**
+     * 精算フォーム。
+     *
+     * 新規でも empty() を渡す。管理 ID や日付の既定値をここが持っているため
+     * (null にすると画面側で同じ既定値をもう一度書くことになる)。
+     */
+    public function create(): InertiaResponse
     {
-        return view('calculate.expenses.form', [
+        return Inertia::render('Expenses/Form', [
             'expense' => TravelExpenseView::empty(),
             'isNew' => true,
+            'urls' => [
+                'submit' => route('expenses.create'),
+                'back' => route('expenses.index'),
+            ],
         ]);
     }
 
@@ -44,11 +59,15 @@ final class TravelExpenseController extends Controller
         return redirect()->route('expenses.index')->with(Flash::success('旅費精算を登録しました'));
     }
 
-    public function edit(int $id, GetTravelExpenseUseCase $getExpense): View
+    public function edit(int $id, GetTravelExpenseUseCase $getExpense): InertiaResponse
     {
-        return view('calculate.expenses.form', [
+        return Inertia::render('Expenses/Form', [
             'expense' => TravelExpenseView::fromEntity($getExpense->execute($id)),
             'isNew' => false,
+            'urls' => [
+                'submit' => route('expenses.edit', ['id' => $id]),
+                'back' => route('expenses.index'),
+            ],
         ]);
     }
 
@@ -59,10 +78,11 @@ final class TravelExpenseController extends Controller
         return redirect()->route('expenses.index')->with(Flash::success('旅費精算を更新しました'));
     }
 
-    public function show(int $id, GetTravelExpenseUseCase $getExpense): View
+    public function show(int $id, GetTravelExpenseUseCase $getExpense): InertiaResponse
     {
-        return view('calculate.expenses.view', [
+        return Inertia::render('Expenses/Show', [
             'expense' => TravelExpenseView::fromEntity($getExpense->execute($id)),
+            'urls' => ['back' => route('expenses.index')],
         ]);
     }
 

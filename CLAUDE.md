@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 13 + Tailwind CSS v4。UI・コード内コメントは日本語。
 
-**画面は Blade から Inertia + Svelte 5 へ移行中**。発注書 (4 画面) とマスタ系 (顧客・案件・ユーザーの 8 画面) が移行済みで、残りはまだ Blade。混在の作法は「フロントエンドの構成」を参照。
+**画面は Blade から Inertia + Svelte 5 へ移行中**。発注書 (4 画面)、マスタ系 (顧客・案件・ユーザーの 8 画面)、出張申請・旅費精算 (6 画面) が移行済み。残りはダッシュボード・設定・ログイン・ファイル・Academy の 5 画面。混在の作法は「フロントエンドの構成」を参照。
 
 Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げてきた（1 メジャー = 1 PR）。**現在 13 で、アップグレードは完了している。**
 
@@ -188,7 +188,7 @@ Tailwind は CSS しか提供しないので、Bootstrap の JS コンポーネ�
 
 **移行中はこれらと同じ UI が Svelte 側 (`resources/ts/components/ui/`) にもある**。Inertia に移した画面はそちらを使う。どちらかだけを直すと見た目がずれるので、共通の見た目を変えるときは両方を直すこと。Blade 側から参照が無くなったものはその都度削除している。移行が終われば Blade 側は消える。
 
-再利用する UI は `resources/views/components/` の匿名 Blade コンポーネントにまとめてある。**残っているのは、まだ Blade の画面が使うものだけ**: `x-button` / `x-input` / `x-textarea` / `x-label` / `x-card` / `x-table` / `x-toggle` / `x-empty-state` / `x-page-header` / `x-dropdown`（+ `x-dropdown-item` / `x-dropdown-divider`）/ `x-modal` / `x-flash`。移行で参照が無くなったものは削除している（`x-badge` / `x-select` / `x-order-status` / `x-order-row`）。それ以外はユーティリティを直書きする。
+再利用する UI は `resources/views/components/` の匿名 Blade コンポーネントにまとめてある。**残っているのは、まだ Blade の画面が使うものだけ**: `x-button` / `x-input` / `x-textarea` / `x-label` / `x-card` / `x-table` / `x-toggle` / `x-empty-state` / `x-page-header` / `x-dropdown`（+ `x-dropdown-item` / `x-dropdown-divider`）/ `x-flash`。移行で参照が無くなったものは削除している（`x-badge` / `x-select` / `x-modal` / `x-order-status` / `x-order-row`）。それ以外はユーティリティを直書きする。
 
 落とし穴が 2 つある。
 
@@ -471,8 +471,8 @@ Laravel の `SoftDeletes` は使わず、`order_headers.is_deleted` (integer) �
 
 | | 画面 |
 | --- | --- |
-| Inertia + Svelte | 発注書（一覧・ごみ箱・フォーム・詳細）、顧客（一覧・フォーム）、案件（一覧・フォーム・売上分析）、ユーザー（一覧・フォーム・2FA 設定） |
-| Blade + Alpine | 出張申請・旅費精算・設定・ダッシュボード・ログイン・ファイル・Academy |
+| Inertia + Svelte | 発注書（一覧・ごみ箱・フォーム・詳細）、顧客（一覧・フォーム）、案件（一覧・フォーム・売上分析）、ユーザー（一覧・フォーム・2FA 設定）、出張申請（一覧・フォーム・詳細）、旅費精算（一覧・フォーム・詳細） |
+| Blade + Alpine | ダッシュボード・設定・ログイン・ファイル・Academy |
 
 SvelteKit は使っていない。ルーティングは Laravel が持ち、Inertia がページを差し替える。
 
@@ -499,14 +499,18 @@ resources/ts/
 │   ├── Orders/      Index / Trash / Form / Show
 │   ├── Customers/   Index / Form
 │   ├── Projects/    Index / Form / Analysis
-│   └── Users/       Index / Form / TwoFactor
+│   ├── Users/       Index / Form / TwoFactor
+│   ├── Trips/       Index / Form / Show
+│   └── Expenses/    Index / Form / Show
 ├── Layouts/         Default.svelte (ナビ・トースト)
 ├── components/
 │   ├── ui/          Blade の x-* を移植したもの (Button/Card/Input/Table/…)
 │   ├── OrderLines.svelte      明細テーブル (旧 lib/order-form.ts)
 │   ├── OrderStatusPill.svelte ステータスピル (旧 lib/status.ts)
-│   └── ProjectsModal.svelte   受注前確認モーダル (案件フォームの子要素)
-└── lib/             order-types.ts / master-types.ts (サーバーが渡す JSON の型) など
+│   ├── ProjectsModal.svelte   受注前確認モーダル (案件フォームの子要素)
+│   └── CsvImportModal.svelte  CSV 取り込み (出張申請と旅費精算が使う)
+└── lib/             order-types.ts / master-types.ts / travel-types.ts
+                     (サーバーが渡す JSON の型) など
 ```
 
 ### 書くときの約束
@@ -518,6 +522,8 @@ resources/ts/
 - **`urls` は id が null なら null にする**。未保存のエンティティに `route(..., ['id' => null])` は組めない（移行前のユーザー新規登録画面が 500 になっていた原因）。画面側は `urls` の有無でボタンを出し分ける
 - **一覧に要らない項目まで props に載せない**。`CustomerView::collection()` は顧客画面用に全項目を出すが、発注書フォームの取引先セレクトは `CustomerView::options()`（id と名前だけ）を使う
 - **検証エラーは `FormErrors` に渡す**。Blade の `$errors->any()` ブロックの置き換えで、`useForm` の `errors` をそのまま渡せばよい
+- **ファイルは `useForm` にそのまま入れる**。値に `File` が混ざると Inertia が自動で `multipart/form-data` に切り替えるので、`enctype` を自分で書く必要は無い（`CsvImportModal`）
+- **日付や連番の既定値はサーバーで決める**。画面が `new Date()` を持つと、サーバーの時計とずれるうえテストから固定できない（出張申請フォームの `defaults`）
 - **フラッシュのトーストは Svelte の `transition:` を使わない**。Inertia はレイアウトを保持したままページを差し替えるため、表示条件が変わる瞬間にトランジションが中断され、opacity 0 の要素が DOM に残ることがあった。出現は CSS アニメーション (`.toast-enter`)、消すときは DOM から取り除く
 - **NFC の読み取りは `lib/nfc-scan.ts`**。旧 `novalumo.ts` は `window.novalumo` 経由で input 要素を受け取り value を直接書き換えていたが、読めた値をコールバックで返す形にしてある（DOM を直接触ると Svelte の状態と食い違う）
 - **React は削除済み**: 生きていたのは `ProjectsModal` 1 つだけで、react-router の `<App />`（ダッシュボードの二重描画の原因）と `Calc` / `Example`（マウント先が存在しない）は死にコードだった

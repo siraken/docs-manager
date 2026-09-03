@@ -17,20 +17,42 @@ use App\Support\Flash;
 use App\Http\ViewModels\TravelView;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 final class TravelController extends Controller
 {
-    public function index(ListTravelsUseCase $listTravels): View
+    public function index(ListTravelsUseCase $listTravels): InertiaResponse
     {
-        return view('calculate.trips.index', [
+        return Inertia::render('Trips/Index', [
             'trips' => TravelView::collection($listTravels->execute()),
+            'urls' => [
+                'create' => route('trips.create'),
+                'import' => route('trips.import'),
+            ],
         ]);
     }
 
-    public function create(): View
+    /**
+     * 申請フォーム。
+     *
+     * 既定値 (管理 ID・出発日・帰着日・申請日) はサーバー側で決める。
+     * 申請者氏名は共有プロパティの auth.name を画面側で使う。
+     */
+    public function create(): InertiaResponse
     {
-        return view('calculate.trips.form');
+        return Inertia::render('Trips/Form', [
+            'defaults' => [
+                'relId' => date('Ymd') . '-Num',
+                'dateFrom' => date('Y-m-d', strtotime('+1 day')),
+                'dateTo' => date('Y-m-d', strtotime('+1 week')),
+                'applyDate' => date('Y-m-d'),
+            ],
+            'urls' => [
+                'submit' => route('trips.create'),
+                'back' => route('trips.index'),
+            ],
+        ]);
     }
 
     public function store(SaveTravelRequest $request, CreateTravelUseCase $createTravel): RedirectResponse
@@ -40,10 +62,11 @@ final class TravelController extends Controller
         return redirect()->route('trips.index')->with(Flash::success('出張申請を登録しました'));
     }
 
-    public function show(int $id, GetTravelUseCase $getTravel): View
+    public function show(int $id, GetTravelUseCase $getTravel): InertiaResponse
     {
-        return view('calculate.trips.view', [
+        return Inertia::render('Trips/Show', [
             'trip' => TravelView::fromEntity($getTravel->execute($id)),
+            'urls' => ['back' => route('trips.index')],
         ]);
     }
 
