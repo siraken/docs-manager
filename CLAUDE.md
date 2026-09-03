@@ -324,7 +324,9 @@ axios との違いで注意が要るのは 2 点。
 
 Vite はビルド時に `import.meta.env.VITE_*` を値へ埋め込む。**`process.env.MIX_*` は解決されない**（Mix 時代の書き方が残っていると常に `undefined` になる）。
 
-`VITE_APP_ENV` は `nfc-auth.ts` / `metamask-auth.ts` がベースパスの判定に使っている。**本番ビルド時にこの変数が設定されていないと、`/docs-manager` プレフィックスの判定が意図せず本番側に倒れる**ので注意。
+**いま `import.meta.env.VITE_*` を読むコードは無い**。`VITE_APP_ENV` は `nfc-auth.ts` / `metamask-auth.ts` がベースパス（`/docs-manager` プレフィックス）の判定に使っていたが、両ファイルは Inertia 化で削除された。URL はすべてサーバー側で組んでいるので、フロントがベースパスを知る必要そのものが無くなっている。`.env.example` の `VITE_APP_ENV` は残してあるが、現状どこからも読まれない。
+
+`tsconfig.json` の `types` にある `vite/client` は引き続き要る。`app.ts` の `import.meta.glob` の型がこれで解決されるため。
 
 ## Laravel 13 で入れた設定
 
@@ -542,15 +544,29 @@ resources/ts/
 - **React は削除済み**: 生きていたのは `ProjectsModal` 1 つだけで、react-router の `<App />`（ダッシュボードの二重描画の原因）と `Calc` / `Example`（マウント先が存在しない）は死にコードだった
 - **Inertia は一度削除して入れ直している**: 使われていなかったため Laravel 11 化の際に外したが、今回の移行で再導入した
 
-## デプロイ / CI
+## CI
 
-**現在 CI・デプロイのワークフローは無い**。`.github/workflows/deploy.yml` は、デプロイ先サーバーが廃止され `main` への push のたびに SSH 接続で失敗する状態になっていたため一旦削除した。同ファイルに同居していた `php-tests`（PHPUnit）ジョブも同時に失われている。
+**`.github/workflows/ci.yml` がテストと型チェックを回す。デプロイのワークフローは無い。**
 
-作り直す場合、旧ワークフローが抱えていた問題を引き継がないよう注意する。
+| ジョブ | 内容 |
+| --- | --- |
+| `php` | PHP 8.3 + `composer install` → `./vendor/bin/pest` |
+| `frontend` | Node 22 + pnpm 11 → `tsc --noEmit` / `svelte-check` / `pnpm build` |
+
+`pull_request` と `main` への push で走る。2 つのジョブは独立なので並列に動く。ローカルの `just check` と同じものを見ている（`just check` は build を含まない点だけ違う）。
+
+- **`php artisan key:generate` が要る**。`.env.example` の `APP_KEY` は空で、暗号化クッキーのミドルウェアが鍵を要求する。DB は `phpunit.xml` が sqlite の `:memory:` を指定するので、`.env.example` の `DB_CONNECTION=mysql` は使われない
+- **テスト前にアセットをビルドする必要は無い**。`tests/TestCase.php` が `withoutVite()` を呼ぶため
+- **Node は 22 を指定する**。pnpm 11 が 22.13+、Vite 8 が 22.12+ を要求し、`@tailwindcss/oxide` と `rolldown` のネイティブバイナリは engines が合わないと黙ってスキップされて `Cannot find native binding` で落ちる
+- **サードパーティの action は SHA で固定する**（`shivammathur/setup-php` / `pnpm/action-setup`）。バージョンはコメントで併記
+
+### デプロイを作る場合
+
+**デプロイ先のサーバーは廃止済み**で、いま復活させる先は無い。作り直す場合、旧 `deploy.yml` が抱えていた問題を引き継がないよう注意する。
 
 - 旧デプロイは SSH 先で `git reset --hard origin/main` → `yarn install && yarn prod` を実行するだけで、**`composer install` を実行しなかった**
 - **マイグレーションも自動実行されなかった**。旧 `runner` にあった `prod:migrate` は `ssh` 先で `migrate:fresh`（＝全テーブル削除）を走らせるものだったので、justfile には移していない
-- Node.js のテストジョブはコメントアウトされていた（jest のテストファイル自体が未作成）
+- テストとデプロイが 1 ファイルに同居していたため、デプロイ先が死んだときにテストのジョブごと失われた。**分けておくこと**
 
 ## コーディング規約
 
