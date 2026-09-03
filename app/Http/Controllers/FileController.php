@@ -7,7 +7,8 @@ namespace App\Http\Controllers;
 use App\Support\Flash;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
@@ -30,11 +31,16 @@ final class FileController extends Controller
 {
     private const UPLOAD_DIR = 'app/public/uploads';
 
-    public function index(): View
+    public function index(): InertiaResponse
     {
-        return view('files.index', [
-            // 一覧はログイン中のみ出す (ビュー側も session('email') を見ている)
-            'files' => session('email') === null ? [] : $this->listFiles(),
+        // 一覧はログイン中のみ。canList を渡すのは、ログイン中でも 0 件の場合と
+        // 未ログインで一覧そのものが無い場合を画面が区別できるようにするため
+        $canList = session('email') !== null;
+
+        return Inertia::render('Files/Index', [
+            'files' => $canList ? $this->fileRows() : [],
+            'canList' => $canList,
+            'urls' => ['upload' => route('files.upload')],
         ]);
     }
 
@@ -69,6 +75,23 @@ final class FileController extends Controller
         unlink($this->resolve($file));
 
         return redirect()->route('files.index')->with(Flash::success('削除しました'));
+    }
+
+    /**
+     * 一覧の各行。ダウンロードと削除の URL はここで組む
+     * (画面側にルートヘルパを持ち込まない方針)。
+     *
+     * @return list<array{name: string, urls: array{download: string, delete: string}}>
+     */
+    private function fileRows(): array
+    {
+        return array_map(static fn (string $file): array => [
+            'name' => $file,
+            'urls' => [
+                'download' => route('files.download', ['file' => $file]),
+                'delete' => route('files.delete', ['file' => $file]),
+            ],
+        ], $this->listFiles());
     }
 
     /** @return list<string> */

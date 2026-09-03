@@ -1,6 +1,7 @@
 <?php
 
 use App\Infrastructure\Persistence\Eloquent\Models\Setting;
+use Inertia\Testing\AssertableInertia;
 
 /**
  * 設定 (自社情報)。
@@ -14,12 +15,11 @@ beforeEach(function () {
 });
 
 test('未登録なら既定値が表示される', function () {
-    $response = $this->get('/settings');
-
-    $response->assertOk();
-    // 移行前に PDF へ直書きされていた値が既定値になっている
-    $response->assertSee('Novalumo合同会社');
-    expect($response->viewData('profile')->isDefault)->toBeTrue();
+    $this->get('/settings')->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Settings')
+        // 移行前に PDF へ直書きされていた値が既定値になっている
+        ->where('profile.name', 'Novalumo合同会社')
+        ->where('profile.isDefault', true));
 });
 
 test('自社情報を保存できる', function () {
@@ -37,9 +37,9 @@ test('自社情報を保存できる', function () {
     expect($setting->name)->toBe('テスト商会')
         ->and($setting->tel_no)->toBe('03-1234-5678');
 
-    $response = $this->get('/settings');
-    $response->assertSee('テスト商会');
-    expect($response->viewData('profile')->isDefault)->toBeFalse();
+    $this->get('/settings')->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('profile.name', 'テスト商会')
+        ->where('profile.isDefault', false));
 });
 
 test('保存は既存のレコードを更新する', function () {

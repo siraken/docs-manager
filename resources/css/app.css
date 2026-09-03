@@ -7,7 +7,6 @@
 @import "./document-table.css";
 
 /* Tailwind v4 は既定でプロジェクト全体を走査するが、対象を明示しておく */
-@source "../views";
 @source "../ts";
 
 @theme {
@@ -35,13 +34,15 @@
         -webkit-text-size-adjust: 100%;
     }
 
-    /* Alpine が初期化されるまで x-show の要素を出さない */
-    [x-cloak] {
-        display: none !important;
-    }
-
     body {
         @apply bg-slate-50 font-sans text-slate-800 antialiased;
+    }
+
+    /* Inertia のマウント先。`@inertia` が吐く <div id="app"> は素の block なので、
+       body と同じ縦の flex にしておかないとレイアウト側の flex-1 が伸びる先を
+       持たない (ログイン画面の背景がページ途中で途切れていた)。 */
+    #app {
+        @apply flex flex-1 flex-col;
     }
 
     /* 数値は等幅の桁送りで揃える (金額表示が多いため) */

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\UploadedFile;
+use Inertia\Testing\AssertableInertia;
 
 /**
  * ファイルの受け渡し。
@@ -65,16 +66,22 @@ test('アップロードは未ログインでもできる', function () {
 test('一覧は未ログインだと出ない', function () {
     file_put_contents(uploadsDir() . '/secret.txt', 'x');
 
-    $response = $this->get('/downloader');
-
-    $response->assertOk();
-    $response->assertDontSee('secret.txt');
+    // アップロードのフォームは誰でも開ける。一覧だけを伏せる
+    $this->get('/downloader')->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Files/Index')
+        ->where('canList', false)
+        ->has('files', 0));
 });
 
 test('一覧はログイン中なら出る', function () {
     file_put_contents(uploadsDir() . '/secret.txt', 'x');
 
-    actingAsUser(createUser())->get('/downloader')->assertSee('secret.txt');
+    actingAsUser(createUser())->get('/downloader')
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('canList', true)
+            ->has('files', 1)
+            ->where('files.0.name', 'secret.txt')
+            ->where('files.0.urls.download', url('/downloader/secret.txt')));
 });
 
 test('ダウンロードできる', function () {

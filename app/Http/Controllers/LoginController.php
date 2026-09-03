@@ -15,7 +15,8 @@ use App\Http\Requests\LoginRequest;
 use App\Support\Flash;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 /**
  * 独自セッション認証の入り口。
@@ -25,9 +26,15 @@ use Illuminate\View\View;
  */
 final class LoginController extends Controller
 {
-    public function index(): View
+    public function index(): InertiaResponse
     {
-        return view('login');
+        return Inertia::render('Auth/Login', [
+            'urls' => [
+                'submit' => route('loginAuth'),
+                'nfc' => route('login-nfc'),
+                'metamask' => route('login-metamask'),
+            ],
+        ]);
     }
 
     public function auth(LoginRequest $request, LoginWithPasswordUseCase $login): RedirectResponse

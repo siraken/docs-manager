@@ -10,7 +10,8 @@ use App\Http\Requests\SaveCompanyProfileRequest;
 use App\Support\Flash;
 use App\Http\ViewModels\CompanyProfileView;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 /**
  * 設定 (自社情報)。
@@ -21,10 +22,11 @@ use Illuminate\View\View;
  */
 final class SettingController extends Controller
 {
-    public function index(GetCompanyProfileUseCase $getProfile): View
+    public function index(GetCompanyProfileUseCase $getProfile): InertiaResponse
     {
-        return view('settings.index', [
+        return Inertia::render('Settings', [
             'profile' => CompanyProfileView::fromEntity($getProfile->execute()),
+            'urls' => ['submit' => route('settings.index')],
         ]);
     }
 

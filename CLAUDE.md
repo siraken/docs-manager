@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 13 + Tailwind CSS v4。UI・コード内コメントは日本語。
 
-**画面は Blade から Inertia + Svelte 5 へ移行中**。発注書 (4 画面)、マスタ系 (顧客・案件・ユーザーの 8 画面)、出張申請・旅費精算 (6 画面) が移行済み。残りはダッシュボード・設定・ログイン・ファイル・Academy の 5 画面。混在の作法は「フロントエンドの構成」を参照。
+**画面は Blade から Inertia + Svelte 5 へ移行済み**（全 23 画面）。Blade として残っているのは Inertia のルートテンプレート (`app.blade.php`)、エラーページ (`errors/`)、メール本文 (`emails/`) だけ。Alpine.js と `resources/views/components/` は削除済み。詳しくは「フロントエンドの構成」を参照。
 
 Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げてきた（1 メジャー = 1 PR）。**現在 13 で、アップグレードは完了している。**
 
@@ -80,7 +80,7 @@ just up            # アプリ + MySQL (http://localhost)
 just dev           # Vite の HMR
 ```
 
-`just dev` を動かすと `public/hot` が作られ、Blade の `@vite` がアセットの参照先を Vite の dev サーバーに切り替える。ページのオリジン（`http://localhost`）と Vite のオリジン（`http://127.0.0.1:5173`）は別になるが、`laravel-vite-plugin` が CORS を通すので問題なく読める。**Vite を止めたら `public/hot` が消えることを確認すること**（残っているとビルド成果物ではなく止まった dev サーバーを見にいくため、画面が真っ白になる）。
+`just dev` を動かすと `public/hot` が作られ、`app.blade.php` の `@vite` がアセットの参照先を Vite の dev サーバーに切り替える。ページのオリジン（`http://localhost`）と Vite のオリジン（`http://127.0.0.1:5173`）は別になるが、`laravel-vite-plugin` が CORS を通すので問題なく読める。**Vite を止めたら `public/hot` が消えることを確認すること**（残っているとビルド成果物ではなく止まった dev サーバーを見にいくため、画面が真っ白になる）。
 
 `set positional-arguments` を使い、レシピ側では `"$@"` で受けている。そのため `just artisan make:model "My Model"` のように**空白を含む引数もそのまま渡せる**（旧 `runner` は `ARGS=${@:2}` を単語分割される形で展開していたため、空白入りの引数が分裂した）。
 
@@ -106,7 +106,7 @@ just sail-test                                 # Sail 経由 (MySQL)
 
 `uses(TestCase::class)->in('Feature')` と `uses(RefreshDatabase::class)->in('Feature')` も `tests/Pest.php` で設定している。
 
-**Inertia の画面は `viewData()` ではなく props を見る**。`viewData()` は Blade のビューにしか使えない。
+**画面のテストは `viewData()` ではなく props を見る**。`viewData()` は Blade のビューにしか使えず、画面はすべて Inertia になっている。
 
 ```php
 $this->get('/orders')->assertInertia(fn (AssertableInertia $page) => $page
@@ -142,11 +142,11 @@ just build     # 本番ビルド
 
 **TypeScript 6 は `moduleResolution: "node"` (node10) を非推奨エラーにする**。TS 7 で機能停止するため、`tsconfig.json` は `module: "esnext"` + `moduleResolution: "bundler"` に移行済み。`import.meta.env` の型は `types` に `vite/client` を足して解決している（無いと `ImportMeta` に `env` が生えず `nfc-auth.ts` / `metamask-auth.ts` が型エラーになる）。なお **tsc は emit に使っていない**（`--noEmit` のみ）。実際のトランスパイルはバンドラ側（Vite 8 では Oxc、それ以前は esbuild）が行う。
 
-エントリは `vite.config.ts` の `input` に定義（`resources/css/app.css` と `resources/ts/app.ts`）。出力は `public/build/`（gitignore 済み）で、`manifest.json` を Blade の `@vite` が読む。
+エントリは `vite.config.ts` の `input` に定義（`resources/css/app.css` と `resources/ts/app.ts`）。出力は `public/build/`（gitignore 済み）で、`manifest.json` を `app.blade.php` の `@vite` が読む。
 
 **ネイティブバイナリを使う依存が 2 つある**: Tailwind v4 の `@tailwindcss/oxide` と、Vite 8 のバンドラである `rolldown`。どちらもプラットフォーム別のプリビルドを optional dependency として配り（`@tailwindcss/oxide-darwin-arm64` / `@rolldown/binding-darwin-arm64`）、`engines` に Node のバージョン制約を持つ。**ホストの Node が古いまま `pnpm install` すると engines 不一致で黙ってスキップされ**、ビルド時に `Cannot find native binding` で落ちる。`node_modules` を消して **devShell の中で** 入れ直すこと。
 
-Blade 側は `layouts/default.blade.php` と `layouts/auth.blade.php` が `@vite([...])` を書く。**`@viteReactRefresh` は削除済み**（React を剥がしたため）。
+`@vite([...])` を書くのは `resources/views/app.blade.php` だけ。**`@viteReactRefresh` は削除済み**（React を剥がしたため）。
 
 **テストでは `withoutVite()` が必須**。`tests/TestCase.php` の `setUp()` で呼んでいる。これがないと `@vite` がビルド成果物を探しに行き、テスト前に `pnpm build` が必要になる。
 
@@ -154,7 +154,7 @@ Vite は ESM 前提なので `require()` は使えない。バンドル対象の
 
 ### Svelte
 
-**Svelte 5**（runes）。**SvelteKit は使っていない** —— ルーティングは Laravel が持ち、Inertia がページを差し替える（「フロントエンドの構成」を参照）。移行済みの画面ではページ全体が Svelte で、Blade の DOM に差し込む「島」はもう無い。
+**Svelte 5**（runes）。**SvelteKit は使っていない** —— ルーティングは Laravel が持ち、Inertia がページを差し替える（「フロントエンドの構成」を参照）。ページ全体が Svelte で、Blade の DOM に差し込む「島」は無い。
 
 - ビルドは `@sveltejs/vite-plugin-svelte` 7.x。**バージョンを上げるときは Vite との対応に注意**: peer が `vite ^8` で、`laravel-vite-plugin` 3.x も同じく Vite 8 を要求する。この 3 つは足並みを揃えて上げること
 - `svelte.config.js` は `vitePreprocess()` だけ。`<script lang="ts">` はこれを通して Vite（8 では Oxc）が処理する
@@ -182,27 +182,22 @@ Bootstrap 5 は削除済み。**Tailwind CSS v4** の CSS-first 構成で、`tai
 
 **アイコンは `bootstrap-icons`**（Bootstrap 本体とは別プロジェクト）。CDN ではなく npm 依存にして Vite にバンドルさせている。フラッシュメッセージの `flash_icon` にコントローラから `bi-` 名を渡す仕組みは従来どおり。CSS の大半（117KB 中 100KB 程度）はこのアイコン定義で、使うのは十数種だが CDN 時代と同じものなので絞り込んではいない。
 
-### Blade コンポーネントと Alpine.js
+### UI コンポーネント
 
-Tailwind は CSS しか提供しないので、Bootstrap の JS コンポーネント（modal / dropdown / collapse / toast）は **Alpine.js** に置き換えてある（`resources/ts/lib/alpine.ts` で `Alpine.start()`）。
+再利用する UI は `resources/ts/components/ui/` にある。`Button` / `Input` / `Select` / `Textarea` / `Toggle` / `Label` / `Card` / `Table` / `Badge` / `EmptyState` / `PageHeader` / `Modal` / `Dropdown`（+ `DropdownItem` / `DropdownDivider`）/ `Flash` / `FormErrors` / `DetailList`。それ以外はユーティリティを直書きする。
 
-**移行中はこれらと同じ UI が Svelte 側 (`resources/ts/components/ui/`) にもある**。Inertia に移した画面はそちらを使う。どちらかだけを直すと見た目がずれるので、共通の見た目を変えるときは両方を直すこと。Blade 側から参照が無くなったものはその都度削除している。移行が終われば Blade 側は消える。
+**Bootstrap 5 の JS コンポーネント（modal / dropdown / collapse / toast）は、一度 Alpine.js に置き換えたあと Svelte に移した**。Alpine とその Blade 版コンポーネント (`resources/views/components/`) は Inertia 化の完了と同時に削除してある。
 
-再利用する UI は `resources/views/components/` の匿名 Blade コンポーネントにまとめてある。**残っているのは、まだ Blade の画面が使うものだけ**: `x-button` / `x-input` / `x-textarea` / `x-label` / `x-card` / `x-table` / `x-toggle` / `x-empty-state` / `x-page-header` / `x-dropdown`（+ `x-dropdown-item` / `x-dropdown-divider`）/ `x-flash`。移行で参照が無くなったものは削除している（`x-badge` / `x-select` / `x-modal` / `x-order-status` / `x-order-row`）。それ以外はユーティリティを直書きする。
+**フラッシュのトーストはヘッダーと重なる**。`Flash` は `top` プロパティで位置を受け取り、`Layouts/Default` では既定の `top-20`（h-16 のヘッダーの下）、`Layouts/Auth` では `top-4` を渡している。
 
-落とし穴が 2 つある。
+### 画面に渡すのは ViewModel
 
-1. **Blade コンポーネントタグの中で Blade ディレクティブを使わない**。`<x-toggle @checked($v) />` のように書くと、コンポーネントタグのパーサが属性として解釈できずタグ自体がコンパイルされず、`<x-toggle>` が未知の HTML 要素としてそのまま出力される（後続の要素がその中に入れ子になり、画面から消える）。`:checked="(bool) $v"` のように **プロパティとして渡す**こと。素の HTML タグの中（`<option @selected(...)>` など）なら問題ない
-2. **フラッシュのトーストはヘッダーと重なる**。`x-flash` は `top` プロパティで位置を受け取り、`layouts/default` では既定の `top-20`（h-16 のヘッダーの下）、`layouts/auth` では `top-4` を渡している
-
-### ビューに渡すのは ViewModel
-
-**Blade に Eloquent モデルもドメインエンティティも渡さない**。`app/Http/ViewModels/` の readonly クラス（`OrderView` / `CustomerView` / `ProjectView` / `UserView` / `TravelView` / `TravelExpenseView` / `CompanyProfileView` / `AcademyInquiryView`）に整形済みの値を詰めて渡す。
+**Eloquent モデルもドメインエンティティも画面に渡さない**。`app/Http/ViewModels/` の readonly クラス（`OrderView` / `CustomerView` / `ProjectView` / `UserView` / `TravelView` / `TravelExpenseView` / `CompanyProfileView` / `AcademyInquiryView`）に整形済みの値を詰めて渡す。
 
 - プロパティはキャメルケース（`$row->issuedDateLabel`）。移行前はカラム名で `$row['issued_date']` と引いていたため、DB のカラム名を変えると画面が壊れた
 - 日付や金額は**整形済みの値も持たせる**（`issuedDate` = `2026-09-01` / `issuedDateLabel` = `2026/09/01`、`total` = `1650` / `totalLabel` = `1,650`）。前者はフォームの `value`、後者は表示に使う
-- 一覧には `::collection()` で `Illuminate\Support\Collection` を返す。テストが `viewData('orders')->keyBy(...)` のように扱えるようにするため
-- 新規作成フォームには `::empty()` を渡す（null チェックを Blade に持ち込まないため）
+- 一覧には `::collection()` で `Illuminate\Support\Collection` を返す
+- 新規作成フォームには `::empty()` を渡すか、props を `null` にして画面側で分岐する。既定値をサーバーが持つなら前者（`TravelExpenseView`）、持たないなら後者（`CustomerView` / `ProjectView` / `UserView`）
 
 ### ローカルでの動作確認 (sqlite)
 
@@ -263,7 +258,7 @@ app/
 ├── Http/             Laravel の既定。HTTP との変換だけを行う
 │   ├── Controllers/      ユースケースを呼んで View か Response を返す
 │   ├── Requests/         FormRequest。検証と Input DTO への組み替え
-│   ├── ViewModels/       Blade に渡す整形済みの値
+│   ├── ViewModels/       画面に渡す整形済みの値 (Inertia の props)
 │   └── Middleware/
 ├── Support/Flash.php フラッシュメッセージの 3 キーを組み立てる
 │
@@ -297,7 +292,7 @@ app/
 
 - **ドメイン層に `use Illuminate\...` を書かない**。書きたくなったらそれは Infrastructure の関心
 - **コントローラに業務ロジックを書かない**。分岐が出てきたらユースケース側へ。`app/Http` は Laravel の既定の場所なので、油断すると元の「全部入りコントローラ」に戻る
-- **Eloquent モデルはリポジトリの外に出さない**。ビューへはドメインのエンティティではなく ViewModel を渡す（Blade が `$row['is_issued']` のようにカラム名で引くと、DB の都合が画面に漏れる）
+- **Eloquent モデルはリポジトリの外に出さない**。画面へはドメインのエンティティではなく ViewModel を渡す（画面が `is_issued` のようにカラム名で引くと、DB の都合が画面に漏れる）
 - **ユースケースはコンストラクタでインターフェースを受け取る**。テストで `$this->app->instance(...)` して差し替えられる
 
 **依存注入はメソッドインジェクションを使っている**。コントローラのコンストラクタに 10 個のユースケースを並べると、1 アクションのために全部が解決されてしまうため。
@@ -347,7 +342,7 @@ Vite はビルド時に `import.meta.env.VITE_*` を値へ埋め込む。**`proc
 | --- | --- |
 | 発注書の編集が保存できず 500 | `edit()` がフォームに存在しない `is_issued` 等を参照していた。更新は集約の同一性を保ったまま行い、フォームが持たない項目（発行・受注ステータス、ごみ箱フラグ、社内メモ）は現在値を維持する。**id も変わらなくなった**（旧実装は物理削除 → 再作成だった） |
 | 編集画面に既存の値が出ない | `orders/form.blade.php` は `$header` / `$details` を受け取りながら一切使っていなかった。`x-order-row` が明細を受け取るようにして描画する |
-| `OrderController::view()` が無い | ルートだけあってメソッドが無く 500。ビューも CakePHP のまま（`$this->Html->url()` で 1 行目から落ちる）だったので、明細と金額を出す Blade に書き直した |
+| `OrderController::view()` が無い | ルートだけあってメソッドが無く 500。ビューも CakePHP のまま（`$this->Html->url()` で 1 行目から落ちる）だったので、明細と金額を出す画面に書き直した |
 | 顧客の編集が保存されない | `edit()` に POST 分岐が無く、保存ボタンを押しても何も起きなかった（画面は成功したように見える） |
 | 案件のステータス表示が壊れている | `switch ($project->status) { case $project->status === 0: ... }` という `switch (true)` の誤用。さらに一覧が 3 種類・フォームが 8 種類と定義が食い違っていた。`ProjectStatus` enum（8 種類）に一本化 |
 | 明細のない発注書で CSV が落ちる | `$details[0]` を無条件参照していた。ヘッダー行を固定で持つようにして、明細が無くても出力できる |
@@ -413,7 +408,7 @@ Route::get('/edit/{id}', 'edit')->name('xxx.edit');
 Route::post('/edit/{id}', 'update');
 ```
 
-**ルート名は GET 側にだけ付ける**（移行前と同じ名前を維持しているので、Blade の `route()` は変更不要）。新しい CRUD もこの形に合わせる。
+**ルート名は GET 側にだけ付ける**（移行前と同じ名前を維持している）。新しい CRUD もこの形に合わせる。
 
 ### フラッシュメッセージ
 
@@ -467,29 +462,39 @@ Laravel の `SoftDeletes` は使わず、`order_headers.is_deleted` (integer) �
 
 ### フロントエンドの構成
 
-**Inertia + Svelte 5 へ移行中で、いまは Blade と混在している。**
-
-| | 画面 |
-| --- | --- |
-| Inertia + Svelte | 発注書（一覧・ごみ箱・フォーム・詳細）、顧客（一覧・フォーム）、案件（一覧・フォーム・売上分析）、ユーザー（一覧・フォーム・2FA 設定）、出張申請（一覧・フォーム・詳細）、旅費精算（一覧・フォーム・詳細） |
-| Blade + Alpine | ダッシュボード・設定・ログイン・ファイル・Academy |
+**全 23 画面が Inertia + Svelte 5。Blade のビューはもう画面を描かない。**
 
 SvelteKit は使っていない。ルーティングは Laravel が持ち、Inertia がページを差し替える。
 
-### 混在させる仕組み
+`resources/views/` に残っているのは 3 つだけ。
 
-読み込まれる JS はどちらの画面でも `resources/ts/app.ts` ひとつ。**`#app`（Inertia のマウント先）の有無で分岐**している。
+| ファイル | 用途 |
+| --- | --- |
+| `app.blade.php` | Inertia のルートテンプレート。`@vite` と `@inertia` を書くだけ |
+| `errors/*.blade.php` | Laravel の例外ハンドラが返すエラーページ。Inertia を通らない |
+| `emails/login.blade.php` | ログイン通知メールの本文 |
 
-```ts
-if (document.getElementById("app")) {
-    createInertiaApp({ ... });   // Inertia の画面
-}
-// Blade の画面は Alpine だけが動く (import の副作用で起動する)
+### レイアウト
+
+`app.ts` の `resolve()` がページに既定のレイアウト (`Layouts/Default.svelte`) を割り当てる。ページ側で `<script module>` から `layout` を export すればそちらが優先される（ログイン画面が `Layouts/Auth.svelte` を指定している）。
+
+```svelte
+<script module lang="ts">
+  export { default as layout } from "../../Layouts/Auth.svelte";
+</script>
 ```
 
-- ルートテンプレートは 2 枚並存する。Inertia は `resources/views/app.blade.php`、Blade の画面は従来の `layouts/default.blade.php`。**ナビの見た目を揃えておく必要がある**（`Layouts/Default.svelte` が Blade 版の移植）
-- **Svelte の「島」はもう無い**。唯一の島だった `ProjectsModal` は、案件フォームが Inertia に移ったことでページの子要素になった。`window.novalumo`（Blade の inline スクリプトから呼ぶ入口）も同時に不要になり、`types/globals.d.ts` ごと消してある
-- 移行が終われば `app.ts` の分岐、Alpine、`layouts/default.blade.php`、`components/*.blade.php` がまとめて消える
+**`#app` は CSS で縦の flex にしてある**（`resources/css/app.css`）。`@inertia` が吐く `<div id="app">` は素の block なので、これをしないとレイアウト側の `flex-1` が伸びる先を持たず、ログイン画面の背景がページの途中で途切れる。
+
+### 削除したもの
+
+移行の完了と同時に消えた。
+
+- **Alpine.js** と `resources/views/components/` の Blade コンポーネント一式（`resources/ts/components/ui/` に移植済み）
+- **`layouts/default.blade.php` / `layouts/auth.blade.php`**（`Layouts/Default.svelte` / `Layouts/Auth.svelte` に移植済み）
+- **`signup.blade.php`**（ルートが登録されておらず到達不能だった）
+- **`lib/nfc-auth.ts` / `lib/metamask-auth.ts`**（`window` の `load` で `document.body` に DOM を組み立てていた。`NfcSignIn.svelte` / `MetamaskSignIn.svelte` に置き換え）
+- **`window.novalumo`** と `types/globals.d.ts`（Blade の inline スクリプトから呼ぶ入口だった）
 
 ### ディレクトリ
 
@@ -501,14 +506,21 @@ resources/ts/
 │   ├── Projects/    Index / Form / Analysis
 │   ├── Users/       Index / Form / TwoFactor
 │   ├── Trips/       Index / Form / Show
-│   └── Expenses/    Index / Form / Show
-├── Layouts/         Default.svelte (ナビ・トースト)
+│   ├── Expenses/    Index / Form / Show
+│   ├── Files/       Index
+│   ├── Academy/     Index
+│   ├── Auth/        Login (Layouts/Auth を指定)
+│   ├── Dashboard.svelte
+│   └── Settings.svelte
+├── Layouts/         Default.svelte (ナビ・トースト) / Auth.svelte (ログイン)
 ├── components/
-│   ├── ui/          Blade の x-* を移植したもの (Button/Card/Input/Table/…)
+│   ├── ui/          再利用する UI (Button/Card/Input/Table/Modal/…)
 │   ├── OrderLines.svelte      明細テーブル (旧 lib/order-form.ts)
 │   ├── OrderStatusPill.svelte ステータスピル (旧 lib/status.ts)
 │   ├── ProjectsModal.svelte   受注前確認モーダル (案件フォームの子要素)
-│   └── CsvImportModal.svelte  CSV 取り込み (出張申請と旅費精算が使う)
+│   ├── CsvImportModal.svelte  CSV 取り込み (出張申請と旅費精算が使う)
+│   ├── NfcSignIn.svelte       NFC でのサインイン (旧 lib/nfc-auth.ts)
+│   └── MetamaskSignIn.svelte  MetaMask でのサインイン (旧 lib/metamask-auth.ts)
 └── lib/             order-types.ts / master-types.ts / travel-types.ts
                      (サーバーが渡す JSON の型) など
 ```
@@ -518,10 +530,11 @@ resources/ts/
 - **Svelte 5 は runes で書く**（`$state` / `$derived` / `$effect`）。DOM の更新はマイクロタスクにまとめられるため、**状態を変えた直後に同期で DOM を読むと更新前の値が返る**
 - **内部の画面へのリンクは Inertia 遷移にする**。`Button` / `DropdownItem` は `href` を渡すと `use:inertia` が付く。素のリンクにしたいときは `external` を渡す。**PDF / CSV のダウンロードは必ず `external`**（Inertia の遷移は XHR になり、ファイルを受け取れない）
 - **画面から参照する URL はサーバー側で組む**。Ziggy のようなルートヘルパは入れていない。一覧の各行のリンクは ViewModel の `urls` に、ナビやユーザーメニューは共有データに入っている
-- **ViewModel は `JsonSerializable` を実装する**。Inertia は props を JSON にして渡すので、メソッド (`displayName()`) の結果もプロパティとして出す必要がある。PHP 側の `jsonSerialize()` と `resources/ts/lib/{order,master}-types.ts` は対になっているので、片方を変えたらもう片方も直すこと
+- **ViewModel は `JsonSerializable` を実装する**。Inertia は props を JSON にして渡すので、メソッド (`displayName()`) の結果もプロパティとして出す必要がある。PHP 側の `jsonSerialize()` と `resources/ts/lib/{order,master,travel}-types.ts` は対になっているので、片方を変えたらもう片方も直すこと
 - **`urls` は id が null なら null にする**。未保存のエンティティに `route(..., ['id' => null])` は組めない（移行前のユーザー新規登録画面が 500 になっていた原因）。画面側は `urls` の有無でボタンを出し分ける
 - **一覧に要らない項目まで props に載せない**。`CustomerView::collection()` は顧客画面用に全項目を出すが、発注書フォームの取引先セレクトは `CustomerView::options()`（id と名前だけ）を使う
-- **検証エラーは `FormErrors` に渡す**。Blade の `$errors->any()` ブロックの置き換えで、`useForm` の `errors` をそのまま渡せばよい
+- **検証エラーは `FormErrors` に渡す**。`useForm` の `errors` をそのまま渡せばよい
+- **`useForm` の `reset()` は「送信時点の値」に戻ることがある**。`useForm` は `onSuccess` の中で現在の値を既定値として取り直すため、`onFinish` で `reset('password')` を呼ぶと送信したパスワードが戻ってくる。消したいときは代入する（`form.password = ""`）。ログイン失敗は `/login` を描き直すだけなので Inertia 的には成功扱いで、ページも状態も残る点にも注意
 - **ファイルは `useForm` にそのまま入れる**。値に `File` が混ざると Inertia が自動で `multipart/form-data` に切り替えるので、`enctype` を自分で書く必要は無い（`CsvImportModal`）
 - **日付や連番の既定値はサーバーで決める**。画面が `new Date()` を持つと、サーバーの時計とずれるうえテストから固定できない（出張申請フォームの `defaults`）
 - **フラッシュのトーストは Svelte の `transition:` を使わない**。Inertia はレイアウトを保持したままページを差し替えるため、表示条件が変わる瞬間にトランジションが中断され、opacity 0 の要素が DOM に残ることがあった。出現は CSS アニメーション (`.toast-enter`)、消すときは DOM から取り除く
