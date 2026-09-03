@@ -1,0 +1,90 @@
+# テストと型チェック。デプロイは行わない。
+#
+# 以前は deploy.yml に php-tests とデプロイが同居していたが、デプロイ先の
+# サーバーが廃止され main への push のたびに SSH で失敗する状態だったため、
+# ファイルごと削除されていた (テストのジョブも巻き添えで失われた)。
+# ここで復活させるのはテストと型チェックだけで、デプロイは持たない。
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# 同じブランチで新しい push があったら古い実行は打ち切る
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    name: PHP (Pest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # composer.json の要件は ^8.3。devShell (nix) も 8.3 に揃えてある。
+      # 拡張は TCPDF の PDF 生成 (gd) と sqlite のテスト (pdo_sqlite) に要るもの。
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, iconv, curl, zip, bcmath, exif, gd, pdo_sqlite, sqlite3
+          coverage: none
+
+      - name: Cache Composer packages
+        uses: actions/cache@v6
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-php8.3-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-php8.3-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      # .env.example の APP_KEY は空なので発行する。
+      # DB は phpunit.xml が sqlite の :memory: を指定するので、
+      # .env.example の DB_CONNECTION=mysql は使われない。
+      - name: Prepare .env
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      # Pest 4。tests/TestCase.php が withoutVite() を呼ぶので、
+      # テストの前にアセットをビルドする必要は無い。
+      - name: Run tests
+        run: ./vendor/bin/pest
+
+  frontend:
+    name: Frontend (tsc / svelte-check / build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+      # pnpm 11 は Node 22.13+ を、Vite 8 は 20.19+ / 22.12+ を要求する。
+      # ネイティブバイナリ (@tailwindcss/oxide, rolldown) は engines が合わないと
+      # 黙ってスキップされ、ビルド時に Cannot find native binding で落ちる。
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # .ts は tsc、.svelte は svelte-check。tsc は .svelte の中身を見ないので両方要る
+      - name: Type check (.ts)
+        run: ./node_modules/.bin/tsc --noEmit
+
+      - name: Type check (.svelte)
+        run: ./node_modules/.bin/svelte-check --tsconfig ./tsconfig.json --output human
+
+      - name: Build
+        run: pnpm build
