@@ -1,6 +1,7 @@
 <?php
 
 use App\Infrastructure\Persistence\Eloquent\Models\LumoUser;
+use Inertia\Testing\AssertableInertia;
 
 /**
  * Lumo Academy の問い合わせ。
@@ -74,9 +75,10 @@ test('一覧に登録済みの問い合わせが出る', function () {
         'inquiry' => 'カリキュラムについて',
     ]);
 
-    $response = actingAsUser(createUser())->get('/lumo-academy');
-
-    $response->assertOk();
-    $response->assertSee('問い合わせ太郎');
-    $response->assertSee('カリキュラムについて');
+    actingAsUser(createUser())->get('/lumo-academy')
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Academy/Index')
+            ->has('inquiries', 1)
+            ->where('inquiries.0.name', '問い合わせ太郎')
+            ->where('inquiries.0.inquiry', 'カリキュラムについて'));
 });

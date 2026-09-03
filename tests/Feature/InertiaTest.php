@@ -70,25 +70,34 @@ test('未認証では Inertia の画面もログインへリダイレクトさ�
     $this->get('/orders')->assertRedirect('/login');
 });
 
-test('Blade のままの画面も動く', function () {
-    // 混在している間はどちらも壊れていないことを見ておく。
-    // 移行が済んだらこのテストごと消える。
-    foreach (['/', '/settings', '/downloader', '/lumo-academy'] as $path) {
-        $this->get($path)->assertOk();
-    }
-});
-
-test('移行済みの画面は Inertia を返す', function () {
+test('全ての画面が Inertia を返す', function () {
+    // Blade のビューはもう無い (app.blade.php はルートテンプレート、
+    // errors/ と emails/ は Blade のまま)。
     $expected = [
+        '/' => 'Dashboard',
         '/orders' => 'Orders/Index',
         '/customers' => 'Customers/Index',
         '/projects' => 'Projects/Index',
         '/users' => 'Users/Index',
         '/trips' => 'Trips/Index',
         '/expenses' => 'Expenses/Index',
+        '/settings' => 'Settings',
+        '/downloader' => 'Files/Index',
+        '/lumo-academy' => 'Academy/Index',
     ];
 
     foreach ($expected as $path => $component) {
         $this->get($path)->assertInertia(fn (AssertableInertia $page) => $page->component($component));
     }
+});
+
+test('ログイン画面も Inertia で描かれる', function () {
+    session()->flush();
+
+    $this->get('/login')->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Auth/Login')
+        // ナビを出さないので auth は null
+        ->where('auth', null)
+        ->has('urls.nfc')
+        ->has('urls.metamask'));
 });

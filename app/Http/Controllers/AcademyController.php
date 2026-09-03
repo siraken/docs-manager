@@ -9,7 +9,8 @@ use App\Application\Academy\UseCase\RegisterAcademyInquiryUseCase;
 use App\Http\Requests\RegisterAcademyInquiryRequest;
 use App\Http\ViewModels\AcademyInquiryView;
 use Illuminate\Http\JsonResponse;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 /**
  * Lumo Academy の問い合わせ受付。
@@ -19,9 +20,9 @@ use Illuminate\View\View;
  */
 final class AcademyController extends Controller
 {
-    public function index(ListAcademyInquiriesUseCase $listInquiries): View
+    public function index(ListAcademyInquiriesUseCase $listInquiries): InertiaResponse
     {
-        return view('academy.index', [
+        return Inertia::render('Academy/Index', [
             'inquiries' => AcademyInquiryView::collection($listInquiries->execute()),
         ]);
     }

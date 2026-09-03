@@ -1,52 +1,39 @@
 import { createInertiaApp, type ResolvedComponent } from "@inertiajs/svelte";
 import { mount } from "svelte";
 
-import "./lib/alpine";
-import "./lib/nfc-auth";
-import "./lib/metamask-auth";
-
 import DefaultLayout from "./Layouts/Default.svelte";
 
 /**
  * フロントのエントリ。
  *
- * いまは Inertia の画面と Blade の画面が混在している。読み込まれる JS は
- * どちらでも同じこのファイルなので、`#app` (Inertia のマウント先) の有無で
- * どちらの世界かを判定する。
+ * 全画面が Inertia + Svelte に移行済みなので、ここは Inertia を起動するだけ。
+ * ルーティングは Laravel が持ち、Inertia が #app の中身を差し替える。
  *
- * - Inertia の画面: Pages/ 以下の Svelte がページ全体を描く
- * - Blade の画面: 従来どおり Alpine が動く
- *
- * 全画面の移行が済んだら、この分岐と Alpine の読み込みは消える。
- * (Svelte の「島」は無くなった。案件フォームが Inertia に移り、
- *  受注前確認モーダルがページの子要素になったため)
+ * 移行中は Blade の画面と混在しており、`#app` の有無で分岐して Alpine を
+ * 起動していた。Blade のビューが無くなったのでその分岐ごと消してある。
  */
 
-const inertiaRoot = document.getElementById("app");
+const pages = import.meta.glob<ResolvedComponent>("./Pages/**/*.svelte", { eager: true });
 
-if (inertiaRoot) {
-  const pages = import.meta.glob<ResolvedComponent>("./Pages/**/*.svelte", { eager: true });
+void createInertiaApp({
+  resolve: (name) => {
+    const page = pages[`./Pages/${name}.svelte`];
 
-  void createInertiaApp({
-    resolve: (name) => {
-      const page = pages[`./Pages/${name}.svelte`];
+    if (!page) {
+      throw new Error(`Inertia のページが見つかりません: ${name}`);
+    }
 
-      if (!page) {
-        throw new Error(`Inertia のページが見つかりません: ${name}`);
-      }
+    // レイアウトはページ側で指定が無ければ既定のものを使う。
+    // (ログイン画面は <script module> で Layouts/Auth を export している)
+    // Inertia がレイアウトを保持するので、ページ遷移でナビは再マウントされない。
+    page.layout ??= DefaultLayout;
 
-      // レイアウトはページ側で指定が無ければ既定のものを使う。
-      // (ページが <script module> で export const layout を持つ場合はそちらが優先)
-      // Inertia がレイアウトを保持するので、ページ遷移でナビは再マウントされない。
-      page.layout ??= DefaultLayout;
-
-      return page;
-    },
-    setup({ el, App, props }) {
-      if (el) {
-        mount(App, { target: el, props });
-      }
-    },
-    progress: { color: "#00acc1" },
-  });
-}
+    return page;
+  },
+  setup({ el, App, props }) {
+    if (el) {
+      mount(App, { target: el, props });
+    }
+  },
+  progress: { color: "#00acc1" },
+});

@@ -7,7 +7,7 @@ namespace App\Http\ViewModels;
 use App\Domain\Academy\Entity\AcademyInquiry;
 use Illuminate\Support\Collection;
 
-final readonly class AcademyInquiryView
+final readonly class AcademyInquiryView implements \JsonSerializable
 {
     private function __construct(
         public ?int $id,
@@ -25,6 +25,21 @@ final readonly class AcademyInquiryView
             email: (string) $inquiry->email(),
             inquiry: $inquiry->inquiry(),
         );
+    }
+
+    /**
+     * Inertia の props 用。
+     *
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'inquiry' => $this->inquiry,
+        ];
     }
 
     /**
