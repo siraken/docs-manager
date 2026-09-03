@@ -4,6 +4,7 @@ use App\Infrastructure\Persistence\Eloquent\Models\Customer;
 use App\Infrastructure\Persistence\Eloquent\Models\Project;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Inertia\Testing\AssertableInertia;
 
 /**
  * ユーザー / 顧客 / 案件のリグレッションテスト。
@@ -157,7 +158,27 @@ test('形式が不正なウォレットアドレスは保存できない', funct
 });
 
 test('ユーザー一覧が表示できる', function () {
-    $this->get('/users')->assertOk();
+    $this->get('/users')->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Users/Index')
+        ->has('users', 1)
+        ->where('users.0.email', 'test@example.com')
+        ->where('users.0.hasTwoFactor', false));
+});
+
+test('未保存のユーザーには編集や2FAのURLが無い', function () {
+    // 移行前はビューが route('users.2fa', ['id' => null]) を組もうとして 500 になっていた。
+    $this->get('/users/create')->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Users/Form')
+        ->where('user', null));
+});
+
+test('ユーザーの編集画面には既存の値と2FAのURLが渡る', function () {
+    $user = User::first();
+
+    $this->get('/users/edit/' . $user->id)->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Users/Form')
+        ->where('user.name', $user->name)
+        ->where('user.urls.twoFactor', url('/users/2fa/' . $user->id)));
 });
 
 test('ユーザーを削除できる', function () {
@@ -235,7 +256,22 @@ test('顧客名が空だと保存できない', function () {
 });
 
 test('顧客一覧が表示できる', function () {
-    $this->get('/customers')->assertOk();
+    createCustomer('一覧に出る商会');
+
+    $this->get('/customers')->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Customers/Index')
+        ->has('customers', 1)
+        ->where('customers.0.name', '一覧に出る商会')
+        ->where('customers.0.isCompany', true));
+});
+
+test('顧客の編集画面には既存の値が渡る', function () {
+    $customer = createCustomer('編集対象');
+
+    $this->get('/customers/edit/' . $customer->id)->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Customers/Form')
+        ->where('customer.name', '編集対象')
+        ->where('customer.email', 'client@example.com'));
 });
 
 // --- 案件 -----------------------------------------------------------
@@ -296,14 +332,15 @@ test('案件一覧のステータス表示がフォームの選択肢と一致�
         Project::create(['name' => '案件' . $status, 'status' => $status]);
     }
 
-    $response = $this->get('/projects');
-    $response->assertOk();
+    $this->get('/projects')->assertInertia(function (AssertableInertia $page) use ($expected): void {
+        $page->component('Projects/Index');
 
-    $projects = $response->viewData('projects')->keyBy('name');
+        $projects = collect($page->toArray()['props']['projects'])->keyBy('name');
 
-    foreach ($expected as $status => $label) {
-        expect($projects['案件' . $status]->status)->toBe($label);
-    }
+        foreach ($expected as $status => $label) {
+            expect($projects['案件' . $status]['status'])->toBe($label);
+        }
+    });
 });
 
 test('売上分析は指定した年月の案件だけを集計する', function () {
@@ -311,11 +348,22 @@ test('売上分析は指定した年月の案件だけを集計する', function
     Project::create(['name' => '対象2', 'payment_date' => '2026-09-30', 'price' => 200000]);
     Project::create(['name' => '対象外', 'payment_date' => '2026-10-01', 'price' => 999999]);
 
-    $response = $this->get('/projects/analysis?type=payment_date&year=2026&month=9');
+    $this->get('/projects/analysis?type=payment_date&year=2026&month=9')
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Projects/Analysis')
+            ->has('projects', 2)
+            ->where('totalPrice', 300000));
+});
 
-    $response->assertOk();
-    expect($response->viewData('projects'))->toHaveCount(2)
-        ->and($response->viewData('total_price'))->toBe(300000);
+test('案件の編集画面には状態の選択肢が8種類渡る', function () {
+    // 移行前はフォームのビューに 8 種類、一覧のコントローラに 3 種類という
+    // 食い違った定義が別々に書かれていた。いまは ProjectStatus が唯一の定義。
+    $project = Project::create(['name' => '編集対象', 'status' => 3]);
+
+    $this->get('/projects/edit/' . $project->id)->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Projects/Form')
+        ->where('project.statusValue', 3)
+        ->has('statuses', 8));
 });
 
 test('集計対象にできない日付カラムは拒否される', function () {

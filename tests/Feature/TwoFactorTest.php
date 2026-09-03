@@ -2,6 +2,7 @@
 
 use App\Domain\User\ValueObject\TwoFactorSecret;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
+use Inertia\Testing\AssertableInertia;
 
 /**
  * 二段階認証の設定。
@@ -17,10 +18,27 @@ beforeEach(function () {
 /** 設定画面を開き、発行されたシークレットを取り出す */
 function startSetup(int $userId): TwoFactorSecret
 {
-    $response = test()->get('/users/2fa/' . $userId);
-    $response->assertOk();
+    return TwoFactorSecret::fromString(twoFactorSetupProps($userId)['secret']);
+}
 
-    return $response->viewData('setup')->secret;
+/**
+ * 設定画面の setup props。
+ *
+ * 画面は Inertia なので viewData() では取れない (Blade のビューにしか使えない)。
+ *
+ * @return array{secret: string, uri: string, alreadyEnabled: bool}
+ */
+function twoFactorSetupProps(int $userId): array
+{
+    $setup = null;
+
+    test()->get('/users/2fa/' . $userId)
+        ->assertInertia(function (AssertableInertia $page) use (&$setup): void {
+            $page->component('Users/TwoFactor');
+            $setup = $page->toArray()['props']['setup'];
+        });
+
+    return $setup;
 }
 
 /** そのシークレットの、いま有効なコード */
@@ -88,7 +106,5 @@ test('有効化済みのユーザーには画面で警告が出る', function ()
     $secret = startSetup($user->id);
     $this->post('/users/2fa/' . $user->id, ['code' => currentCode($secret)]);
 
-    $response = $this->get('/users/2fa/' . $user->id);
-
-    expect($response->viewData('setup')->alreadyEnabled)->toBeTrue();
+    expect(twoFactorSetupProps($user->id)['alreadyEnabled'])->toBeTrue();
 });

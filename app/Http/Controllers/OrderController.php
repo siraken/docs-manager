@@ -70,7 +70,7 @@ final class OrderController extends Controller
     public function create(ListCustomersUseCase $listCustomers): InertiaResponse
     {
         return Inertia::render('Orders/Form', [
-            'customers' => CustomerView::collection($listCustomers->execute()),
+            'customers' => CustomerView::options($listCustomers->execute()),
             'order' => null,
             'taxOptions' => $this->taxOptions(),
             'urls' => [
@@ -95,7 +95,7 @@ final class OrderController extends Controller
         $customerNames = $this->customerNames($customers);
 
         return Inertia::render('Orders/Form', [
-            'customers' => CustomerView::collection($customers),
+            'customers' => CustomerView::options($customers),
             'order' => OrderView::fromEntity($order, $customerNames[$order->customerId()] ?? ''),
             'taxOptions' => $this->taxOptions(),
             'urls' => [

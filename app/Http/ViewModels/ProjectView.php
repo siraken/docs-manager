@@ -7,7 +7,7 @@ namespace App\Http\ViewModels;
 use App\Domain\Project\Entity\Project;
 use Illuminate\Support\Collection;
 
-final readonly class ProjectView
+final readonly class ProjectView implements \JsonSerializable
 {
     private function __construct(
         public ?int $id,
@@ -48,6 +48,36 @@ final readonly class ProjectView
             // 移行前は switch の誤用でここが常にずれていた
             status: $project->status()->label(),
         );
+    }
+
+    /**
+     * Inertia の props 用。
+     *
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'description' => $this->description,
+            'clientId' => $this->clientId,
+            'relatedTaskId' => $this->relatedTaskId,
+            'startDate' => $this->startDate,
+            'endDate' => $this->endDate,
+            'paymentDate' => $this->paymentDate,
+            'startDateLabel' => $this->startDateLabel,
+            'endDateLabel' => $this->endDateLabel,
+            'paymentDateLabel' => $this->paymentDateLabel,
+            'price' => $this->price,
+            'priceLabel' => $this->priceLabel,
+            'statusValue' => $this->statusValue,
+            'status' => $this->status,
+
+            'urls' => $this->id === null ? null : [
+                'edit' => route('projects.edit', ['id' => $this->id]),
+            ],
+        ];
     }
 
     /** 新規作成フォーム用の空の入れ物 */
