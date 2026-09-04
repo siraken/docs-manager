@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理・勤務報告・契約管理）。Laravel 13 + Tailwind CSS v4。**UI もコード内コメントも日本語**で書く。
+Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理・勤務報告・契約管理・仕訳帳）。Laravel 13 + Tailwind CSS v4。**UI もコード内コメントも日本語**で書く。
 
-- **画面は全 28 枚が Inertia + Svelte 5**。Blade として残っているのはルートテンプレート (`app.blade.php`)、エラーページ (`errors/`)、メール本文 (`emails/`) だけ
+- **画面は全 33 枚が Inertia + Svelte 5**。Blade として残っているのはルートテンプレート (`app.blade.php`)、エラーページ (`errors/`)、メール本文 (`emails/`) だけ
 - **サーバー側は Laravel の既定 (`app/Http`) の内側に Domain / Application / Infrastructure を足した構成**。以前はコントローラに DB アクセス・金額計算・PDF 描画・外部 API 呼び出しが直書きされていた
 - Laravel 8 から 13 へメジャーバージョンを 1 つずつ上げてきた（1 メジャー = 1 PR）。**現在 13 で、アップグレードは完了している**
 
@@ -23,7 +23,7 @@ Novalumo 社内向けの業務管理ツール（発注書・出張申請・出�
 | [CI とデプロイ](docs/ci.md) | ワークフローの中身、デプロイを作り直す場合の注意 |
 | [残っている TODO](docs/todo.md) | 未実装のまま残っている重いもの（2FA の未接続、MetaMask ログインの脆弱性など） |
 | [Laravel 8 → 13 の移行で直したこと](docs/history/laravel-upgrade.md) | 元から壊れていた箇所と、その直し方 |
-| [in-house-timecard-app からの移植](docs/history/timecard-port.md) | 契約管理・勤務報告の移植と、かぶり機能から取り込んだ仕様 |
+| [in-house-timecard-app からの移植](docs/history/timecard-port.md) | 契約管理・勤務報告の移植、かぶり機能から取り込んだ仕様、仕訳帳の新規開発 |
 
 ## 絶対に守ること
 
@@ -62,6 +62,13 @@ Novalumo 社内向けの業務管理ツール（発注書・出張申請・出�
 - **ViewModel は `JsonSerializable` を実装する**。PHP 側の `jsonSerialize()` と `resources/ts/lib/*-types.ts` は対なので、片方を変えたらもう片方も直す
 - **内部の画面へのリンクは Inertia 遷移にする**。PDF / CSV のダウンロードは必ず `external`
 - **日付や連番の既定値はサーバーで決める**。画面が `new Date()` を持つとテストから固定できない
+
+### 仕訳帳
+
+- **仕訳の金額は 1 つしか持たない**。借方と貸方で必ず同じ額が計上されるので、貸借がずれた帳簿は表現できない
+- **勘定科目は `accounts` マスタから id で参照する**。文字列で持つと表記ゆれで集計が壊れる
+- **使われている勘定科目は削除できない**。使わなくなったものは無効化して選択肢から外す
+- **残高がどちらの側に立つかは `AccountType` が決める**。画面やクエリで judge しない
 
 ### テスト
 

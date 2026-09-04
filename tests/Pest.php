@@ -1,7 +1,9 @@
 <?php
 
+use App\Infrastructure\Persistence\Eloquent\Models\Account;
 use App\Infrastructure\Persistence\Eloquent\Models\Contract;
 use App\Infrastructure\Persistence\Eloquent\Models\Customer;
+use App\Infrastructure\Persistence\Eloquent\Models\JournalEntry;
 use App\Infrastructure\Persistence\Eloquent\Models\OrderHeader;
 use App\Infrastructure\Persistence\Eloquent\Models\Report;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
@@ -210,6 +212,60 @@ function contractPayload(array $overrides = []): array
         'start_date' => '2026-09-01',
         'end_date' => '2027-08-31',
         'description' => '月額保守',
+    ], $overrides);
+}
+
+/**
+ * 勘定科目を 1 件作る。
+ */
+function createAccount(string $name = '現金', string $type = 'asset', array $attributes = []): Account
+{
+    return Account::create(array_merge([
+        'code' => null,
+        'name' => $name,
+        'type' => $type,
+        'is_active' => true,
+        'note' => null,
+    ], $attributes));
+}
+
+/**
+ * 借方・貸方の勘定科目を作って返す。仕訳のテストの下ごしらえ。
+ *
+ * @return array{0: Account, 1: Account} [借方科目, 貸方科目]
+ */
+function createAccountPair(): array
+{
+    return [createAccount('現金', 'asset'), createAccount('売上', 'revenue')];
+}
+
+/**
+ * 仕訳を 1 件作る。
+ */
+function createJournalEntry(int $debitId, int $creditId, array $attributes = []): JournalEntry
+{
+    return JournalEntry::create(array_merge([
+        'date' => '2026-09-04',
+        'debit_account_id' => $debitId,
+        'credit_account_id' => $creditId,
+        'amount' => 1000,
+        'description' => '売上の計上',
+        'note' => null,
+    ], $attributes));
+}
+
+/**
+ * 仕訳フォームの POST ペイロード。
+ */
+function journalPayload(int $debitId, int $creditId, array $overrides = []): array
+{
+    return array_merge([
+        'date' => '2026-09-04',
+        'debit_account_id' => $debitId,
+        'credit_account_id' => $creditId,
+        'amount' => 1000,
+        'description' => '売上の計上',
+        'note' => null,
     ], $overrides);
 }
 

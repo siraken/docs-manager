@@ -20,7 +20,7 @@
 | ドキュメント | 中身 |
 | --- | --- |
 | [Laravel 8 → 13 の移行で直したこと](history/laravel-upgrade.md) | 元から壊れていた箇所と、その直し方 |
-| [in-house-timecard-app からの移植](history/timecard-port.md) | 契約管理・勤務報告の移植と、かぶり機能から取り込んだ仕様 |
+| [in-house-timecard-app からの移植](history/timecard-port.md) | 契約管理・勤務報告の移植、かぶり機能から取り込んだ仕様、仕訳帳の新規開発 |
 
 ## 書き足すときの目安
 
