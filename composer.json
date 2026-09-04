@@ -15,7 +15,6 @@
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
-        "michelf/php-markdown": "^1.9",
         "setasign/fpdi": "^2.3",
         "tecnickcom/tcpdf": "^6.4"
     },

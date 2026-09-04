@@ -130,21 +130,17 @@ Bootstrap 5 は削除済み。**Tailwind CSS v4** の CSS-first 構成で、`tai
 - 一覧には `::collection()` で `Illuminate\Support\Collection` を返す
 - 新規作成フォームには `::empty()` を渡すか、props を `null` にして画面側で分岐する。既定値をサーバーが持つなら前者（`TravelExpenseView`）、持たないなら後者（`CustomerView` / `ProjectView` / `UserView`）
 
-## HTTP クライアント (ky)
+## サーバーへの送信
 
-**axios は廃止し `ky` を使う**（fetch のラッパー、依存 0）。設定済みインスタンスは `resources/ts/lib/http.ts` の `http` で、これを import すること。素の `ky` や `fetch` を直接使うと以下が漏れる。
+**すべて Inertia 経由で送る。HTTP クライアントは入れていない。**
 
-- **`X-XSRF-TOKEN`**: `XSRF-TOKEN` クッキーの値を URL デコードして載せる。axios が暗黙にやっていた処理を `beforeRequest` フックで再現している。JSON を投げる先（`login-nfc` / `login-metamask` / `orders/set-status`）はすべて `routes/web.php` にあり CSRF の対象
-- **`X-Requested-With: XMLHttpRequest`**
+- フォームの送信は `useForm` の `form.post(url)`
+- フォーム以外（NFC・MetaMask のサインイン、削除ボタンなど）は `router.post()` / `router.delete()`
+- 一覧の再取得は `router.reload({ only: ['messages'] })` のような部分リロード（チャットが使っている）
 
-**ky 2.x のフックは引数を 1 つのオブジェクトで受け取る**（`({ request }) => ...`）。1.x の `(request, options) => ...` とは非互換なので、ネット上の 1.x 向けサンプルをそのまま貼らないこと。
+Inertia が CSRF トークンとヘッダを面倒見るので、こちら側で用意するものは無い。
 
-axios との違いで注意が要るのは 2 点。
-
-1. **既定タイムアウトが 10 秒**（axios は無制限）。長い処理を叩くときは `timeout` を明示する
-2. **レスポンスボディは `.json()` で取り出す**。axios の `res.data` に相当するものは無い
-
-リトライは既定で GET / PUT / HEAD / DELETE / OPTIONS / TRACE のみが対象で、**POST は再送されない**。現状の呼び出しはすべて POST なので axios と挙動は変わらない。
+**専用の JSON エンドポイントを足さないこと。** データが要るなら Inertia の props で渡し、更新が要るなら部分リロードで取り直す。この方針のおかげで、以前 axios → `ky` と乗り換えながら維持していた `lib/http.ts`（XSRF トークンの付与と `X-Requested-With` を手で再現していた）は不要になり、依存ごと削除した。
 
 ## 環境変数
 
