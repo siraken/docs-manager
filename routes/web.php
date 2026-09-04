@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AcademyController;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\FreeeController;
+use App\Http\Controllers\JournalController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProjectController;
@@ -169,6 +171,38 @@ Route::middleware('login')->group(function (): void {
             Route::get('/edit/{id}', 'edit')->name('contracts.edit')->whereNumber('id');
             Route::post('/edit/{id}', 'update')->whereNumber('id');
             Route::delete('/delete/{id}', 'destroy')->name('contracts.delete')->whereNumber('id');
+        });
+
+    /**
+     * 仕訳帳 (会計)
+     *
+     * in-house-timecard-app に CakePHP 時代のテンプレートだけが残っていた
+     * 機能を、参考にしつつ新規に作り直したもの。
+     */
+    Route::prefix('journal')
+        ->controller(JournalController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->name('journal.index');
+            Route::get('/trial-balance', 'trialBalance')->name('journal.trialBalance');
+            Route::get('/create', 'create')->name('journal.create');
+            Route::post('/create', 'store');
+            Route::get('/edit/{id}', 'edit')->name('journal.edit')->whereNumber('id');
+            Route::post('/edit/{id}', 'update')->whereNumber('id');
+            Route::delete('/delete/{id}', 'destroy')->name('journal.delete')->whereNumber('id');
+        });
+
+    /**
+     * 勘定科目 (仕訳帳のマスタ)
+     */
+    Route::prefix('accounts')
+        ->controller(AccountController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->name('accounts.index');
+            Route::get('/create', 'create')->name('accounts.create');
+            Route::post('/create', 'store');
+            Route::get('/edit/{id}', 'edit')->name('accounts.edit')->whereNumber('id');
+            Route::post('/edit/{id}', 'update')->whereNumber('id');
+            Route::delete('/delete/{id}', 'destroy')->name('accounts.delete')->whereNumber('id');
         });
 
     /**

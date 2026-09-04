@@ -15,6 +15,8 @@ use App\Application\Travel\Port\TravelExpensePdfRendererInterface;
 use App\Application\Travel\Port\TravelPdfRendererInterface;
 use App\Application\User\Port\TwoFactorSetupStoreInterface;
 use App\Domain\Academy\Repository\AcademyInquiryRepositoryInterface;
+use App\Domain\Accounting\Repository\AccountRepositoryInterface;
+use App\Domain\Accounting\Repository\JournalEntryRepositoryInterface;
 use App\Domain\Contract\Repository\ContractRepositoryInterface;
 use App\Domain\Customer\Repository\CustomerRepositoryInterface;
 use App\Domain\Order\Repository\OrderRepositoryInterface;
@@ -36,9 +38,11 @@ use App\Infrastructure\Pdf\TcpdfOrderPdfRenderer;
 use App\Infrastructure\Pdf\TcpdfTravelExpensePdfRenderer;
 use App\Infrastructure\Pdf\TcpdfTravelPdfRenderer;
 use App\Infrastructure\Persistence\Eloquent\AcademyInquiryRepository;
+use App\Infrastructure\Persistence\Eloquent\AccountRepository;
 use App\Infrastructure\Persistence\Eloquent\CompanyProfileRepository;
 use App\Infrastructure\Persistence\Eloquent\ContractRepository;
 use App\Infrastructure\Persistence\Eloquent\CustomerRepository;
+use App\Infrastructure\Persistence\Eloquent\JournalEntryRepository;
 use App\Infrastructure\Persistence\Eloquent\OrderRepository;
 use App\Infrastructure\Persistence\Eloquent\ProjectRepository;
 use App\Infrastructure\Persistence\Eloquent\ReportRepository;
@@ -69,6 +73,8 @@ final class DomainServiceProvider extends ServiceProvider
         ProjectRepositoryInterface::class => ProjectRepository::class,
         ContractRepositoryInterface::class => ContractRepository::class,
         ReportRepositoryInterface::class => ReportRepository::class,
+        AccountRepositoryInterface::class => AccountRepository::class,
+        JournalEntryRepositoryInterface::class => JournalEntryRepository::class,
         UserRepositoryInterface::class => UserRepository::class,
         TravelRepositoryInterface::class => TravelRepository::class,
         TravelExpenseRepositoryInterface::class => TravelExpenseRepository::class,

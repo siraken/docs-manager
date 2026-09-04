@@ -4,7 +4,7 @@
 
 ## 構成
 
-**全 28 画面が Inertia + Svelte 5。Blade のビューはもう画面を描かない。**
+**全 33 画面が Inertia + Svelte 5。Blade のビューはもう画面を描かない。**
 
 SvelteKit は使っていない。ルーティングは Laravel が持ち、Inertia がページを差し替える。
 
@@ -29,6 +29,8 @@ resources/ts/
 │   ├── Expenses/    Index / Form / Show
 │   ├── Reports/     Index / Form / Show   (勤務報告)
 │   ├── Contracts/   Index / Form           (契約管理)
+│   ├── Journal/     Index / Form / TrialBalance (仕訳帳・残高試算表)
+│   ├── Accounts/    Index / Form           (勘定科目マスタ)
 │   ├── Files/       Index
 │   ├── Academy/     Index
 │   ├── Auth/        Login (Layouts/Auth を指定)
@@ -44,7 +46,8 @@ resources/ts/
 │   ├── NfcSignIn.svelte       NFC でのサインイン (旧 lib/nfc-auth.ts)
 │   └── MetamaskSignIn.svelte  MetaMask でのサインイン (旧 lib/metamask-auth.ts)
 └── lib/             order-types.ts / master-types.ts / travel-types.ts /
-                     report-types.ts (サーバーが渡す JSON の型) など
+                     report-types.ts / accounting-types.ts
+                     (サーバーが渡す JSON の型) など
 ```
 
 ## ビルド (Vite 8)

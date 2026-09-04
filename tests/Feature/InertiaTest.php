@@ -26,7 +26,7 @@ test('ログインユーザーが共有データに載る', function () {
 test('ナビの現在位置がサーバー側で決まる', function () {
     // Blade では request()->route()->named() をビューの中で呼んでいた
     $this->get('/orders')->assertInertia(fn (AssertableInertia $page) => $page
-        ->has('nav', 5)
+        ->has('nav', 6)
         ->where('nav.2.label', '発注書')
         ->where('nav.2.active', true)
         ->where('nav.0.active', false));
@@ -38,6 +38,7 @@ test('ユーザーメニューの URL が共有データに載る', function () 
         ->where('menu.files', url('/downloader'))
         ->where('menu.users', url('/users'))
         ->where('menu.contracts', url('/contracts'))
+        ->where('menu.accounts', url('/accounts'))
         ->where('menu.logout', url('/logout')));
 });
 
@@ -88,6 +89,10 @@ test('全ての画面が Inertia を返す', function () {
         // in-house-timecard-app から移植した画面
         '/reports' => 'Reports/Index',
         '/contracts' => 'Contracts/Index',
+        // CakePHP 時代のテンプレートを参考に作り直した仕訳帳
+        '/journal' => 'Journal/Index',
+        '/journal/trial-balance' => 'Journal/TrialBalance',
+        '/accounts' => 'Accounts/Index',
     ];
 
     foreach ($expected as $path => $component) {
