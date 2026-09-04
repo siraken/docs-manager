@@ -21,6 +21,7 @@ use App\Domain\Order\ValueObject\TaxRate;
 use App\Http\Requests\ChangeOrderStatusRequest;
 use App\Http\Requests\SaveOrderRequest;
 use App\Support\Flash;
+use App\Support\Lookup;
 use App\Http\ViewModels\CustomerView;
 use App\Http\ViewModels\OrderView;
 use Illuminate\Http\RedirectResponse;
@@ -206,12 +207,6 @@ final class OrderController extends Controller
      */
     private function customerNames(array $customers): array
     {
-        $names = [];
-
-        foreach ($customers as $customer) {
-            $names[(int) $customer->id()] = $customer->name();
-        }
-
-        return $names;
+        return Lookup::byId($customers, static fn (Customer $c): string => $c->name());
     }
 }

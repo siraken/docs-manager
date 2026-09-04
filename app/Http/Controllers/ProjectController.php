@@ -15,8 +15,10 @@ use App\Domain\Customer\Entity\Customer;
 use App\Domain\Project\ValueObject\ProjectStatus;
 use App\Http\Requests\SaveProjectRequest;
 use App\Support\Flash;
+use App\Support\Lookup;
 use App\Http\ViewModels\CustomerView;
 use App\Http\ViewModels\ProjectView;
+use App\Support\SelectOptions;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -148,13 +150,7 @@ final class ProjectController extends Controller
      */
     private function customerNames(array $customers): array
     {
-        $names = [];
-
-        foreach ($customers as $customer) {
-            $names[(int) $customer->id()] = $customer->name();
-        }
-
-        return $names;
+        return Lookup::byId($customers, static fn (Customer $c): string => $c->name());
     }
 
     /**
@@ -167,11 +163,7 @@ final class ProjectController extends Controller
      */
     private function statusOptions(): array
     {
-        return array_map(
-            static fn (int $value, string $label): array => ['value' => $value, 'label' => $label],
-            array_keys(ProjectStatus::options()),
-            array_values(ProjectStatus::options()),
-        );
+        return SelectOptions::fromMap(ProjectStatus::options());
     }
 
     /**

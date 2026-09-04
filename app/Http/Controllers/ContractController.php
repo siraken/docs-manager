@@ -15,6 +15,7 @@ use App\Http\Requests\SaveContractRequest;
 use App\Http\ViewModels\ContractView;
 use App\Http\ViewModels\CustomerView;
 use App\Support\Flash;
+use App\Support\Lookup;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -109,12 +110,6 @@ final class ContractController extends Controller
      */
     private function customerNames(array $customers): array
     {
-        $names = [];
-
-        foreach ($customers as $customer) {
-            $names[(int) $customer->id()] = $customer->name();
-        }
-
-        return $names;
+        return Lookup::byId($customers, static fn (Customer $c): string => $c->name());
     }
 }

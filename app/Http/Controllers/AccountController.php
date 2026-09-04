@@ -13,6 +13,7 @@ use App\Domain\Accounting\ValueObject\AccountType;
 use App\Http\Requests\SaveAccountRequest;
 use App\Http\ViewModels\AccountView;
 use App\Support\Flash;
+use App\Support\SelectOptions;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -92,10 +93,6 @@ final class AccountController extends Controller
      */
     private function typeOptions(): array
     {
-        return array_map(
-            static fn (string $value, string $label): array => ['value' => $value, 'label' => $label],
-            array_keys(AccountType::options()),
-            array_values(AccountType::options()),
-        );
+        return SelectOptions::fromMap(AccountType::options());
     }
 }

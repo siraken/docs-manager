@@ -56,6 +56,14 @@ Novalumo 社内向けの業務管理ツール（発注書・出張申請・出�
 - **`config/services.php` を通す**。`env()` を直接読むと `config:cache` した環境で null になる
 - **ドメイン例外は catch しない**。`bootstrap/app.php` の `withExceptions()` が 404 / リダイレクトに落とす
 
+### 共通化されているもの
+
+同じ処理を各所で書き写さない。以下は既に 1 箇所へ寄せてある。
+
+- **一覧の「id => 名前」の対応表は `App\Support\Lookup`**。コントローラごとに `customerNames()` のような private メソッドを書かない
+- **enum の選択肢は `App\Support\SelectOptions::fromMap()`**。`[値 => 表示名]` を `[{value, label}]` に直す
+- **削除確認は `components/DeleteConfirm.svelte`**。`confirming` / `target` / `askDelete()` を画面ごとに書かない
+
 ### フロントエンド
 
 - **Svelte 5 は runes で書く**（`$state` / `$derived` / `$effect`）

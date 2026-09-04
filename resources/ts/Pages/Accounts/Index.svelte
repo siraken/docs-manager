@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Link, router } from "@inertiajs/svelte";
+  import { Link } from "@inertiajs/svelte";
 
   import Badge from "../../components/ui/Badge.svelte";
   import Button from "../../components/ui/Button.svelte";
   import EmptyState from "../../components/ui/EmptyState.svelte";
-  import Modal from "../../components/ui/Modal.svelte";
+  import DeleteConfirm from "../../components/DeleteConfirm.svelte";
   import PageHeader from "../../components/ui/PageHeader.svelte";
   import Table from "../../components/ui/Table.svelte";
   import type { Account } from "../../lib/accounting-types";
@@ -19,23 +19,8 @@
 
   let { accounts, urls }: Props = $props();
 
-  let confirming = $state(false);
-  let target = $state<Account | null>(null);
-
-  function askDelete(row: Account): void {
-    target = row;
-    confirming = true;
-  }
-
-  function confirmDelete(): void {
-    if (target?.urls) {
-      // 仕訳から参照されている科目はサーバー側で弾かれ、
-      // 理由がフラッシュメッセージで返る
-      router.delete(target.urls.delete);
-    }
-
-    confirming = false;
-  }
+  // 仕訳で使われている科目はサーバー側で弾かれ、理由がフラッシュで返る
+  let confirm = $state<DeleteConfirm<Account> | undefined>();
 
   const badgeColor = (type: string): "brand" | "amber" | "green" | "slate" =>
     type === "asset" ? "brand" : type === "liability" || type === "equity" ? "amber" : type === "revenue" ? "green" : "slate";
@@ -87,21 +72,14 @@
           {#if row.urls}
             <Button href={row.urls.edit} size="sm" icon="pencil">編集</Button>
           {/if}
-          <Button size="sm" variant="ghost" icon="trash" onclick={() => askDelete(row)}>削除</Button>
+          <Button size="sm" variant="ghost" icon="trash" onclick={() => confirm?.ask(row)}>削除</Button>
         </td>
       </tr>
     {/each}
   </Table>
 {/if}
 
-<Modal bind:open={confirming} title="勘定科目の削除">
-  <p class="text-sm text-slate-600">「{target?.name}」を削除します。取り消せません。</p>
-  <p class="mt-2 text-xs text-slate-500">
-    仕訳で使われている科目は削除できません。使わなくなった科目は編集画面で「無効にする」と選択肢から外せます。
-  </p>
-
-  {#snippet footer()}
-    <Button onclick={() => (confirming = false)}>キャンセル</Button>
-    <Button variant="danger" icon="trash" onclick={confirmDelete}>削除する</Button>
-  {/snippet}
-</Modal>
+<DeleteConfirm bind:this={confirm} title="勘定科目の削除">
+  {#snippet body(row: Account)}「{row.name}」を削除します。取り消せません。{/snippet}
+  {#snippet note()}仕訳で使われている科目は削除できません。使わなくなった科目は編集画面で「無効にする」と選択肢から外せます。{/snippet}
+</DeleteConfirm>

@@ -44,6 +44,7 @@ resources/ts/
 ├── Layouts/         Default.svelte (ナビ・トースト) / Auth.svelte (ログイン)
 ├── components/
 │   ├── ui/          再利用する UI (Button/Card/Input/Table/Modal/…)
+│   ├── DeleteConfirm.svelte   一覧の削除確認 (8 画面が共有)
 │   ├── OrderLines.svelte      明細テーブル (旧 lib/order-form.ts)
 │   ├── OrderStatusPill.svelte ステータスピル (旧 lib/status.ts)
 │   ├── ProjectsModal.svelte   受注前確認モーダル (案件フォームの子要素)

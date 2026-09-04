@@ -18,6 +18,7 @@ use App\Http\ViewModels\AccountView;
 use App\Http\ViewModels\JournalEntryView;
 use App\Http\ViewModels\TrialBalanceRowView;
 use App\Support\Flash;
+use App\Support\Lookup;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -182,12 +183,6 @@ final class JournalController extends Controller
      */
     private function accountNames(array $accounts): array
     {
-        $names = [];
-
-        foreach ($accounts as $account) {
-            $names[(int) $account->id()] = $account->displayName();
-        }
-
-        return $names;
+        return Lookup::byId($accounts, static fn (Account $a): string => $a->displayName());
     }
 }
