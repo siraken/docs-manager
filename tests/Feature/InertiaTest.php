@@ -26,7 +26,7 @@ test('ログインユーザーが共有データに載る', function () {
 test('ナビの現在位置がサーバー側で決まる', function () {
     // Blade では request()->route()->named() をビューの中で呼んでいた
     $this->get('/orders')->assertInertia(fn (AssertableInertia $page) => $page
-        ->has('nav', 4)
+        ->has('nav', 5)
         ->where('nav.2.label', '発注書')
         ->where('nav.2.active', true)
         ->where('nav.0.active', false));
@@ -37,6 +37,7 @@ test('ユーザーメニューの URL が共有データに載る', function () 
     $this->get('/orders')->assertInertia(fn (AssertableInertia $page) => $page
         ->where('menu.files', url('/downloader'))
         ->where('menu.users', url('/users'))
+        ->where('menu.contracts', url('/contracts'))
         ->where('menu.logout', url('/logout')));
 });
 
@@ -84,6 +85,9 @@ test('全ての画面が Inertia を返す', function () {
         '/settings' => 'Settings',
         '/downloader' => 'Files/Index',
         '/lumo-academy' => 'Academy/Index',
+        // in-house-timecard-app から移植した画面
+        '/reports' => 'Reports/Index',
+        '/contracts' => 'Contracts/Index',
     ];
 
     foreach ($expected as $path => $component) {

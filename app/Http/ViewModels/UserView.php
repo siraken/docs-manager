@@ -68,6 +68,26 @@ final readonly class UserView implements \JsonSerializable
     }
 
     /**
+     * セレクトの選択肢。勤務報告の担当者セレクトが使う。
+     *
+     * 一覧に要らない項目まで props に載せないため、id と名前だけを出す
+     * (CustomerView::options() と同じ考え方)。
+     *
+     * @param list<User> $users
+     * @return list<array{id: int|null, name: string}>
+     */
+    public static function options(array $users): array
+    {
+        return array_map(
+            static fn (User $user): array => [
+                'id' => $user->id(),
+                'name' => $user->name(),
+            ],
+            $users,
+        );
+    }
+
+    /**
      * @param list<User> $users
      * @return Collection<int, self>
      */

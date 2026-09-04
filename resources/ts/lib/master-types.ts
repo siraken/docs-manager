@@ -42,6 +42,24 @@ export type Project = {
   urls: { edit: string } | null;
 };
 
+/** App\Http\ViewModels\ContractView */
+export type Contract = {
+  id: number;
+  name: string;
+  contractNo: string | null;
+  customerId: number | null;
+  customerName: string;
+  startDate: string | null;
+  endDate: string | null;
+  termLabel: string;
+  /** ContractStatus::label() の結果 (契約中 / 開始前 / 終了) */
+  status: string;
+  /** ContractStatus の値 (active / scheduled / expired) */
+  statusValue: string;
+  description: string | null;
+  urls: { edit: string; delete: string } | null;
+};
+
 /** App\Http\ViewModels\UserView */
 export type User = {
   id: number;
@@ -56,3 +74,6 @@ export type User = {
 
 /** セレクトの選択肢 */
 export type Option<T = string> = { value: T; label: string };
+
+/** セレクトに渡すマスタ。CustomerView / UserView / ProjectView の options() */
+export type MasterOption = { id: number; name: string };

@@ -25,6 +25,8 @@
 <!-- type は動的に変えないので、Svelte が要求する静的な type を満たすため分岐する -->
 {#if type === "date"}
   <input type="date" bind:value class="{CLASSES} {extraClass}" {...rest} />
+{:else if type === "time"}
+  <input type="time" bind:value class="{CLASSES} {extraClass}" {...rest} />
 {:else if type === "number"}
   <input type="number" bind:value class="{CLASSES} {extraClass}" {...rest} />
 {:else if type === "password"}

@@ -15,9 +15,11 @@ use App\Application\Travel\Port\TravelExpensePdfRendererInterface;
 use App\Application\Travel\Port\TravelPdfRendererInterface;
 use App\Application\User\Port\TwoFactorSetupStoreInterface;
 use App\Domain\Academy\Repository\AcademyInquiryRepositoryInterface;
+use App\Domain\Contract\Repository\ContractRepositoryInterface;
 use App\Domain\Customer\Repository\CustomerRepositoryInterface;
 use App\Domain\Order\Repository\OrderRepositoryInterface;
 use App\Domain\Project\Repository\ProjectRepositoryInterface;
+use App\Domain\Report\Repository\ReportRepositoryInterface;
 use App\Domain\Setting\Repository\CompanyProfileRepositoryInterface;
 use App\Domain\Travel\Repository\TravelExpenseRepositoryInterface;
 use App\Domain\Travel\Repository\TravelRepositoryInterface;
@@ -35,9 +37,11 @@ use App\Infrastructure\Pdf\TcpdfTravelExpensePdfRenderer;
 use App\Infrastructure\Pdf\TcpdfTravelPdfRenderer;
 use App\Infrastructure\Persistence\Eloquent\AcademyInquiryRepository;
 use App\Infrastructure\Persistence\Eloquent\CompanyProfileRepository;
+use App\Infrastructure\Persistence\Eloquent\ContractRepository;
 use App\Infrastructure\Persistence\Eloquent\CustomerRepository;
 use App\Infrastructure\Persistence\Eloquent\OrderRepository;
 use App\Infrastructure\Persistence\Eloquent\ProjectRepository;
+use App\Infrastructure\Persistence\Eloquent\ReportRepository;
 use App\Infrastructure\Persistence\Eloquent\TravelExpenseRepository;
 use App\Infrastructure\Persistence\Eloquent\TravelRepository;
 use App\Infrastructure\Persistence\Eloquent\UserRepository;
@@ -63,6 +67,8 @@ final class DomainServiceProvider extends ServiceProvider
         OrderRepositoryInterface::class => OrderRepository::class,
         CustomerRepositoryInterface::class => CustomerRepository::class,
         ProjectRepositoryInterface::class => ProjectRepository::class,
+        ContractRepositoryInterface::class => ContractRepository::class,
+        ReportRepositoryInterface::class => ReportRepository::class,
         UserRepositoryInterface::class => UserRepository::class,
         TravelRepositoryInterface::class => TravelRepository::class,
         TravelExpenseRepositoryInterface::class => TravelExpenseRepository::class,

@@ -1,7 +1,9 @@
 <?php
 
+use App\Infrastructure\Persistence\Eloquent\Models\Contract;
 use App\Infrastructure\Persistence\Eloquent\Models\Customer;
 use App\Infrastructure\Persistence\Eloquent\Models\OrderHeader;
+use App\Infrastructure\Persistence\Eloquent\Models\Report;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -140,6 +142,74 @@ function orderPayload(array $overrides = []): array
         'unit' => ['個', '式'],
         'cost' => [1000, 250],
         'tax' => [1, 1],
+    ], $overrides);
+}
+
+/**
+ * 勤務報告を 1 件作る。
+ *
+ * work_minutes を直接指定する点に注意。ユースケース経由だと始業・終業から
+ * 計算し直されてしまい、「準備」と「検証対象」が同じ経路になる。
+ */
+function createReport(array $attributes = []): Report
+{
+    return Report::create(array_merge([
+        'user_id' => null,
+        'customer_id' => null,
+        'project_id' => null,
+        'title' => '実装作業',
+        'description' => null,
+        'date' => '2026-09-04',
+        'start_time' => '09:00',
+        'end_time' => '18:00',
+        'work_minutes' => 540,
+    ], $attributes));
+}
+
+/**
+ * 勤務報告フォームの POST ペイロード。
+ *
+ * 勤務時間 (work_time) は送っても、始業・終業が揃っていれば使われない。
+ * 保存される値はサーバー側で計算し直すため。
+ */
+function reportPayload(array $overrides = []): array
+{
+    return array_merge([
+        'title' => '実装作業',
+        'date' => '2026-09-04',
+        'start_time' => '09:00',
+        'end_time' => '18:00',
+        'work_time' => '9',
+        'description' => '詳細',
+    ], $overrides);
+}
+
+/**
+ * 契約を 1 件作る。
+ */
+function createContract(array $attributes = []): Contract
+{
+    return Contract::create(array_merge([
+        'name' => '保守契約',
+        'contract_no' => 'CT-001',
+        'customer_id' => null,
+        'start_date' => '2026-09-01',
+        'end_date' => '2027-08-31',
+        'description' => null,
+    ], $attributes));
+}
+
+/**
+ * 契約フォームの POST ペイロード。
+ */
+function contractPayload(array $overrides = []): array
+{
+    return array_merge([
+        'name' => '保守契約',
+        'contract_no' => 'CT-001',
+        'start_date' => '2026-09-01',
+        'end_date' => '2027-08-31',
+        'description' => '月額保守',
     ], $overrides);
 }
 

@@ -100,6 +100,7 @@ final class HandleInertiaRequests extends Middleware
             ['label' => '出張旅費精算', 'route' => 'expenses.index', 'pattern' => 'expenses.*'],
             ['label' => '発注書', 'route' => 'orders.index', 'pattern' => 'orders.*'],
             ['label' => '案件管理', 'route' => 'projects.index', 'pattern' => 'projects.*'],
+            ['label' => '勤務報告', 'route' => 'reports.index', 'pattern' => 'reports.*'],
         ];
 
         return array_map(static fn (array $item): array => [
@@ -121,6 +122,7 @@ final class HandleInertiaRequests extends Middleware
             'files' => route('files.index'),
             'users' => route('users.index'),
             'customers' => route('customers.index'),
+            'contracts' => route('contracts.index'),
             'settings' => route('settings.index'),
             'logout' => route('logout'),
         ];
