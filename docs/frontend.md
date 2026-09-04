@@ -4,7 +4,7 @@
 
 ## 構成
 
-**全 37 画面が Inertia + Svelte 5。Blade のビューはもう画面を描かない。**
+**全 41 画面が Inertia + Svelte 5。Blade のビューはもう画面を描かない。**
 
 SvelteKit は使っていない。ルーティングは Laravel が持ち、Inertia がページを差し替える。
 
@@ -33,6 +33,8 @@ resources/ts/
 │   ├── Accounts/    Index / Form           (勘定科目マスタ)
 │   ├── Enrollments/ Index / Form           (受講記録)
 │   ├── Courses/     Index / Form           (講座マスタ)
+│   ├── Submissions/ Index / Form           (提出物)
+│   ├── Assignments/ Index / Form           (課題マスタ)
 │   ├── Files/       Index
 │   ├── Academy/     Index
 │   ├── Auth/        Login (Layouts/Auth を指定)
