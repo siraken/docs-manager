@@ -26,7 +26,7 @@ test('ログインユーザーが共有データに載る', function () {
 test('ナビの現在位置がサーバー側で決まる', function () {
     // Blade では request()->route()->named() をビューの中で呼んでいた
     $this->get('/orders')->assertInertia(fn (AssertableInertia $page) => $page
-        ->has('nav', 6)
+        ->has('nav', 7)
         ->where('nav.2.label', '発注書')
         ->where('nav.2.active', true)
         ->where('nav.0.active', false));
@@ -39,6 +39,7 @@ test('ユーザーメニューの URL が共有データに載る', function () 
         ->where('menu.users', url('/users'))
         ->where('menu.contracts', url('/contracts'))
         ->where('menu.accounts', url('/accounts'))
+        ->where('menu.courses', url('/courses'))
         ->where('menu.logout', url('/logout')));
 });
 
@@ -93,6 +94,9 @@ test('全ての画面が Inertia を返す', function () {
         '/journal' => 'Journal/Index',
         '/journal/trial-balance' => 'Journal/TrialBalance',
         '/accounts' => 'Accounts/Index',
+        // novalumo/e-learning を参考に新規開発した社内研修
+        '/enrollments' => 'Enrollments/Index',
+        '/courses' => 'Courses/Index',
     ];
 
     foreach ($expected as $path => $component) {

@@ -5,8 +5,10 @@ declare(strict_types=1);
 use App\Http\Controllers\AcademyController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\FreeeController;
 use App\Http\Controllers\JournalController;
@@ -203,6 +205,34 @@ Route::middleware('login')->group(function (): void {
             Route::get('/edit/{id}', 'edit')->name('accounts.edit')->whereNumber('id');
             Route::post('/edit/{id}', 'update')->whereNumber('id');
             Route::delete('/delete/{id}', 'destroy')->name('accounts.delete')->whereNumber('id');
+        });
+
+    /**
+     * 社内研修 (novalumo/e-learning を参考に新規開発)
+     */
+    Route::prefix('enrollments')
+        ->controller(EnrollmentController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->name('enrollments.index');
+            Route::get('/create', 'create')->name('enrollments.create');
+            Route::post('/create', 'store');
+            Route::get('/edit/{id}', 'edit')->name('enrollments.edit')->whereNumber('id');
+            Route::post('/edit/{id}', 'update')->whereNumber('id');
+            Route::delete('/delete/{id}', 'destroy')->name('enrollments.delete')->whereNumber('id');
+        });
+
+    /**
+     * 講座 (受講記録のマスタ)
+     */
+    Route::prefix('courses')
+        ->controller(CourseController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->name('courses.index');
+            Route::get('/create', 'create')->name('courses.create');
+            Route::post('/create', 'store');
+            Route::get('/edit/{id}', 'edit')->name('courses.edit')->whereNumber('id');
+            Route::post('/edit/{id}', 'update')->whereNumber('id');
+            Route::delete('/delete/{id}', 'destroy')->name('courses.delete')->whereNumber('id');
         });
 
     /**
