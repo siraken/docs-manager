@@ -21,10 +21,14 @@
    */
   type Profile = {
     name: string;
+    nameEn: string;
     zipcode: string;
     address: string;
     representative: string;
     telNo: string;
+    established: string | null;
+    capital: number | null;
+    bank: string;
     logoUrl: string;
     companyStampUrl: string;
     representativeStampUrl: string;
@@ -46,10 +50,14 @@
   const form = untrack(() =>
     useForm({
       name: profile.name,
+      name_en: profile.nameEn,
       zipcode: profile.zipcode,
       tel_no: profile.telNo,
       address: profile.address,
       rep: profile.representative,
+      established: profile.established ?? "",
+      capital: profile.capital ?? "",
+      bank: profile.bank,
       logo_url: profile.logoUrl,
       com_stamp_url: profile.companyStampUrl,
       rep_stamp_url: profile.representativeStampUrl,
@@ -81,9 +89,15 @@
     {/if}
 
     <Card class="space-y-5">
-      <div>
-        <Label for="name" required>会社名</Label>
-        <Input id="name" bind:value={form.name} required />
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <Label for="name" required>会社名</Label>
+          <Input id="name" bind:value={form.name} required />
+        </div>
+        <div>
+          <Label for="name_en">英語社名</Label>
+          <Input id="name_en" bind:value={form.name_en} placeholder="Novalumo LLC" />
+        </div>
       </div>
 
       <div class="grid gap-4 sm:grid-cols-2">
@@ -103,9 +117,34 @@
         <p class="mt-1 text-xs text-slate-400">改行するとPDFでも行が分かれます</p>
       </div>
 
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div>
+          <Label for="rep">代表者名</Label>
+          <Input id="rep" bind:value={form.rep} />
+        </div>
+        <div>
+          <Label for="established">設立年月日</Label>
+          <Input type="date" id="established" bind:value={form.established} />
+        </div>
+        <div>
+          <Label for="capital">資本金</Label>
+          <div class="flex">
+            <span
+              class="inline-flex items-center rounded-l-lg bg-slate-100 px-3 text-sm text-slate-500 ring-1 ring-inset ring-slate-300"
+            >
+              ¥
+            </span>
+            <Input type="number" id="capital" min="0" bind:value={form.capital} class="rounded-l-none" />
+          </div>
+        </div>
+      </div>
+
       <div>
-        <Label for="rep">代表者名</Label>
-        <Input id="rep" bind:value={form.rep} />
+        <Label for="bank">振込先</Label>
+        <Textarea id="bank" rows={3} bind:value={form.bank} placeholder={"〇〇銀行 〇〇支店\n普通 1234567\nノヴァルモ(ド"} />
+        <p class="mt-1 text-xs text-slate-400">
+          入力すると発注書PDFの備考欄の下に印字されます。改行するとPDFでも行が分かれます
+        </p>
       </div>
 
       <div class="grid gap-4 sm:grid-cols-2">

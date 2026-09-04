@@ -18,6 +18,7 @@ final readonly class CreateCustomerUseCase
     {
         $customer = Customer::create(
             name: $input->name,
+            person: $input->person,
             isCompany: $input->isCompany,
             email: $input->email,
             phone: $input->phone,

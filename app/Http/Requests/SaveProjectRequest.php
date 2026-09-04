@@ -22,8 +22,9 @@ final class SaveProjectRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],
-            'client_id' => ['nullable', 'integer'],
-            'related_task_id' => ['nullable', 'integer'],
+            'client_id' => ['nullable', 'integer', 'exists:customers,id'],
+            // 書式そのものの検証は JiraKey が行う。ここでは長さだけ見る
+            'jira_key' => ['nullable', 'string', 'max:32'],
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date'],
             'payment_date' => ['nullable', 'date'],
@@ -38,6 +39,8 @@ final class SaveProjectRequest extends FormRequest
         return [
             'name' => '案件名',
             'client_id' => '取引先',
+            'jira_key' => 'Jira のキー',
+            'description' => '備考',
             'price' => '請求金額',
             'status' => '状態',
         ];
@@ -49,7 +52,7 @@ final class SaveProjectRequest extends FormRequest
             name: (string) $this->input('name'),
             description: $this->stringOrNull('description'),
             clientId: $this->intOrNull('client_id'),
-            relatedTaskId: $this->intOrNull('related_task_id'),
+            jiraKey: $this->stringOrNull('jira_key'),
             startDate: $this->input('start_date'),
             endDate: $this->input('end_date'),
             paymentDate: $this->input('payment_date'),

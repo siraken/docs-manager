@@ -255,6 +255,26 @@ test('顧客名が空だと保存できない', function () {
     expect(Customer::count())->toBe(0);
 });
 
+test('顧客に担当者名を保存できる', function () {
+    // in-house-timecard-app の clients.person から移植した項目。
+    // 移植前の docs-manager は担当者を発注書ごとにしか持てなかった。
+    $this->post('/customers/create', [
+        'name' => '株式会社サンプル',
+        'person' => '営業一郎',
+    ])->assertRedirect('/customers');
+
+    expect(Customer::first()->person)->toBe('営業一郎');
+});
+
+test('発注書フォームの取引先セレクトに担当者名が載る', function () {
+    // 取引先を選んだときに担当者欄を埋めるために使う
+    createCustomer('担当者つき商会')->update(['person' => '営業一郎']);
+
+    $this->get('/orders/create')->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Orders/Form')
+        ->where('customers.0.person', '営業一郎'));
+});
+
 test('顧客一覧が表示できる', function () {
     createCustomer('一覧に出る商会');
 
@@ -277,11 +297,13 @@ test('顧客の編集画面には既存の値が渡る', function () {
 // --- 案件 -----------------------------------------------------------
 
 test('案件を作成できる', function () {
+    $customer = createCustomer('案件の取引先');
+
     $this->post('/projects/create', [
         'name' => 'テスト案件',
         'description' => '説明',
-        'client_id' => 1,
-        'related_task_id' => null,
+        'client_id' => $customer->id,
+        'jira_key' => 'NOVA-123',
         'start_date' => '2026-09-01',
         'end_date' => '2026-12-31',
         'payment_date' => '2027-01-31',
@@ -294,7 +316,8 @@ test('案件を作成できる', function () {
         ->and($project->name)->toBe('テスト案件')
         // price は移行前の $fillable から漏れていた
         ->and((int) $project->price)->toBe(500000)
-        ->and((int) $project->status)->toBe(1);
+        ->and((int) $project->status)->toBe(1)
+        ->and($project->jira_key)->toBe('NOVA-123');
 });
 
 test('案件を編集できる', function () {
@@ -364,6 +387,63 @@ test('案件の編集画面には状態の選択肢が8種類渡る', function (
         ->component('Projects/Form')
         ->where('project.statusValue', 3)
         ->has('statuses', 8));
+});
+
+test('案件の一覧には取引先名とJiraのリンクが渡る', function () {
+    // 移植前の一覧は取引先の列に顧客 ID をそのまま出しており、
+    // Jira への導線はそもそも無かった (related_task_id は画面に出ない死に項目)。
+    $customer = createCustomer('案件の取引先');
+    Project::create(['name' => 'リンク確認', 'client_id' => $customer->id, 'jira_key' => 'NOVA-9']);
+
+    $this->get('/projects')->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('projects.0.clientName', '案件の取引先')
+        ->where('projects.0.jiraKey', 'NOVA-9')
+        ->where('projects.0.jiraUrl', config('services.jira.browse_url') . 'NOVA-9'));
+});
+
+test('Jiraのキーが無ければリンクも無い', function () {
+    Project::create(['name' => 'Jira なし']);
+
+    $this->get('/projects')->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('projects.0.jiraKey', null)
+        ->where('projects.0.jiraUrl', null));
+});
+
+test('Jiraのキーは大文字に寄せて保存される', function () {
+    $this->post('/projects/create', ['name' => '案件', 'jira_key' => 'nova-42'])
+        ->assertRedirect('/projects');
+
+    expect(Project::first()->jira_key)->toBe('NOVA-42');
+});
+
+test('形式が不正なJiraのキーは保存できない', function () {
+    $this->post('/projects/create', ['name' => '案件', 'jira_key' => 'NOVA/42']);
+
+    expect(Project::count())->toBe(0);
+});
+
+test('案件の取引先は顧客マスタから選ぶ', function () {
+    // 移植前は顧客 ID を手で打ち込ませており、存在しない ID も通っていた。
+    $this->post('/projects/create', ['name' => '案件', 'client_id' => 999])
+        ->assertSessionHasErrors('client_id');
+
+    expect(Project::count())->toBe(0);
+});
+
+test('案件フォームに取引先の選択肢が渡る', function () {
+    createCustomer('選択できる商会');
+
+    $this->get('/projects/create')->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Projects/Form')
+        ->where('customers.0.name', '選択できる商会'));
+});
+
+test('案件の備考を保存できる', function () {
+    // description はサーバー側だけが扱い、フォームに入力欄が無かった。
+    $this->post('/projects/create', ['name' => '案件', 'description' => '備考のテスト'])
+        ->assertRedirect('/projects');
+
+    expect(Project::first()->description)->toBe('備考のテスト');
 });
 
 test('集計対象にできない日付カラムは拒否される', function () {

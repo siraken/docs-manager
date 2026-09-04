@@ -9,6 +9,8 @@
 export type Customer = {
   id: number;
   name: string;
+  /** 取引先の担当者名。発注書フォームの担当者欄の初期値に使う */
+  person: string | null;
   isCompany: boolean;
   email: string | null;
   phone: string | null;
@@ -28,7 +30,12 @@ export type Project = {
   name: string;
   description: string | null;
   clientId: number | null;
-  relatedTaskId: number | null;
+  /** 取引先名。サーバー側で顧客マスタから引いて渡す */
+  clientName: string;
+  /** Jira のキー (NOVA / NOVA-123)。旧 relatedTaskId の置き換え */
+  jiraKey: string | null;
+  /** Jira へのリンク。キーが無いか URL 未設定なら null */
+  jiraUrl: string | null;
   startDate: string | null;
   endDate: string | null;
   paymentDate: string | null;

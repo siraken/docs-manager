@@ -376,18 +376,20 @@ Vite はビルド時に `import.meta.env.VITE_*` を値へ埋め込む。**`proc
 
 ## in-house-timecard-app からの移植
 
-`novalumo/in-house-timecard-app`（Laravel 10 + Bootstrap 4 の勤怠ツール）から、**docs-manager に無かった 2 機能だけ**を移植した。
+`novalumo/in-house-timecard-app`（Laravel 10 + Bootstrap 4 の勤怠ツール）から取り込んだもの。**機能まるごとの移植は 2 つ**、**かぶり機能から仕様だけ取り込んだものが 3 つ**ある。
 
 | timecard の機能 | docs-manager | 扱い |
 | --- | --- | --- |
-| Client（クライアント） | Customer（顧客） | かぶり。移植しない |
-| Project（プロジェクト） | Project（案件） | かぶり。移植しない |
-| Company（会社情報） | Setting / CompanyProfile | かぶり。移植しない |
-| User | User | かぶり。移植しない |
-| **Contract（契約管理）** | — | **移植した** |
-| **Report（勤務報告）** | — | **移植した** |
+| **Contract（契約管理）** | — | **機能ごと移植** |
+| **Report（勤務報告）** | — | **機能ごと移植** |
+| Client（クライアント） | Customer（顧客） | かぶり。`person`（担当者）だけ取り込み |
+| Project（プロジェクト） | Project（案件） | かぶり。`pid`（Jira キー）だけ取り込み |
+| Company（会社情報） | Setting / CompanyProfile | かぶり。会社概要 4 項目だけ取り込み |
+| User | User | かぶり。docs-manager が上位互換のため何も取り込まない |
 
-移植は 2 コミットに分けてある。1 つ目が移植元のファイルを無加工でコピーしたもの、2 つ目がこのリポジトリの構成へ寄せたもの。**移植元との差分を読みたいときは 2 つ目のコミットの diff を見ること。**
+**移植価値が無いと判断したもの**: `clients.flag`（フォームに入力欄はあるが読む処理がどこにも無い）、`welcome.blade.php`（中身が空）、`signin.blade.php`（docs-manager は独自セッション認証 + NFC / MetaMask を実装済み）、ナビの「会計 / 見積書 / 請求書 / 簡易料金計算 / フィードバック / バックアップ」（`public_path()` を href に埋めた壊れたリンクで実体が無い）。
+
+機能ごとの移植は 2 コミットに分けてある。1 つ目が移植元のファイルを無加工でコピーしたもの、2 つ目がこのリポジトリの構成へ寄せたもの。**移植元との差分を読みたいときは 2 つ目のコミットの diff を見ること。**
 
 ### スキーマの変更
 
@@ -424,6 +426,46 @@ Vite はビルド時に `import.meta.env.VITE_*` を値へ埋め込む。**`proc
 | 契約一覧の「取引先」列に PID が出る | 存在しないカラム `$contract['pid']` で Jira のリンクを組んでいた |
 | 契約一覧の「契約期間」に開始日しか出ない | 終了日を表示していなかった |
 | 検証なしで保存される | `store()` / `update()` が `$request->all()` をそのまま `fill()` に渡していた。`SaveReportRequest` / `SaveContractRequest` を通す |
+
+### かぶり機能から取り込んだ仕様
+
+機能そのものは移植しないが、timecard 側にしか無かった項目を docs-manager に足したもの。
+
+#### 案件の Jira キー (`projects.jira_key`)
+
+`related_task_id` を置き換えた。あの列は**二重に死んでいた**。
+
+- 指す先の `tasks` テーブルはマイグレーションごと存在しない（`App\Models\Task` を削除したときに判明している）
+- Domain から TypeScript の型まで全層を通っているのに、フォームにも一覧にも出ないため値を入れる手段が無かった
+
+timecard の `projects.pid` は同じ「案件に紐づく外部の識別子」でありながら、一覧から Jira へリンクする導線として実際に使われていた。整数では `NOVA-123` を持てないので文字列の `jira_key` に入れ替えている。
+
+- 書式の検証は `Domain\Project\ValueObject\JiraKey`。`NOVA` と `NOVA-123` のどちらも受け、小文字は大文字に寄せる（Jira 自身の既定に合わせる）
+- **リンクの URL はドメイン層で組まない**。ホスト名は環境設定なので `config('services.jira.browse_url')`（`JIRA_BROWSE_URL`）から読み、`ProjectView` が組み立てる。移植元はビューに直書きしていた
+- 一覧の Jira リンクは**外部サイトなので Inertia 遷移にしない**（`target="_blank"` の素のリンク）
+
+#### 顧客の担当者 (`customers.person`)
+
+docs-manager は担当者を発注書ごと（`order_headers.responsible`）にしか持っておらず、取引先を選んでも毎回手入力していた。マスタに既定の担当者を持たせ、**発注書フォームで取引先を選ぶと担当者欄が埋まる**ようにしてある。
+
+- 埋めるのは「担当者欄が空のとき」と「直前に選んでいた取引先の担当者がそのまま入っているとき」だけ。手で打った名前は消さない
+- `CustomerView::options()` の戻り値に `person` を足してある。契約・勤務報告のセレクトでは読まないが、短い文字列 1 つなので `options()` を分けずに 1 本のままにしている
+
+#### 自社情報の会社概要 (`settings.name_en` / `established` / `capital` / `bank`)
+
+- **`bank`（振込先）が本命**。移植前の発注書 PDF には振込先の記載が一切無く、別途伝える運用だった。備考欄の下（y=215〜）に印字する。**未設定なら欄ごと出さない**ので、設定していない環境の PDF は従来どおり
+- `capital` は円の整数（`Money`）。`name_en` / `established` は会社概要の表示用
+- 既存の `settings` 行を壊さないよう、足した列はいずれも nullable
+
+### ついでに直した docs-manager 側の弱点
+
+timecard 由来ではないが、上の作業で同じファイルを触るため一緒に直したもの。
+
+| 症状 | 直した内容 |
+| --- | --- |
+| 案件フォームの取引先が顧客 ID の手打ち | `customers` のセレクトにした。`exists:customers,id` で存在しない ID も弾く |
+| 案件一覧の取引先欄に生の ID が出る | サーバー側で顧客名を解決して渡す（`OrderController` と同じ N+1 回避の対応表） |
+| 案件の備考が入力できない | `description` は FormRequest・Input・Entity まで通っているのに、フォームに入力欄が無かった |
 
 ### 移植していないもの
 
@@ -519,6 +561,7 @@ Laravel の `SoftDeletes` は使わず、`order_headers.is_deleted` (integer) �
 
 - **freee API** (`Infrastructure\Freee\CurlFreeeApiClient`): SDK は使わないが、生の cURL から Laravel の HTTP クライアントに変えてある。5 つのリソース取得は URL の差しかないので `FreeeResource` enum で 1 本にまとめた。認証情報は `config('services.freee.*')`
 - **Google Sheets** (`Infrastructure\SpreadSheet\GoogleSheetsClient`): `resources/json/credentials.json`（gitignore 済み、`credentials.example.json` が雛形）+ `config('services.google_sheets.spreadsheet_id')`
+- **Jira**: API は叩かない。案件の `jira_key` からリンクを組むための URL だけを `config('services.jira.browse_url')`（`JIRA_BROWSE_URL`）に持つ。組み立てるのは `ProjectView` で、ドメイン層はホスト名を知らない
 - **CSV インポート**: `SplFileObject` + `READ_CSV` で読む（`Infrastructure\Csv\SplFileObjectCsvReader`）。フラグの組み合わせは移行前と同じ。**列は 0 始まりではなく `$row[1]` から読む**（先頭列は使われない）という癖もそのまま
 - **CSV の取り込みは 1 トランザクション**。1 行でも日付として解釈できない行があれば全体を取り消す（移行前は 1 行ずつ保存していたため、途中で失敗すると半端に入った）
 

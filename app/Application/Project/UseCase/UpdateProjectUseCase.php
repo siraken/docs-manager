@@ -24,7 +24,7 @@ final readonly class UpdateProjectUseCase
             name: $input->name,
             description: $input->description,
             clientId: $input->clientId,
-            relatedTaskId: $input->relatedTaskId,
+            jiraKey: $input->jiraKeyValue(),
             startDate: $input->startDateValue(),
             endDate: $input->endDateValue(),
             paymentDate: $input->paymentDateValue(),

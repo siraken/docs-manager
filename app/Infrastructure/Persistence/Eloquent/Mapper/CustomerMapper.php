@@ -14,6 +14,7 @@ final class CustomerMapper
         return CustomerEntity::reconstitute(
             id: (int) $model->id,
             name: (string) $model->name,
+            person: $model->person,
             isCompany: (int) $model->is_company === 1,
             email: $model->email,
             phone: $model->phone,
@@ -31,6 +32,7 @@ final class CustomerMapper
     {
         return [
             'name' => $customer->name(),
+            'person' => $customer->person(),
             'is_company' => $customer->isCompany() ? 1 : 0,
             'email' => $customer->email(),
             'phone' => $customer->phone(),

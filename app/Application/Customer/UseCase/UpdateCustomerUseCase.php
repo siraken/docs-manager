@@ -28,6 +28,7 @@ final readonly class UpdateCustomerUseCase
 
         $customer->update(
             name: $input->name,
+            person: $input->person,
             isCompany: $input->isCompany,
             email: $input->email,
             phone: $input->phone,

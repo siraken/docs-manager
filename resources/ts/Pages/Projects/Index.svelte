@@ -26,6 +26,7 @@
   <Table>
     {#snippet head()}
       <th class="px-4 py-3">案件名</th>
+      <th class="hidden px-4 py-3 sm:table-cell">Jira</th>
       <th class="px-4 py-3">取引先</th>
       <th class="px-4 py-3">状態</th>
       <th class="px-4 py-3">開始日</th>
@@ -45,7 +46,22 @@
             <span class="font-medium text-slate-900">{row.name}</span>
           {/if}
         </td>
-        <td class="px-4 py-3 text-slate-600">{row.clientId ?? ""}</td>
+        <td class="hidden px-4 py-3 sm:table-cell">
+          {#if row.jiraUrl}
+            <!-- Jira は外部サイトなので Inertia の遷移にしない -->
+            <a
+              href={row.jiraUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-brand-700 hover:text-brand-900 hover:underline tabular"
+            >
+              {row.jiraKey}
+            </a>
+          {:else}
+            <span class="text-slate-400">-</span>
+          {/if}
+        </td>
+        <td class="px-4 py-3 text-slate-600">{row.clientName || "-"}</td>
         <td class="px-4 py-3"><Badge>{row.status}</Badge></td>
         <td class="px-4 py-3 whitespace-nowrap text-slate-600 tabular">{row.startDateLabel}</td>
         <td class="px-4 py-3 whitespace-nowrap text-slate-600 tabular">{row.endDateLabel}</td>

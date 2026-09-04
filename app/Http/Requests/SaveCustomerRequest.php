@@ -19,6 +19,7 @@ final class SaveCustomerRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'person' => ['nullable', 'string', 'max:255'],
             'is_company' => ['nullable'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
@@ -36,6 +37,7 @@ final class SaveCustomerRequest extends FormRequest
     {
         return [
             'name' => '顧客名',
+            'person' => '担当者名',
             'email' => 'メールアドレス',
             'phone' => '電話番号',
             'post_code' => '郵便番号',
@@ -47,6 +49,7 @@ final class SaveCustomerRequest extends FormRequest
     {
         return new CustomerInput(
             name: (string) $this->input('name'),
+            person: $this->stringOrNull('person'),
             // チェックボックスは未チェックだと送信されないので boolean() で受ける
             isCompany: $this->boolean('is_company'),
             email: $this->stringOrNull('email'),

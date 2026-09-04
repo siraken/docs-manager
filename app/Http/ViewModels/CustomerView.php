@@ -12,6 +12,7 @@ final readonly class CustomerView implements \JsonSerializable
     private function __construct(
         public ?int $id,
         public string $name,
+        public ?string $person,
         public bool $isCompany,
         public ?string $email,
         public ?string $phone,
@@ -30,6 +31,7 @@ final readonly class CustomerView implements \JsonSerializable
         return new self(
             id: $customer->id(),
             name: $customer->name(),
+            person: $customer->person(),
             isCompany: $customer->isCompany(),
             email: $customer->email(),
             phone: $customer->phone(),
@@ -56,6 +58,7 @@ final readonly class CustomerView implements \JsonSerializable
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'person' => $this->person,
             'isCompany' => $this->isCompany,
             'email' => $this->email,
             'phone' => $this->phone,
@@ -76,7 +79,7 @@ final readonly class CustomerView implements \JsonSerializable
     /** 新規作成フォーム用の空の入れ物 */
     public static function empty(): self
     {
-        return new self(null, '', false, null, null, null, null, null, null, null, null, '');
+        return new self(null, '', null, false, null, null, null, null, null, null, null, null, '');
     }
 
     /**
@@ -92,7 +95,7 @@ final readonly class CustomerView implements \JsonSerializable
      * セレクトの選択肢。発注書フォームが使う。
      *
      * @param list<Customer> $customers
-     * @return list<array{id: int|null, name: string}>
+     * @return list<array{id: int|null, name: string, person: string|null}>
      */
     public static function options(array $customers): array
     {
@@ -100,6 +103,10 @@ final readonly class CustomerView implements \JsonSerializable
             static fn (Customer $customer): array => [
                 'id' => $customer->id(),
                 'name' => $customer->name(),
+                // 発注書フォームが担当者欄の初期値に使う。契約・勤務報告の
+                // セレクトでは読まないが、短い文字列 1 つなので options() を
+                // 分けるより 1 本にまとめておく
+                'person' => $customer->person(),
             ],
             $customers,
         );

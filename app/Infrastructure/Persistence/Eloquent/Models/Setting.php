@@ -15,10 +15,14 @@ class Setting extends Model
 
     protected $fillable = [
         'name',
+        'name_en',
         'zipcode',
         'address',
         'rep',
         'tel_no',
+        'established',
+        'capital',
+        'bank',
         'logo_url',
         'com_stamp_url',
         'rep_stamp_url',

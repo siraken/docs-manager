@@ -52,6 +52,7 @@ final class TcpdfOrderPdfRenderer implements OrderPdfRendererInterface
         $this->drawCompany($pdf, $company);
         $this->drawSummary($pdf, $order);
         $this->drawRemarks($pdf, $order);
+        $this->drawBank($pdf, $company);
         $this->drawDetails($pdf, $order);
 
         // 'S' でバイト列として受け取る (ブラウザへ直接書き出さない)
@@ -152,6 +153,32 @@ final class TcpdfOrderPdfRenderer implements OrderPdfRendererInterface
         $pdf->SetFontSize(9);
         $pdf->Text(19, 196.5, '備考欄');
         $pdf->Text(19, 201.5, (string) $order->remarks());
+    }
+
+    /**
+     * 振込先。設定されていなければ欄ごと出さない。
+     *
+     * 移行前の PDF には振込先の記載が一切無く、別途メールで伝える運用だった。
+     * 備考欄 (y=195〜) の下に置く。備考は 1 行しか描かないので重ならない。
+     */
+    private function drawBank(Fpdi $pdf, CompanyProfile $company): void
+    {
+        $lines = $company->bankLines();
+
+        if ($lines === []) {
+            return;
+        }
+
+        $pdf->Line(20, 215, 192, 215);
+        $pdf->SetFontSize(9);
+        $pdf->Text(19, 216.5, 'お振込先');
+
+        $y = 221.5;
+
+        foreach ($lines as $line) {
+            $pdf->Text(19, $y, $line);
+            $y += 5;
+        }
     }
 
     private function drawDetails(Fpdi $pdf, Order $order): void

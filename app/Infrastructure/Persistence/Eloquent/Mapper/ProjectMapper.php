@@ -6,6 +6,7 @@ namespace App\Infrastructure\Persistence\Eloquent\Mapper;
 
 use App\Application\Shared\DateParser;
 use App\Domain\Project\Entity\Project as ProjectEntity;
+use App\Domain\Project\ValueObject\JiraKey;
 use App\Domain\Project\ValueObject\ProjectStatus;
 use App\Domain\Shared\ValueObject\Money;
 use App\Infrastructure\Persistence\Eloquent\Models\Project as ProjectModel;
@@ -19,7 +20,7 @@ final class ProjectMapper
             name: (string) $model->name,
             description: $model->description,
             clientId: $model->client_id === null ? null : (int) $model->client_id,
-            relatedTaskId: $model->related_task_id === null ? null : (int) $model->related_task_id,
+            jiraKey: JiraKey::parseNullable($model->jira_key),
             startDate: DateParser::parseNullable($model->start_date, '開始日'),
             endDate: DateParser::parseNullable($model->end_date, '終了日'),
             paymentDate: DateParser::parseNullable($model->payment_date, '支払日'),
@@ -35,7 +36,7 @@ final class ProjectMapper
             'name' => $project->name(),
             'description' => $project->description(),
             'client_id' => $project->clientId(),
-            'related_task_id' => $project->relatedTaskId(),
+            'jira_key' => $project->jiraKey()?->value,
             'start_date' => $project->startDate()?->format('Y-m-d'),
             'end_date' => $project->endDate()?->format('Y-m-d'),
             'payment_date' => $project->paymentDate()?->format('Y-m-d'),

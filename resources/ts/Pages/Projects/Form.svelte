@@ -10,15 +10,17 @@
   import PageHeader from "../../components/ui/PageHeader.svelte";
   import Select from "../../components/ui/Select.svelte";
   import ProjectsModal from "../../components/ProjectsModal.svelte";
-  import type { Option, Project } from "../../lib/master-types";
+  import Textarea from "../../components/ui/Textarea.svelte";
+  import type { MasterOption, Option, Project } from "../../lib/master-types";
 
   type Props = {
     project: Project | null;
     statuses: Option<number>[];
+    customers: MasterOption[];
     urls: { submit: string; back: string };
   };
 
-  let { project, statuses, urls }: Props = $props();
+  let { project, statuses, customers, urls }: Props = $props();
 
   const isNew = $derived(project === null);
 
@@ -29,11 +31,14 @@
     useForm({
       name: project?.name ?? "",
       client_id: project?.clientId ?? "",
+      jira_key: project?.jiraKey ?? "",
       status: project?.statusValue ?? statuses[0]?.value ?? 0,
       start_date: project?.startDate ?? "",
       end_date: project?.endDate ?? "",
       payment_date: project?.paymentDate ?? "",
       price: project?.price ?? "",
+      // 移行前はサーバー側だけが description を扱い、フォームに入力欄が無かった
+      description: project?.description ?? "",
     }),
   );
 
@@ -60,9 +65,23 @@
       <Input id="name" bind:value={form.name} required />
     </div>
 
-    <div>
-      <Label for="client_id">取引先</Label>
-      <Input id="client_id" bind:value={form.client_id} />
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <Label for="client_id">取引先</Label>
+        <!-- 移行前は顧客 ID を手で打ち込ませていた -->
+        <Select id="client_id" bind:value={form.client_id}>
+          <option value="">選択してください</option>
+          {#each customers as customer (customer.id)}
+            <option value={customer.id}>{customer.name}</option>
+          {/each}
+        </Select>
+      </div>
+
+      <div>
+        <Label for="jira_key">Jira のキー</Label>
+        <Input id="jira_key" bind:value={form.jira_key} placeholder="NOVA-123" />
+        <p class="mt-1.5 text-xs text-slate-500">一覧からこのキーで Jira を開けます</p>
+      </div>
     </div>
 
     <div>
@@ -99,6 +118,11 @@
         </span>
         <Input type="number" id="price" bind:value={form.price} class="rounded-l-none" />
       </div>
+    </div>
+
+    <div>
+      <Label for="description">備考</Label>
+      <Textarea id="description" rows={4} bind:value={form.description} />
     </div>
   </Card>
 </div>
