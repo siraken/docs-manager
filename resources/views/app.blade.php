@@ -7,6 +7,11 @@
     <meta name="robots" content="noindex" />
     <meta name="googlebot" content="nofollow" />
     <title>管理ツール</title>
+
+    {{-- favicon.ico は長らく 0 バイトの空ファイルで、参照もされていなかった。
+         novalumo/e-learning から実体を持ってきて繋いである。 --}}
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
     @vite(['resources/css/app.css', 'resources/ts/app.ts'])
     @inertiaHead
 </head>
