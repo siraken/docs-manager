@@ -90,6 +90,7 @@
               <p class="truncate text-xs text-slate-500">{auth.email}</p>
             </div>
 
+            <DropdownItem href={menu.chat}>Chat</DropdownItem>
             <DropdownItem href={menu.files}>Files</DropdownItem>
             <DropdownDivider />
             <p class="px-4 pt-2 pb-1 text-[10px] font-semibold tracking-wide text-slate-400 uppercase">Settings</p>
@@ -130,6 +131,7 @@
           <div class="mt-3 border-t border-slate-200 pt-3">
             <p class="px-3 pb-2 text-xs text-slate-500">{auth.name}</p>
             <ul class="space-y-1">
+              <li><Link href={menu.chat} class={mobileLinkClass(false)}>Chat</Link></li>
               <li><Link href={menu.files} class={mobileLinkClass(false)}>Files</Link></li>
               <li><Link href={menu.users} class={mobileLinkClass(false)}>User Management</Link></li>
               <li><Link href={menu.customers} class={mobileLinkClass(false)}>Customer Management</Link></li>

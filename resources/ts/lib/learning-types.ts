@@ -92,4 +92,18 @@ export type Submission = {
   /** 期限に遅れて出したか */
   isLate: boolean;
   urls: { edit: string; delete: string } | null;
+/** App\Http\ViewModels\ChatMessageView */
+export type ChatMessage = {
+  id: number;
+  userId: number;
+  userName: string;
+  body: string;
+  /** "2026-09-04 14:30" */
+  postedAt: string;
+  /** "9/4 14:30" */
+  postedAtLabel: string;
+  /** 自分の発言か。見た目と削除ボタンの出し分けに使う */
+  isMine: boolean;
+  /** 消せるのは自分の発言だけなので、他人の発言では null */
+  urls: { delete: string } | null;
 };

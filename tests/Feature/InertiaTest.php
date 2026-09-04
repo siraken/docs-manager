@@ -41,6 +41,7 @@ test('ユーザーメニューの URL が共有データに載る', function () 
         ->where('menu.accounts', url('/accounts'))
         ->where('menu.courses', url('/courses'))
         ->where('menu.assignments', url('/assignments'))
+        ->where('menu.chat', url('/chat'))
         ->where('menu.logout', url('/logout')));
 });
 
@@ -100,6 +101,7 @@ test('全ての画面が Inertia を返す', function () {
         '/courses' => 'Courses/Index',
         '/submissions' => 'Submissions/Index',
         '/assignments' => 'Assignments/Index',
+        '/chat' => 'Chat/Index',
     ];
 
     foreach ($expected as $path => $component) {

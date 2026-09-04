@@ -2,6 +2,7 @@
 
 use App\Infrastructure\Persistence\Eloquent\Models\Account;
 use App\Infrastructure\Persistence\Eloquent\Models\Assignment;
+use App\Infrastructure\Persistence\Eloquent\Models\ChatMessage;
 use App\Infrastructure\Persistence\Eloquent\Models\Contract;
 use App\Infrastructure\Persistence\Eloquent\Models\Course;
 use App\Infrastructure\Persistence\Eloquent\Models\Customer;
@@ -363,6 +364,11 @@ function submissionPayload(int $assignmentId, int $userId, array $overrides = []
         'body' => '提出内容',
         'feedback' => null,
     ], $overrides);
+ * チャットの発言を 1 件作る。
+ */
+function createChatMessage(int $userId, string $body = 'おはようございます'): ChatMessage
+{
+    return ChatMessage::create(['user_id' => $userId, 'body' => $body]);
 }
 
 /**

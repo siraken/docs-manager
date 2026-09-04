@@ -18,6 +18,7 @@ use App\Domain\Academy\Repository\AcademyInquiryRepositoryInterface;
 use App\Domain\Accounting\Repository\AccountRepositoryInterface;
 use App\Domain\Accounting\Repository\JournalEntryRepositoryInterface;
 use App\Domain\Contract\Repository\ContractRepositoryInterface;
+use App\Domain\Chat\Repository\ChatMessageRepositoryInterface;
 use App\Domain\Customer\Repository\CustomerRepositoryInterface;
 use App\Domain\Learning\Repository\AssignmentRepositoryInterface;
 use App\Domain\Learning\Repository\CourseRepositoryInterface;
@@ -44,6 +45,7 @@ use App\Infrastructure\Pdf\TcpdfTravelPdfRenderer;
 use App\Infrastructure\Persistence\Eloquent\AcademyInquiryRepository;
 use App\Infrastructure\Persistence\Eloquent\AssignmentRepository;
 use App\Infrastructure\Persistence\Eloquent\AccountRepository;
+use App\Infrastructure\Persistence\Eloquent\ChatMessageRepository;
 use App\Infrastructure\Persistence\Eloquent\CompanyProfileRepository;
 use App\Infrastructure\Persistence\Eloquent\CourseRepository;
 use App\Infrastructure\Persistence\Eloquent\ContractRepository;
@@ -87,6 +89,7 @@ final class DomainServiceProvider extends ServiceProvider
         EnrollmentRepositoryInterface::class => EnrollmentRepository::class,
         AssignmentRepositoryInterface::class => AssignmentRepository::class,
         SubmissionRepositoryInterface::class => SubmissionRepository::class,
+        ChatMessageRepositoryInterface::class => ChatMessageRepository::class,
         UserRepositoryInterface::class => UserRepository::class,
         TravelRepositoryInterface::class => TravelRepository::class,
         TravelExpenseRepositoryInterface::class => TravelExpenseRepository::class,
