@@ -92,6 +92,8 @@ export type Submission = {
   /** 期限に遅れて出したか */
   isLate: boolean;
   urls: { edit: string; delete: string } | null;
+};
+
 /** App\Http\ViewModels\ChatMessageView */
 export type ChatMessage = {
   id: number;

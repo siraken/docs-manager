@@ -364,6 +364,9 @@ function submissionPayload(int $assignmentId, int $userId, array $overrides = []
         'body' => '提出内容',
         'feedback' => null,
     ], $overrides);
+}
+
+/**
  * チャットの発言を 1 件作る。
  */
 function createChatMessage(int $userId, string $body = 'おはようございます'): ChatMessage
