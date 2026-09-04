@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\AcademyController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
@@ -233,6 +234,20 @@ Route::middleware('login')->group(function (): void {
             Route::get('/edit/{id}', 'edit')->name('courses.edit')->whereNumber('id');
             Route::post('/edit/{id}', 'update')->whereNumber('id');
             Route::delete('/delete/{id}', 'destroy')->name('courses.delete')->whereNumber('id');
+        });
+
+    /**
+     * チャット (novalumo/e-learning を参考に作り直したもの)
+     *
+     * 全員が読み書きする 1 つのルーム。更新は専用の JSON エンドポイントでは
+     * なく Inertia の部分リロードで行うため、取得用のルートは無い。
+     */
+    Route::prefix('chat')
+        ->controller(ChatController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->name('chat.index');
+            Route::post('/', 'store');
+            Route::delete('/delete/{id}', 'destroy')->name('chat.delete')->whereNumber('id');
         });
 
     /**

@@ -40,6 +40,7 @@ test('ユーザーメニューの URL が共有データに載る', function () 
         ->where('menu.contracts', url('/contracts'))
         ->where('menu.accounts', url('/accounts'))
         ->where('menu.courses', url('/courses'))
+        ->where('menu.chat', url('/chat'))
         ->where('menu.logout', url('/logout')));
 });
 
@@ -97,6 +98,7 @@ test('全ての画面が Inertia を返す', function () {
         // novalumo/e-learning を参考に新規開発した社内研修
         '/enrollments' => 'Enrollments/Index',
         '/courses' => 'Courses/Index',
+        '/chat' => 'Chat/Index',
     ];
 
     foreach ($expected as $path => $component) {

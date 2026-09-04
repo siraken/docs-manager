@@ -1,6 +1,7 @@
 <?php
 
 use App\Infrastructure\Persistence\Eloquent\Models\Account;
+use App\Infrastructure\Persistence\Eloquent\Models\ChatMessage;
 use App\Infrastructure\Persistence\Eloquent\Models\Contract;
 use App\Infrastructure\Persistence\Eloquent\Models\Course;
 use App\Infrastructure\Persistence\Eloquent\Models\Customer;
@@ -315,6 +316,14 @@ function enrollmentPayload(int $userId, int $courseId, array $overrides = []): a
         'completed_at' => '2026-09-30',
         'note' => null,
     ], $overrides);
+}
+
+/**
+ * チャットの発言を 1 件作る。
+ */
+function createChatMessage(int $userId, string $body = 'おはようございます'): ChatMessage
+{
+    return ChatMessage::create(['user_id' => $userId, 'body' => $body]);
 }
 
 /**
