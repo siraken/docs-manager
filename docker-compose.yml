@@ -1,5 +1,4 @@
 # For more information: https://laravel.com/docs/sail
-version: "3"
 services:
     laravel.test:
         build:
@@ -44,11 +43,12 @@ services:
             test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}"]
             retries: 3
             timeout: 5s
-    mailhog:
-        image: mailhog/mailhog
+    # Mailhog は開発終了。後継の Mailpit を使う (SMTP は同じ 1025 番)
+    mailpit:
+        image: "axllent/mailpit:latest"
         ports:
-            - "1025:1025"
-            - "8025:8025"
+            - "${FORWARD_MAILPIT_PORT:-1025}:1025"
+            - "${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025"
         networks:
             - sail
 networks:

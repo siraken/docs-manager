@@ -1,6 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
+declare(strict_types=1);
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -8,19 +9,13 @@ use Illuminate\Support\Facades\Route;
 | API Routes
 |--------------------------------------------------------------------------
 |
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
+| このアプリに API はまだ無い。画面はすべて Inertia で、サーバーとの
+| やりとりは web ルート越しに行う (docs/frontend.md の「サーバーへの送信」)。
+|
+| ファイル自体を消していないのは bootstrap/app.php の withRouting() が
+| このパスを指しているため。API を足すときはここに書く。
+|
+| throttle は bootstrap/app.php の throttleApi() で掛かる。リミッター
+| (60/min) は AppServiceProvider が定義している。
 |
 */
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-Route::prefix('v1')
-    ->group(function () {
-        Route::get('/ping', function () {
-            return ["pong"];
-        });
-    });
