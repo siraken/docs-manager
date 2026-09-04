@@ -15,6 +15,7 @@ use App\Http\Requests\SaveAssignmentRequest;
 use App\Http\ViewModels\AssignmentView;
 use App\Http\ViewModels\CourseView;
 use App\Support\Flash;
+use App\Support\Lookup;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -106,12 +107,6 @@ final class AssignmentController extends Controller
      */
     private function courseTitles(array $courses): array
     {
-        $titles = [];
-
-        foreach ($courses as $course) {
-            $titles[(int) $course->id()] = $course->title();
-        }
-
-        return $titles;
+        return Lookup::byId($courses, static fn (Course $c): string => $c->title());
     }
 }

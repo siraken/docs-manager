@@ -7,7 +7,7 @@
   import EmptyState from "../../components/ui/EmptyState.svelte";
   import Input from "../../components/ui/Input.svelte";
   import Label from "../../components/ui/Label.svelte";
-  import Modal from "../../components/ui/Modal.svelte";
+  import DeleteConfirm from "../../components/DeleteConfirm.svelte";
   import PageHeader from "../../components/ui/PageHeader.svelte";
   import Select from "../../components/ui/Select.svelte";
   import Table from "../../components/ui/Table.svelte";
@@ -51,21 +51,7 @@
     );
   }
 
-  let confirming = $state(false);
-  let target = $state<JournalEntry | null>(null);
-
-  function askDelete(row: JournalEntry): void {
-    target = row;
-    confirming = true;
-  }
-
-  function confirmDelete(): void {
-    if (target?.urls) {
-      router.delete(target.urls.delete);
-    }
-
-    confirming = false;
-  }
+  let confirm = $state<DeleteConfirm<JournalEntry> | undefined>();
 </script>
 
 <PageHeader title="仕訳帳">
@@ -161,20 +147,13 @@
           {#if row.urls}
             <Button href={row.urls.edit} size="sm" icon="pencil">編集</Button>
           {/if}
-          <Button size="sm" variant="ghost" icon="trash" onclick={() => askDelete(row)}>削除</Button>
+          <Button size="sm" variant="ghost" icon="trash" onclick={() => confirm?.ask(row)}>削除</Button>
         </td>
       </tr>
     {/each}
   </Table>
 {/if}
 
-<Modal bind:open={confirming} title="仕訳の削除">
-  <p class="text-sm text-slate-600">
-    {target?.dateLabel}「{target?.description}」（￥{target?.amountLabel}）を削除します。取り消せません。
-  </p>
-
-  {#snippet footer()}
-    <Button onclick={() => (confirming = false)}>キャンセル</Button>
-    <Button variant="danger" icon="trash" onclick={confirmDelete}>削除する</Button>
-  {/snippet}
-</Modal>
+<DeleteConfirm bind:this={confirm} title="仕訳の削除">
+  {#snippet body(row: JournalEntry)}{row.dateLabel}「{row.description}」（￥{row.amountLabel}）を削除します。取り消せません。{/snippet}
+</DeleteConfirm>

@@ -23,6 +23,7 @@ use App\Http\ViewModels\ProjectView;
 use App\Http\ViewModels\ReportView;
 use App\Http\ViewModels\UserView;
 use App\Support\Flash;
+use App\Support\Lookup;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -218,13 +219,7 @@ final class ReportController extends Controller
      */
     private function userNames(array $users): array
     {
-        $names = [];
-
-        foreach ($users as $user) {
-            $names[(int) $user->id()] = $user->name();
-        }
-
-        return $names;
+        return Lookup::byId($users, static fn (User $u): string => $u->name());
     }
 
     /**
@@ -233,13 +228,7 @@ final class ReportController extends Controller
      */
     private function customerNames(array $customers): array
     {
-        $names = [];
-
-        foreach ($customers as $customer) {
-            $names[(int) $customer->id()] = $customer->name();
-        }
-
-        return $names;
+        return Lookup::byId($customers, static fn (Customer $c): string => $c->name());
     }
 
     /**
@@ -248,12 +237,6 @@ final class ReportController extends Controller
      */
     private function projectNames(array $projects): array
     {
-        $names = [];
-
-        foreach ($projects as $project) {
-            $names[(int) $project->id()] = $project->name();
-        }
-
-        return $names;
+        return Lookup::byId($projects, static fn (Project $p): string => $p->name());
     }
 }

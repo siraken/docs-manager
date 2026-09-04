@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Link, router } from "@inertiajs/svelte";
+  import { Link } from "@inertiajs/svelte";
 
   import Badge from "../../components/ui/Badge.svelte";
   import Button from "../../components/ui/Button.svelte";
   import EmptyState from "../../components/ui/EmptyState.svelte";
-  import Modal from "../../components/ui/Modal.svelte";
+  import DeleteConfirm from "../../components/DeleteConfirm.svelte";
   import PageHeader from "../../components/ui/PageHeader.svelte";
   import Table from "../../components/ui/Table.svelte";
   import type { Assignment } from "../../lib/learning-types";
@@ -14,22 +14,8 @@
 
   let { assignments, urls }: Props = $props();
 
-  let confirming = $state(false);
-  let target = $state<Assignment | null>(null);
-
-  function askDelete(row: Assignment): void {
-    target = row;
-    confirming = true;
-  }
-
-  function confirmDelete(): void {
-    if (target?.urls) {
-      // 提出物のある課題はサーバー側で弾かれ、理由がフラッシュで返る
-      router.delete(target.urls.delete);
-    }
-
-    confirming = false;
-  }
+  // 提出物のある課題はサーバー側で弾かれ、理由がフラッシュで返る
+  let confirm = $state<DeleteConfirm<Assignment> | undefined>();
 </script>
 
 <PageHeader title="課題">
@@ -76,19 +62,14 @@
           {#if row.urls}
             <Button href={row.urls.edit} size="sm" icon="pencil">編集</Button>
           {/if}
-          <Button size="sm" variant="ghost" icon="trash" onclick={() => askDelete(row)}>削除</Button>
+          <Button size="sm" variant="ghost" icon="trash" onclick={() => confirm?.ask(row)}>削除</Button>
         </td>
       </tr>
     {/each}
   </Table>
 {/if}
 
-<Modal bind:open={confirming} title="課題の削除">
-  <p class="text-sm text-slate-600">「{target?.title}」を削除します。取り消せません。</p>
-  <p class="mt-2 text-xs text-slate-500">提出物のある課題は削除できません。</p>
-
-  {#snippet footer()}
-    <Button onclick={() => (confirming = false)}>キャンセル</Button>
-    <Button variant="danger" icon="trash" onclick={confirmDelete}>削除する</Button>
-  {/snippet}
-</Modal>
+<DeleteConfirm bind:this={confirm} title="課題の削除">
+  {#snippet body(row: Assignment)}「{row.title}」を削除します。取り消せません。{/snippet}
+  {#snippet note()}提出物のある課題は削除できません。{/snippet}
+</DeleteConfirm>

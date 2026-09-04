@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Link, router } from "@inertiajs/svelte";
+  import { Link } from "@inertiajs/svelte";
 
   import Badge from "../../components/ui/Badge.svelte";
   import Button from "../../components/ui/Button.svelte";
   import EmptyState from "../../components/ui/EmptyState.svelte";
-  import Modal from "../../components/ui/Modal.svelte";
+  import DeleteConfirm from "../../components/DeleteConfirm.svelte";
   import PageHeader from "../../components/ui/PageHeader.svelte";
   import Table from "../../components/ui/Table.svelte";
   import type { Contract } from "../../lib/master-types";
@@ -17,21 +17,7 @@
    * 削除の確認。移植前は編集画面に type="button" の削除ボタンがあるだけで
    * 何も起きず、サーバー側の受け口も無かった。
    */
-  let confirming = $state(false);
-  let target = $state<Contract | null>(null);
-
-  function askDelete(row: Contract): void {
-    target = row;
-    confirming = true;
-  }
-
-  function confirmDelete(): void {
-    if (target?.urls) {
-      router.delete(target.urls.delete);
-    }
-
-    confirming = false;
-  }
+  let confirm = $state<DeleteConfirm<Contract> | undefined>();
 
   /** 契約期間から導出した状態。保存されたカラムではない */
   const badgeColor = (status: string): "green" | "amber" | "slate" =>
@@ -73,18 +59,13 @@
         <td class="px-4 py-3 align-middle whitespace-nowrap text-slate-600 tabular">{row.termLabel}</td>
         <td class="px-4 py-3 align-middle"><Badge color={badgeColor(row.statusValue)}>{row.status}</Badge></td>
         <td class="px-4 py-3 text-right align-middle">
-          <Button size="sm" variant="ghost" icon="trash" onclick={() => askDelete(row)}>削除</Button>
+          <Button size="sm" variant="ghost" icon="trash" onclick={() => confirm?.ask(row)}>削除</Button>
         </td>
       </tr>
     {/each}
   </Table>
 {/if}
 
-<Modal bind:open={confirming} title="契約の削除">
-  <p class="text-sm text-slate-600">「{target?.name}」を削除します。取り消せません。</p>
-
-  {#snippet footer()}
-    <Button onclick={() => (confirming = false)}>キャンセル</Button>
-    <Button variant="danger" icon="trash" onclick={confirmDelete}>削除する</Button>
-  {/snippet}
-</Modal>
+<DeleteConfirm bind:this={confirm} title="契約の削除">
+  {#snippet body(row: Contract)}「{row.name}」を削除します。取り消せません。{/snippet}
+</DeleteConfirm>

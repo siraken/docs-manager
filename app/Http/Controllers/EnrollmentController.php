@@ -20,6 +20,8 @@ use App\Http\ViewModels\CourseView;
 use App\Http\ViewModels\EnrollmentView;
 use App\Http\ViewModels\UserView;
 use App\Support\Flash;
+use App\Support\Lookup;
+use App\Support\SelectOptions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -162,11 +164,7 @@ final class EnrollmentController extends Controller
      */
     private function statusOptions(): array
     {
-        return array_map(
-            static fn (string $value, string $label): array => ['value' => $value, 'label' => $label],
-            array_keys(EnrollmentStatus::options()),
-            array_values(EnrollmentStatus::options()),
-        );
+        return SelectOptions::fromMap(EnrollmentStatus::options());
     }
 
     /**
@@ -177,13 +175,7 @@ final class EnrollmentController extends Controller
      */
     private function userNames(array $users): array
     {
-        $names = [];
-
-        foreach ($users as $user) {
-            $names[(int) $user->id()] = $user->name();
-        }
-
-        return $names;
+        return Lookup::byId($users, static fn (User $u): string => $u->name());
     }
 
     /**

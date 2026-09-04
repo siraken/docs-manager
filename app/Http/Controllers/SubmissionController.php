@@ -22,6 +22,8 @@ use App\Http\ViewModels\AssignmentView;
 use App\Http\ViewModels\SubmissionView;
 use App\Http\ViewModels\UserView;
 use App\Support\Flash;
+use App\Support\Lookup;
+use App\Support\SelectOptions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -161,11 +163,7 @@ final class SubmissionController extends Controller
      */
     private function statusOptions(): array
     {
-        return array_map(
-            static fn (string $value, string $label): array => ['value' => $value, 'label' => $label],
-            array_keys(SubmissionStatus::options()),
-            array_values(SubmissionStatus::options()),
-        );
+        return SelectOptions::fromMap(SubmissionStatus::options());
     }
 
     /**
@@ -174,13 +172,7 @@ final class SubmissionController extends Controller
      */
     private function assignmentsById(array $assignments): array
     {
-        $map = [];
-
-        foreach ($assignments as $assignment) {
-            $map[(int) $assignment->id()] = $assignment;
-        }
-
-        return $map;
+        return Lookup::keyById($assignments);
     }
 
     /**
@@ -189,13 +181,7 @@ final class SubmissionController extends Controller
      */
     private function courseTitles(array $courses): array
     {
-        $titles = [];
-
-        foreach ($courses as $course) {
-            $titles[(int) $course->id()] = $course->title();
-        }
-
-        return $titles;
+        return Lookup::byId($courses, static fn (Course $c): string => $c->title());
     }
 
     /**
@@ -204,12 +190,6 @@ final class SubmissionController extends Controller
      */
     private function userNames(array $users): array
     {
-        $names = [];
-
-        foreach ($users as $user) {
-            $names[(int) $user->id()] = $user->name();
-        }
-
-        return $names;
+        return Lookup::byId($users, static fn (User $u): string => $u->name());
     }
 }

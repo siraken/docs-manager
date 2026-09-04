@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Link, router } from "@inertiajs/svelte";
+  import { Link } from "@inertiajs/svelte";
 
   import Badge from "../../components/ui/Badge.svelte";
   import Button from "../../components/ui/Button.svelte";
   import EmptyState from "../../components/ui/EmptyState.svelte";
-  import Modal from "../../components/ui/Modal.svelte";
+  import DeleteConfirm from "../../components/DeleteConfirm.svelte";
   import PageHeader from "../../components/ui/PageHeader.svelte";
   import Table from "../../components/ui/Table.svelte";
   import type { Course } from "../../lib/learning-types";
@@ -14,22 +14,8 @@
 
   let { courses, urls }: Props = $props();
 
-  let confirming = $state(false);
-  let target = $state<Course | null>(null);
-
-  function askDelete(row: Course): void {
-    target = row;
-    confirming = true;
-  }
-
-  function confirmDelete(): void {
-    if (target?.urls) {
-      // 受講記録のある講座はサーバー側で弾かれ、理由がフラッシュで返る
-      router.delete(target.urls.delete);
-    }
-
-    confirming = false;
-  }
+  // 受講記録のある講座はサーバー側で弾かれ、理由がフラッシュで返る
+  let confirm = $state<DeleteConfirm<Course> | undefined>();
 </script>
 
 <PageHeader title="講座">
@@ -78,21 +64,16 @@
           {#if row.urls}
             <Button href={row.urls.edit} size="sm" icon="pencil">編集</Button>
           {/if}
-          <Button size="sm" variant="ghost" icon="trash" onclick={() => askDelete(row)}>削除</Button>
+          <Button size="sm" variant="ghost" icon="trash" onclick={() => confirm?.ask(row)}>削除</Button>
         </td>
       </tr>
     {/each}
   </Table>
 {/if}
 
-<Modal bind:open={confirming} title="講座の削除">
-  <p class="text-sm text-slate-600">「{target?.title}」を削除します。取り消せません。</p>
-  <p class="mt-2 text-xs text-slate-500">
+<DeleteConfirm bind:this={confirm} title="講座の削除">
+  {#snippet body(row: Course)}「{row.title}」を削除します。取り消せません。{/snippet}
+  {#snippet note()}
     受講記録のある講座は削除できません。使わなくなった講座は編集画面で「公開しない」にすると選択肢から外せます。
-  </p>
-
-  {#snippet footer()}
-    <Button onclick={() => (confirming = false)}>キャンセル</Button>
-    <Button variant="danger" icon="trash" onclick={confirmDelete}>削除する</Button>
   {/snippet}
-</Modal>
+</DeleteConfirm>

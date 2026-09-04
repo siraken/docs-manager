@@ -11,6 +11,7 @@ use App\Application\User\UseCase\ListUsersUseCase;
 use App\Domain\User\Entity\User;
 use App\Http\Requests\PostChatMessageRequest;
 use App\Http\ViewModels\ChatMessageView;
+use App\Support\Lookup;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -71,12 +72,6 @@ final class ChatController extends Controller
      */
     private function userNames(array $users): array
     {
-        $names = [];
-
-        foreach ($users as $user) {
-            $names[(int) $user->id()] = $user->name();
-        }
-
-        return $names;
+        return Lookup::byId($users, static fn (User $u): string => $u->name());
     }
 }
