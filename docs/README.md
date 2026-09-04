@@ -21,6 +21,7 @@
 | --- | --- |
 | [Laravel 8 → 13 の移行で直したこと](history/laravel-upgrade.md) | 元から壊れていた箇所と、その直し方 |
 | [in-house-timecard-app からの移植](history/timecard-port.md) | 契約管理・勤務報告の移植、かぶり機能から取り込んだ仕様、仕訳帳の新規開発 |
+| [e-learning を参考にした社内研修](history/e-learning-port.md) | 講座・受講記録の新規開発と、取り込まなかったものの判断 |
 
 ## 書き足すときの目安
 

@@ -2,7 +2,9 @@
 
 use App\Infrastructure\Persistence\Eloquent\Models\Account;
 use App\Infrastructure\Persistence\Eloquent\Models\Contract;
+use App\Infrastructure\Persistence\Eloquent\Models\Course;
 use App\Infrastructure\Persistence\Eloquent\Models\Customer;
+use App\Infrastructure\Persistence\Eloquent\Models\Enrollment;
 use App\Infrastructure\Persistence\Eloquent\Models\JournalEntry;
 use App\Infrastructure\Persistence\Eloquent\Models\OrderHeader;
 use App\Infrastructure\Persistence\Eloquent\Models\Report;
@@ -265,6 +267,52 @@ function journalPayload(int $debitId, int $creditId, array $overrides = []): arr
         'credit_account_id' => $creditId,
         'amount' => 1000,
         'description' => '売上の計上',
+        'note' => null,
+    ], $overrides);
+}
+
+/**
+ * 講座を 1 件作る。
+ */
+function createCourse(string $title = 'Laravel 入門', int $exp = 50, array $attributes = []): Course
+{
+    return Course::create(array_merge([
+        'title' => $title,
+        'description' => null,
+        'exp' => $exp,
+        'is_published' => true,
+    ], $attributes));
+}
+
+/**
+ * 受講記録を 1 件作る。
+ *
+ * 状態と日付を直接指定する点に注意。ユースケース経由だと整合が
+ * 調整されてしまい、「準備」と「検証対象」が同じ経路になる。
+ */
+function createEnrollment(int $userId, int $courseId, array $attributes = []): Enrollment
+{
+    return Enrollment::create(array_merge([
+        'user_id' => $userId,
+        'course_id' => $courseId,
+        'status' => 'completed',
+        'started_at' => '2026-09-01',
+        'completed_at' => '2026-09-30',
+        'note' => null,
+    ], $attributes));
+}
+
+/**
+ * 受講記録フォームの POST ペイロード。
+ */
+function enrollmentPayload(int $userId, int $courseId, array $overrides = []): array
+{
+    return array_merge([
+        'user_id' => $userId,
+        'course_id' => $courseId,
+        'status' => 'completed',
+        'started_at' => '2026-09-01',
+        'completed_at' => '2026-09-30',
         'note' => null,
     ], $overrides);
 }

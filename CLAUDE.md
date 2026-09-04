@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理・勤務報告・契約管理・仕訳帳）。Laravel 13 + Tailwind CSS v4。**UI もコード内コメントも日本語**で書く。
+Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理・勤務報告・契約管理・仕訳帳・社内研修）。Laravel 13 + Tailwind CSS v4。**UI もコード内コメントも日本語**で書く。
 
-- **画面は全 33 枚が Inertia + Svelte 5**。Blade として残っているのはルートテンプレート (`app.blade.php`)、エラーページ (`errors/`)、メール本文 (`emails/`) だけ
+- **画面は全 37 枚が Inertia + Svelte 5**。Blade として残っているのはルートテンプレート (`app.blade.php`)、エラーページ (`errors/`)、メール本文 (`emails/`) だけ
 - **サーバー側は Laravel の既定 (`app/Http`) の内側に Domain / Application / Infrastructure を足した構成**。以前はコントローラに DB アクセス・金額計算・PDF 描画・外部 API 呼び出しが直書きされていた
 - Laravel 8 から 13 へメジャーバージョンを 1 つずつ上げてきた（1 メジャー = 1 PR）。**現在 13 で、アップグレードは完了している**
 
@@ -24,6 +24,7 @@ Novalumo 社内向けの業務管理ツール（発注書・出張申請・出�
 | [残っている TODO](docs/todo.md) | 未実装のまま残っている重いもの（2FA の未接続、MetaMask ログインの脆弱性など） |
 | [Laravel 8 → 13 の移行で直したこと](docs/history/laravel-upgrade.md) | 元から壊れていた箇所と、その直し方 |
 | [in-house-timecard-app からの移植](docs/history/timecard-port.md) | 契約管理・勤務報告の移植、かぶり機能から取り込んだ仕様、仕訳帳の新規開発 |
+| [e-learning を参考にした社内研修](docs/history/e-learning-port.md) | 講座・受講記録の新規開発と、取り込まなかったものの判断 |
 
 ## 絶対に守ること
 
@@ -69,6 +70,12 @@ Novalumo 社内向けの業務管理ツール（発注書・出張申請・出�
 - **勘定科目は `accounts` マスタから id で参照する**。文字列で持つと表記ゆれで集計が壊れる
 - **使われている勘定科目は削除できない**。使わなくなったものは無効化して選択肢から外す
 - **残高がどちらの側に立つかは `AccountType` が決める**。画面やクエリで judge しない
+
+### 社内研修
+
+- **受講記録の状態と日付は必ず噛み合う**。未受講は日付を持たず、完了には完了日が要る。整合は `Enrollment` が調整するので、画面やクエリで辻褄を合わせない
+- **ポイントが入るのは完了したときだけ**。受講中のぶんを数えない
+- **同じ受講者・同じ講座の記録は 2 つ作らない**。受け直しは既存の記録を更新する
 
 ### テスト
 
