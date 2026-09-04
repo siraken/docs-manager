@@ -127,6 +127,7 @@ final class HandleInertiaRequests extends Middleware
             'contracts' => route('contracts.index'),
             'accounts' => route('accounts.index'),
             'courses' => route('courses.index'),
+            'assignments' => route('assignments.index'),
             'chat' => route('chat.index'),
             'settings' => route('settings.index'),
             'logout' => route('logout'),

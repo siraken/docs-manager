@@ -99,6 +99,7 @@
             <DropdownItem href={menu.contracts}>Contract Management</DropdownItem>
             <DropdownItem href={menu.accounts}>Account Management</DropdownItem>
             <DropdownItem href={menu.courses}>Course Management</DropdownItem>
+            <DropdownItem href={menu.assignments}>Assignment Management</DropdownItem>
             <DropdownItem href={menu.settings}>Settings</DropdownItem>
             <DropdownDivider />
             <DropdownItem onclick={logout}>Logout</DropdownItem>
@@ -137,6 +138,7 @@
               <li><Link href={menu.contracts} class={mobileLinkClass(false)}>Contract Management</Link></li>
               <li><Link href={menu.accounts} class={mobileLinkClass(false)}>Account Management</Link></li>
               <li><Link href={menu.courses} class={mobileLinkClass(false)}>Course Management</Link></li>
+              <li><Link href={menu.assignments} class={mobileLinkClass(false)}>Assignment Management</Link></li>
               <li><Link href={menu.settings} class={mobileLinkClass(false)}>Settings</Link></li>
               <li>
                 <button type="button" onclick={logout} class="{mobileLinkClass(false)} w-full text-left">

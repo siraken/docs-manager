@@ -56,6 +56,44 @@ export type EnrollmentFilter = {
   status: string | null;
 };
 
+/** App\Http\ViewModels\AssignmentView */
+export type Assignment = {
+  id: number;
+  courseId: number;
+  courseTitle: string;
+  title: string;
+  description: string | null;
+  dueOn: string | null;
+  /** 期限が無ければ "期限なし" */
+  dueOnLabel: string;
+  /** 今日の時点で期限を過ぎているか */
+  isOverdue: boolean;
+  urls: { edit: string; delete: string } | null;
+};
+
+/** App\Http\ViewModels\AssignmentView::options() */
+export type AssignmentOption = { id: number; name: string; course: string };
+
+/** App\Http\ViewModels\SubmissionView */
+export type Submission = {
+  id: number;
+  assignmentId: number;
+  assignmentTitle: string;
+  courseTitle: string;
+  userId: number;
+  userName: string;
+  /** not_submitted / submitted / returned / approved */
+  statusValue: string;
+  status: string;
+  submittedAt: string | null;
+  submittedAtLabel: string;
+  body: string | null;
+  feedback: string | null;
+  /** 期限に遅れて出したか */
+  isLate: boolean;
+  urls: { edit: string; delete: string } | null;
+};
+
 /** App\Http\ViewModels\ChatMessageView */
 export type ChatMessage = {
   id: number;

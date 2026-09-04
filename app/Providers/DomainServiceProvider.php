@@ -20,8 +20,10 @@ use App\Domain\Accounting\Repository\JournalEntryRepositoryInterface;
 use App\Domain\Contract\Repository\ContractRepositoryInterface;
 use App\Domain\Chat\Repository\ChatMessageRepositoryInterface;
 use App\Domain\Customer\Repository\CustomerRepositoryInterface;
+use App\Domain\Learning\Repository\AssignmentRepositoryInterface;
 use App\Domain\Learning\Repository\CourseRepositoryInterface;
 use App\Domain\Learning\Repository\EnrollmentRepositoryInterface;
+use App\Domain\Learning\Repository\SubmissionRepositoryInterface;
 use App\Domain\Order\Repository\OrderRepositoryInterface;
 use App\Domain\Project\Repository\ProjectRepositoryInterface;
 use App\Domain\Report\Repository\ReportRepositoryInterface;
@@ -41,6 +43,7 @@ use App\Infrastructure\Pdf\TcpdfOrderPdfRenderer;
 use App\Infrastructure\Pdf\TcpdfTravelExpensePdfRenderer;
 use App\Infrastructure\Pdf\TcpdfTravelPdfRenderer;
 use App\Infrastructure\Persistence\Eloquent\AcademyInquiryRepository;
+use App\Infrastructure\Persistence\Eloquent\AssignmentRepository;
 use App\Infrastructure\Persistence\Eloquent\AccountRepository;
 use App\Infrastructure\Persistence\Eloquent\ChatMessageRepository;
 use App\Infrastructure\Persistence\Eloquent\CompanyProfileRepository;
@@ -51,6 +54,7 @@ use App\Infrastructure\Persistence\Eloquent\EnrollmentRepository;
 use App\Infrastructure\Persistence\Eloquent\JournalEntryRepository;
 use App\Infrastructure\Persistence\Eloquent\OrderRepository;
 use App\Infrastructure\Persistence\Eloquent\ProjectRepository;
+use App\Infrastructure\Persistence\Eloquent\SubmissionRepository;
 use App\Infrastructure\Persistence\Eloquent\ReportRepository;
 use App\Infrastructure\Persistence\Eloquent\TravelExpenseRepository;
 use App\Infrastructure\Persistence\Eloquent\TravelRepository;
@@ -83,6 +87,8 @@ final class DomainServiceProvider extends ServiceProvider
         JournalEntryRepositoryInterface::class => JournalEntryRepository::class,
         CourseRepositoryInterface::class => CourseRepository::class,
         EnrollmentRepositoryInterface::class => EnrollmentRepository::class,
+        AssignmentRepositoryInterface::class => AssignmentRepository::class,
+        SubmissionRepositoryInterface::class => SubmissionRepository::class,
         ChatMessageRepositoryInterface::class => ChatMessageRepository::class,
         UserRepositoryInterface::class => UserRepository::class,
         TravelRepositoryInterface::class => TravelRepository::class,

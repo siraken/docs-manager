@@ -1,6 +1,7 @@
 <?php
 
 use App\Infrastructure\Persistence\Eloquent\Models\Account;
+use App\Infrastructure\Persistence\Eloquent\Models\Assignment;
 use App\Infrastructure\Persistence\Eloquent\Models\ChatMessage;
 use App\Infrastructure\Persistence\Eloquent\Models\Contract;
 use App\Infrastructure\Persistence\Eloquent\Models\Course;
@@ -9,6 +10,7 @@ use App\Infrastructure\Persistence\Eloquent\Models\Enrollment;
 use App\Infrastructure\Persistence\Eloquent\Models\JournalEntry;
 use App\Infrastructure\Persistence\Eloquent\Models\OrderHeader;
 use App\Infrastructure\Persistence\Eloquent\Models\Report;
+use App\Infrastructure\Persistence\Eloquent\Models\Submission;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -315,6 +317,52 @@ function enrollmentPayload(int $userId, int $courseId, array $overrides = []): a
         'started_at' => '2026-09-01',
         'completed_at' => '2026-09-30',
         'note' => null,
+    ], $overrides);
+}
+
+/**
+ * 課題を 1 件作る。
+ */
+function createAssignment(int $courseId, array $attributes = []): Assignment
+{
+    return Assignment::create(array_merge([
+        'course_id' => $courseId,
+        'title' => '演習 1',
+        'description' => null,
+        'due_on' => '2026-09-30',
+    ], $attributes));
+}
+
+/**
+ * 提出物を 1 件作る。
+ *
+ * 状態と日付を直接指定する点に注意。ユースケース経由だと整合が
+ * 調整されてしまい、「準備」と「検証対象」が同じ経路になる。
+ */
+function createSubmission(int $assignmentId, int $userId, array $attributes = []): Submission
+{
+    return Submission::create(array_merge([
+        'assignment_id' => $assignmentId,
+        'user_id' => $userId,
+        'status' => 'submitted',
+        'submitted_at' => '2026-09-20',
+        'body' => '提出内容',
+        'feedback' => null,
+    ], $attributes));
+}
+
+/**
+ * 提出物フォームの POST ペイロード。
+ */
+function submissionPayload(int $assignmentId, int $userId, array $overrides = []): array
+{
+    return array_merge([
+        'assignment_id' => $assignmentId,
+        'user_id' => $userId,
+        'status' => 'submitted',
+        'submitted_at' => '2026-09-20',
+        'body' => '提出内容',
+        'feedback' => null,
     ], $overrides);
 }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\AcademyController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\CourseController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SpreadSheetController;
+use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\TravelController;
 use App\Http\Controllers\TravelExpenseController;
 use App\Http\Controllers\UserController;
@@ -234,6 +236,34 @@ Route::middleware('login')->group(function (): void {
             Route::get('/edit/{id}', 'edit')->name('courses.edit')->whereNumber('id');
             Route::post('/edit/{id}', 'update')->whereNumber('id');
             Route::delete('/delete/{id}', 'destroy')->name('courses.delete')->whereNumber('id');
+        });
+
+    /**
+     * 提出物 (社内研修の課題)
+     */
+    Route::prefix('submissions')
+        ->controller(SubmissionController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->name('submissions.index');
+            Route::get('/create', 'create')->name('submissions.create');
+            Route::post('/create', 'store');
+            Route::get('/edit/{id}', 'edit')->name('submissions.edit')->whereNumber('id');
+            Route::post('/edit/{id}', 'update')->whereNumber('id');
+            Route::delete('/delete/{id}', 'destroy')->name('submissions.delete')->whereNumber('id');
+        });
+
+    /**
+     * 課題 (提出物のマスタ)
+     */
+    Route::prefix('assignments')
+        ->controller(AssignmentController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->name('assignments.index');
+            Route::get('/create', 'create')->name('assignments.create');
+            Route::post('/create', 'store');
+            Route::get('/edit/{id}', 'edit')->name('assignments.edit')->whereNumber('id');
+            Route::post('/edit/{id}', 'update')->whereNumber('id');
+            Route::delete('/delete/{id}', 'destroy')->name('assignments.delete')->whereNumber('id');
         });
 
     /**
