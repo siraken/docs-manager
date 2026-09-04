@@ -49,6 +49,31 @@ timecard のときと違い、**そのまま持ってこられる実装はほと
 | ホーム・個人設定の画面 | docs-manager に同等のものがある |
 | `previous/`（Laravel 化以前のレガシー PHP） | 参考元のリポジトリに残っていた旧実装。現行の設計に影響しない |
 
+## 引き継いだ画像アセット
+
+移植元のリポジトリを整理するにあたり、docs-manager に無かった画像だけを退避したもの。
+
+| ファイル | 中身 | 移植元 |
+| --- | --- | --- |
+| `public/favicon.ico` | Novalumo のファビコン (6.9KB) | `public/icons/favicon.ico` |
+| `public/favicon.png` | 同じものの 496×496 版 (apple-touch-icon 用) | `public/icons/favicon.png` |
+| `resources/img/novalumo.jpg` | ロゴ + タグライン "A New World Creation Company" (640×400) | `resources/img/novalumo.jpg` |
+| `resources/img/mask.png` | 40×40 の単色グレー。移植元でも未使用で用途不明 | `resources/img/mask.png` |
+
+**`favicon.ico` は docs-manager では長らく 0 バイトの空ファイルで、`app.blade.php` から参照もされていなかった。** 実体を入れたうえで `<link rel="icon">` を繋いである。
+
+`novalumo.jpg` と `mask.png` は現時点でどこからも参照していない。
+
+### かぶりとして持ってこなかったもの
+
+| ファイル | 理由 |
+| --- | --- |
+| `logo.svg` | docs-manager の `resources/img/logo.svg` と**バイト単位で同一**（in-house-timecard-app から先に移植済み） |
+| `logo.png` | 同じ Novalumo ワードマークの 936×204 ラスタ。docs-manager には既にベクタ (`logo.svg`) と、より高解像度のラスタ (`Logo.png`, 1444×245) がある。加えて macOS の大文字小文字を区別しないファイルシステムでは `Logo.png` と衝突する |
+| `btn-open.svg` / `btn-close.svg` | ハンバーガーメニューの開閉アイコン。docs-manager は Bootstrap Icons の `bi-list` / `bi-x-lg` で同じ役割を満たしている |
+| `previous/assets/img/*` | `resources/img/*` の完全な複製（6 ファイルすべて同一ハッシュ） |
+| `previous/favicon.*` | `public/icons/favicon.*` の複製 |
+
 ## 残っている制約
 
 - 課題（提出物）は無い
