@@ -8,6 +8,7 @@ final readonly class CustomerInput
 {
     public function __construct(
         public string $name,
+        public ?string $person,
         public bool $isCompany,
         public ?string $email,
         public ?string $phone,

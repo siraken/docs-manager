@@ -59,6 +59,8 @@ export type OrderDetail = OrderListItem & {
 export type CustomerOption = {
   id: number;
   name: string;
+  /** 取引先の担当者名。選ぶと担当者欄の初期値になる */
+  person: string | null;
 };
 
 export type TaxOption = { value: number; label: string };

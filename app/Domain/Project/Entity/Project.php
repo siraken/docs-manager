@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Project\Entity;
 
+use App\Domain\Project\ValueObject\JiraKey;
 use App\Domain\Project\ValueObject\ProjectStatus;
 use App\Domain\Shared\ValueObject\Money;
 
@@ -17,7 +18,7 @@ final class Project
         private string $name,
         private ?string $description,
         private ?int $clientId,
-        private ?int $relatedTaskId,
+        private ?JiraKey $jiraKey,
         private ?\DateTimeImmutable $startDate,
         private ?\DateTimeImmutable $endDate,
         private ?\DateTimeImmutable $paymentDate,
@@ -30,14 +31,14 @@ final class Project
         string $name,
         ?string $description,
         ?int $clientId,
-        ?int $relatedTaskId,
+        ?JiraKey $jiraKey,
         ?\DateTimeImmutable $startDate,
         ?\DateTimeImmutable $endDate,
         ?\DateTimeImmutable $paymentDate,
         Money $price,
         ProjectStatus $status,
     ): self {
-        return new self(null, $name, $description, $clientId, $relatedTaskId, $startDate, $endDate, $paymentDate, $price, $status);
+        return new self(null, $name, $description, $clientId, $jiraKey, $startDate, $endDate, $paymentDate, $price, $status);
     }
 
     public static function reconstitute(
@@ -45,21 +46,21 @@ final class Project
         string $name,
         ?string $description,
         ?int $clientId,
-        ?int $relatedTaskId,
+        ?JiraKey $jiraKey,
         ?\DateTimeImmutable $startDate,
         ?\DateTimeImmutable $endDate,
         ?\DateTimeImmutable $paymentDate,
         Money $price,
         ProjectStatus $status,
     ): self {
-        return new self($id, $name, $description, $clientId, $relatedTaskId, $startDate, $endDate, $paymentDate, $price, $status);
+        return new self($id, $name, $description, $clientId, $jiraKey, $startDate, $endDate, $paymentDate, $price, $status);
     }
 
     public function update(
         string $name,
         ?string $description,
         ?int $clientId,
-        ?int $relatedTaskId,
+        ?JiraKey $jiraKey,
         ?\DateTimeImmutable $startDate,
         ?\DateTimeImmutable $endDate,
         ?\DateTimeImmutable $paymentDate,
@@ -69,7 +70,7 @@ final class Project
         $this->name = $name;
         $this->description = $description;
         $this->clientId = $clientId;
-        $this->relatedTaskId = $relatedTaskId;
+        $this->jiraKey = $jiraKey;
         $this->startDate = $startDate;
         $this->endDate = $endDate;
         $this->paymentDate = $paymentDate;
@@ -102,9 +103,9 @@ final class Project
         return $this->clientId;
     }
 
-    public function relatedTaskId(): ?int
+    public function jiraKey(): ?JiraKey
     {
-        return $this->relatedTaskId;
+        return $this->jiraKey;
     }
 
     public function startDate(): ?\DateTimeImmutable

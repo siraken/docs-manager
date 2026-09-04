@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Project\Input;
 
 use App\Application\Shared\DateParser;
+use App\Domain\Project\ValueObject\JiraKey;
 use App\Domain\Project\ValueObject\ProjectStatus;
 use App\Domain\Shared\ValueObject\Money;
 
@@ -14,13 +15,19 @@ final readonly class ProjectInput
         public string $name,
         public ?string $description,
         public ?int $clientId,
-        public ?int $relatedTaskId,
+        public mixed $jiraKey,
         public mixed $startDate,
         public mixed $endDate,
         public mixed $paymentDate,
         public mixed $price,
         public mixed $status,
     ) {
+    }
+
+    /** 書式の検証は JiraKey が持つ */
+    public function jiraKeyValue(): ?JiraKey
+    {
+        return JiraKey::parseNullable($this->jiraKey);
     }
 
     public function startDateValue(): ?\DateTimeImmutable

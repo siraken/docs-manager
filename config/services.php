@@ -50,4 +50,19 @@ return [
         'spreadsheet_id' => env('GOOGLE_SPREADSHEET_ID'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Jira
+    |--------------------------------------------------------------------------
+    |
+    | 案件に紐づく Jira のキー (projects.jira_key) からリンクを組むための URL。
+    | API を叩くわけではなく、画面のリンク先を作るためだけに使う。
+    | 移植元 (in-house-timecard-app) はこの URL をビューに直書きしていた。
+    |
+    */
+
+    'jira' => [
+        'browse_url' => env('JIRA_BROWSE_URL', 'https://novalumo.atlassian.net/browse/'),
+    ],
+
 ];

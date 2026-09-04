@@ -14,7 +14,9 @@ final readonly class ProjectView implements \JsonSerializable
         public string $name,
         public ?string $description,
         public ?int $clientId,
-        public ?int $relatedTaskId,
+        public string $clientName,
+        public ?string $jiraKey,
+        public ?string $jiraUrl,
         public ?string $startDate,
         public ?string $endDate,
         public ?string $paymentDate,
@@ -28,14 +30,24 @@ final readonly class ProjectView implements \JsonSerializable
     ) {
     }
 
-    public static function fromEntity(Project $project): self
+    /**
+     * @param string $clientName 取引先名。一覧では N+1 を避けるため
+     *                           コントローラがまとめて引いた対応表から渡す
+     * @param string $jiraBrowseUrl Jira の /browse/ の URL (config/services.php)。
+     *                              ホスト名は環境設定なのでドメイン層では組まない
+     */
+    public static function fromEntity(Project $project, string $clientName = '', string $jiraBrowseUrl = ''): self
     {
+        $jiraKey = $project->jiraKey();
+
         return new self(
             id: $project->id(),
             name: $project->name(),
             description: $project->description(),
             clientId: $project->clientId(),
-            relatedTaskId: $project->relatedTaskId(),
+            clientName: $clientName,
+            jiraKey: $jiraKey?->value,
+            jiraUrl: $jiraKey === null || $jiraBrowseUrl === '' ? null : $jiraBrowseUrl . $jiraKey->value,
             startDate: $project->startDate()?->format('Y-m-d'),
             endDate: $project->endDate()?->format('Y-m-d'),
             paymentDate: $project->paymentDate()?->format('Y-m-d'),
@@ -62,7 +74,9 @@ final readonly class ProjectView implements \JsonSerializable
             'name' => $this->name,
             'description' => $this->description,
             'clientId' => $this->clientId,
-            'relatedTaskId' => $this->relatedTaskId,
+            'clientName' => $this->clientName,
+            'jiraKey' => $this->jiraKey,
+            'jiraUrl' => $this->jiraUrl,
             'startDate' => $this->startDate,
             'endDate' => $this->endDate,
             'paymentDate' => $this->paymentDate,
@@ -83,7 +97,7 @@ final readonly class ProjectView implements \JsonSerializable
     /** 新規作成フォーム用の空の入れ物 */
     public static function empty(): self
     {
-        return new self(null, '', null, null, null, null, null, null, '-', '-', '-', 0, '0', 0, '');
+        return new self(null, '', null, null, '', null, null, null, null, null, '-', '-', '-', 0, '0', 0, '');
     }
 
     /**
@@ -105,10 +119,17 @@ final readonly class ProjectView implements \JsonSerializable
 
     /**
      * @param list<Project> $projects
+     * @param array<int, string> $clientNames 顧客 ID => 顧客名
      * @return Collection<int, self>
      */
-    public static function collection(array $projects): Collection
+    public static function collection(array $projects, array $clientNames = [], string $jiraBrowseUrl = ''): Collection
     {
-        return collect($projects)->map(self::fromEntity(...))->values();
+        return collect($projects)
+            ->map(static fn (Project $project): self => self::fromEntity(
+                $project,
+                $clientNames[$project->clientId()] ?? '',
+                $jiraBrowseUrl,
+            ))
+            ->values();
     }
 }

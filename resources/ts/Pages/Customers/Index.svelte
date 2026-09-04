@@ -25,6 +25,7 @@
   <Table>
     {#snippet head()}
       <th class="px-4 py-3">Name</th>
+      <th class="hidden px-4 py-3 sm:table-cell">Person</th>
       <th class="px-4 py-3">Address</th>
       <th class="px-4 py-3">Email</th>
       <th class="px-4 py-3"><span class="sr-only">操作</span></th>
@@ -44,6 +45,7 @@
             <Badge color="brand" class="ml-1.5">法人</Badge>
           {/if}
         </td>
+        <td class="hidden px-4 py-3 align-middle text-slate-600 sm:table-cell">{row.person ?? "-"}</td>
         <td class="px-4 py-3 align-middle text-slate-600">{row.location}</td>
         <td class="px-4 py-3 align-middle text-slate-600">{row.email ?? ""}</td>
         <td class="px-4 py-3 text-right align-middle">

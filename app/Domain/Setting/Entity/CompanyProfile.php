@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Setting\Entity;
 
+use App\Domain\Shared\ValueObject\Money;
+
 /**
  * 自社情報 (settings テーブル)。発注書 PDF の差出人欄と社印に使う。
  *
@@ -19,10 +21,14 @@ final class CompanyProfile
     private function __construct(
         private ?int $id,
         private string $name,
+        private string $nameEn,
         private string $zipcode,
         private string $address,
         private string $representative,
         private string $telNo,
+        private ?\DateTimeImmutable $established,
+        private ?Money $capital,
+        private string $bank,
         private string $logoUrl,
         private string $companyStampUrl,
         private string $representativeStampUrl,
@@ -36,27 +42,35 @@ final class CompanyProfile
         string $address,
         string $representative,
         string $telNo,
+        string $nameEn = '',
+        ?\DateTimeImmutable $established = null,
+        ?Money $capital = null,
+        string $bank = '',
         string $logoUrl = 'img/Logo.png',
         string $companyStampUrl = 'img/CompanyStamp.png',
         string $representativeStampUrl = '',
         string $applyStampUrl = '',
     ): self {
-        return new self(null, $name, $zipcode, $address, $representative, $telNo, $logoUrl, $companyStampUrl, $representativeStampUrl, $applyStampUrl);
+        return new self(null, $name, $nameEn, $zipcode, $address, $representative, $telNo, $established, $capital, $bank, $logoUrl, $companyStampUrl, $representativeStampUrl, $applyStampUrl);
     }
 
     public static function reconstitute(
         int $id,
         string $name,
+        string $nameEn,
         string $zipcode,
         string $address,
         string $representative,
         string $telNo,
+        ?\DateTimeImmutable $established,
+        ?Money $capital,
+        string $bank,
         string $logoUrl,
         string $companyStampUrl,
         string $representativeStampUrl,
         string $applyStampUrl,
     ): self {
-        return new self($id, $name, $zipcode, $address, $representative, $telNo, $logoUrl, $companyStampUrl, $representativeStampUrl, $applyStampUrl);
+        return new self($id, $name, $nameEn, $zipcode, $address, $representative, $telNo, $established, $capital, $bank, $logoUrl, $companyStampUrl, $representativeStampUrl, $applyStampUrl);
     }
 
     /**
@@ -71,10 +85,15 @@ final class CompanyProfile
         return new self(
             id: null,
             name: 'Novalumo合同会社',
+            nameEn: '',
             zipcode: '000-000',
             address: "〇〇県〇〇市１行目\n２行目001号室",
             representative: '',
             telNo: '000-0000-0000',
+            established: null,
+            capital: null,
+            // 振込先は既定値を持たない。未設定なら PDF に振込先欄を出さない
+            bank: '',
             logoUrl: 'img/Logo.png',
             companyStampUrl: 'img/CompanyStamp.png',
             representativeStampUrl: '',
@@ -84,20 +103,28 @@ final class CompanyProfile
 
     public function update(
         string $name,
+        string $nameEn,
         string $zipcode,
         string $address,
         string $representative,
         string $telNo,
+        ?\DateTimeImmutable $established,
+        ?Money $capital,
+        string $bank,
         string $logoUrl,
         string $companyStampUrl,
         string $representativeStampUrl,
         string $applyStampUrl,
     ): void {
         $this->name = $name;
+        $this->nameEn = $nameEn;
         $this->zipcode = $zipcode;
         $this->address = $address;
         $this->representative = $representative;
         $this->telNo = $telNo;
+        $this->established = $established;
+        $this->capital = $capital;
+        $this->bank = $bank;
         $this->logoUrl = $logoUrl;
         $this->companyStampUrl = $companyStampUrl;
         $this->representativeStampUrl = $representativeStampUrl;
@@ -119,9 +146,40 @@ final class CompanyProfile
         return $this->name;
     }
 
+    public function nameEn(): string
+    {
+        return $this->nameEn;
+    }
+
     public function zipcode(): string
     {
         return $this->zipcode;
+    }
+
+    public function established(): ?\DateTimeImmutable
+    {
+        return $this->established;
+    }
+
+    public function capital(): ?Money
+    {
+        return $this->capital;
+    }
+
+    /** 振込先 (銀行名・支店名・口座番号を改行で並べたもの) */
+    public function bank(): string
+    {
+        return $this->bank;
+    }
+
+    /**
+     * 振込先を行に割る。PDF は 1 行ずつ座標を指定して描くため。
+     *
+     * @return list<string>
+     */
+    public function bankLines(): array
+    {
+        return self::toLines($this->bank);
     }
 
     public function address(): string
@@ -136,8 +194,18 @@ final class CompanyProfile
      */
     public function addressLines(): array
     {
+        return self::toLines($this->address);
+    }
+
+    /**
+     * 改行区切りの文字列を、空行を除いた行の配列にする。
+     *
+     * @return list<string>
+     */
+    private static function toLines(string $value): array
+    {
         return array_values(array_filter(
-            array_map(trim(...), preg_split('/\R/', $this->address) ?: []),
+            array_map(trim(...), preg_split('/\R/', $value) ?: []),
             static fn (string $line): bool => $line !== '',
         ));
     }

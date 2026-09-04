@@ -16,7 +16,7 @@ class Project extends Model
         'name',
         'description',
         'client_id',
-        'related_task_id',
+        'jira_key',
         'start_date',
         'end_date',
         'payment_date',

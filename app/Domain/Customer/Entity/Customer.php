@@ -12,6 +12,8 @@ final class Customer
     private function __construct(
         private ?int $id,
         private string $name,
+        /** 取引先の担当者名。発注書フォームの担当者欄の初期値に使う */
+        private ?string $person,
         private bool $isCompany,
         private ?string $email,
         private ?string $phone,
@@ -26,6 +28,7 @@ final class Customer
 
     public static function create(
         string $name,
+        ?string $person,
         bool $isCompany,
         ?string $email = null,
         ?string $phone = null,
@@ -36,12 +39,13 @@ final class Customer
         ?string $country = null,
         ?string $note = null,
     ): self {
-        return new self(null, $name, $isCompany, $email, $phone, $postCode, $address, $city, $state, $country, $note);
+        return new self(null, $name, $person, $isCompany, $email, $phone, $postCode, $address, $city, $state, $country, $note);
     }
 
     public static function reconstitute(
         int $id,
         string $name,
+        ?string $person,
         bool $isCompany,
         ?string $email,
         ?string $phone,
@@ -52,11 +56,12 @@ final class Customer
         ?string $country,
         ?string $note,
     ): self {
-        return new self($id, $name, $isCompany, $email, $phone, $postCode, $address, $city, $state, $country, $note);
+        return new self($id, $name, $person, $isCompany, $email, $phone, $postCode, $address, $city, $state, $country, $note);
     }
 
     public function update(
         string $name,
+        ?string $person,
         bool $isCompany,
         ?string $email,
         ?string $phone,
@@ -68,6 +73,7 @@ final class Customer
         ?string $note,
     ): void {
         $this->name = $name;
+        $this->person = $person;
         $this->isCompany = $isCompany;
         $this->email = $email;
         $this->phone = $phone;
@@ -92,6 +98,11 @@ final class Customer
     public function name(): string
     {
         return $this->name;
+    }
+
+    public function person(): ?string
+    {
+        return $this->person;
     }
 
     public function isCompany(): bool

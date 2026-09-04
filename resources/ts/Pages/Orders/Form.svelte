@@ -54,6 +54,24 @@
 
   const errors = $derived(Object.values(form.errors as Record<string, string>).filter(Boolean));
 
+  /**
+   * 取引先を選んだら担当者欄を顧客マスタの担当者で埋める。
+   *
+   * 手で打った名前を消さないよう、埋めるのは「空のとき」と「直前に選んでいた
+   * 取引先の担当者がそのまま入っているとき」だけにする。取引先を切り替えた
+   * ときに前の担当者が残るのを防ぎつつ、手入力は尊重される。
+   */
+  let filledFrom = $state<string | null>(null);
+
+  function onCustomerChange(): void {
+    const person = customers.find((c) => String(c.id) === String(form.customer_id))?.person ?? "";
+
+    if (form.responsible === "" || form.responsible === filledFrom) {
+      form.responsible = person;
+      filledFrom = person === "" ? null : person;
+    }
+  }
+
   function submit(event: SubmitEvent): void {
     event.preventDefault();
 
@@ -96,7 +114,7 @@
       <div>
         <Label required>取引先</Label>
         <div class="grid gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
-          <Select bind:value={form.customer_id}>
+          <Select bind:value={form.customer_id} onchange={onCustomerChange}>
             <option value="">選択してください</option>
             {#each customers as customer (customer.id)}
               <option value={customer.id}>{customer.name}</option>

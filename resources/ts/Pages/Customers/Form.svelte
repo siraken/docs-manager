@@ -23,6 +23,7 @@
 
   /** name はサーバーが受け取るキー。ラベルは Blade 版と同じ英語表記のまま */
   const FIELDS = [
+    { key: "person", label: "Person in charge" },
     { key: "email", label: "Email" },
     { key: "phone", label: "Phone" },
     { key: "post_code", label: "Post code" },
@@ -37,6 +38,8 @@
     useForm({
       name: customer?.name ?? "",
       is_company: customer?.isCompany ?? false,
+      // 発注書フォームの担当者欄の初期値になる
+      person: customer?.person ?? "",
       email: customer?.email ?? "",
       phone: customer?.phone ?? "",
       post_code: customer?.postCode ?? "",

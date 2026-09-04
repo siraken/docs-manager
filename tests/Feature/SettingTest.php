@@ -50,6 +50,51 @@ test('保存は既存のレコードを更新する', function () {
         ->and(Setting::first()->name)->toBe('2回目');
 });
 
+test('会社概要と振込先を保存できる', function () {
+    // in-house-timecard-app の company テーブルから移植した項目。
+    $this->post('/settings', [
+        'name' => 'テスト商会',
+        'name_en' => 'Test Trading LLC',
+        'established' => '2019-04-01',
+        'capital' => '3000000',
+        'bank' => "〇〇銀行 〇〇支店\n普通 1234567",
+    ])->assertRedirect();
+
+    $setting = Setting::first();
+    expect($setting->name_en)->toBe('Test Trading LLC')
+        ->and((string) $setting->established)->toStartWith('2019-04-01')
+        ->and((int) $setting->capital)->toBe(3000000)
+        ->and($setting->bank)->toBe("〇〇銀行 〇〇支店\n普通 1234567");
+});
+
+test('会社概要が未入力でも保存できる', function () {
+    // 既存の settings 行を壊さないよう、足した列はいずれも nullable
+    $this->post('/settings', ['name' => 'テスト商会'])->assertRedirect();
+
+    $setting = Setting::first();
+    expect($setting->established)->toBeNull()
+        ->and($setting->capital)->toBeNull();
+});
+
+test('資本金が数値でないと保存できない', function () {
+    $this->post('/settings', ['name' => 'テスト商会', 'capital' => '三百万'])
+        ->assertSessionHasErrors('capital');
+
+    expect(Setting::count())->toBe(0);
+});
+
+test('保存した会社概要が画面に整形済みで渡る', function () {
+    $this->post('/settings', [
+        'name' => 'テスト商会',
+        'established' => '2019-04-01',
+        'capital' => '3000000',
+    ]);
+
+    $this->get('/settings')->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('profile.establishedLabel', '2019年4月1日')
+        ->where('profile.capitalLabel', '3,000,000'));
+});
+
 test('会社名が空だと保存できない', function () {
     $this->post('/settings', ['name' => ''])->assertSessionHasErrors('name');
 

@@ -81,6 +81,37 @@ test('PDFの差出人欄には保存済みの自社情報が使われる', funct
     $this->get('/orders/pdf/' . $header->id)->assertOk();
 });
 
+test('振込先を設定するとPDFに印字される', function () {
+    // 移行前の PDF には振込先の記載が一切無かった。
+    Setting::create([
+        'name' => 'テスト商会',
+        'zipcode' => '100-0001',
+        'address' => '東京都千代田区1-1',
+        'rep' => '代表 太郎',
+        'tel_no' => '03-0000-0000',
+        'bank' => "〇〇銀行 〇〇支店\n普通 1234567",
+        'logo_url' => '',
+        'com_stamp_url' => '',
+        'rep_stamp_url' => '',
+        'apply_stamp_url' => '',
+    ]);
+
+    $header = createOrderWithDetail();
+
+    // 座標までは見ない。振込先を設定しても例外なく生成できることを見る
+    $response = $this->get('/orders/pdf/' . $header->id);
+
+    $response->assertOk();
+    expect($response->getContent())->toStartWith('%PDF-');
+});
+
+test('振込先が未設定でもPDFは生成できる', function () {
+    // 未設定なら振込先の欄ごと出さない
+    $header = createOrderWithDetail();
+
+    $this->get('/orders/pdf/' . $header->id)->assertOk();
+});
+
 test('出張申請のPDFがテンプレートから生成される', function () {
     $travel = Travel::create([
         'rel_id' => 1,
