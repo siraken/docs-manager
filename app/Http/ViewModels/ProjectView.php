@@ -87,6 +87,23 @@ final readonly class ProjectView implements \JsonSerializable
     }
 
     /**
+     * セレクトの選択肢。勤務報告の案件セレクトが使う。
+     *
+     * @param list<Project> $projects
+     * @return list<array{id: int|null, name: string}>
+     */
+    public static function options(array $projects): array
+    {
+        return array_map(
+            static fn (Project $project): array => [
+                'id' => $project->id(),
+                'name' => $project->name(),
+            ],
+            $projects,
+        );
+    }
+
+    /**
      * @param list<Project> $projects
      * @return Collection<int, self>
      */

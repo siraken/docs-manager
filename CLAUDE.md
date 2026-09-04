@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理）。Laravel 13 + Tailwind CSS v4。UI・コード内コメントは日本語。
+Novalumo 社内向けの業務管理ツール（発注書・出張申請・出張旅費精算・案件管理・顧客管理・勤務報告・契約管理）。Laravel 13 + Tailwind CSS v4。UI・コード内コメントは日本語。
 
-**画面は Blade から Inertia + Svelte 5 へ移行済み**（全 23 画面）。Blade として残っているのは Inertia のルートテンプレート (`app.blade.php`)、エラーページ (`errors/`)、メール本文 (`emails/`) だけ。Alpine.js と `resources/views/components/` は削除済み。詳しくは「フロントエンドの構成」を参照。
+**画面は Blade から Inertia + Svelte 5 へ移行済み**（全 28 画面）。Blade として残っているのは Inertia のルートテンプレート (`app.blade.php`)、エラーページ (`errors/`)、メール本文 (`emails/`) だけ。Alpine.js と `resources/views/components/` は削除済み。詳しくは「フロントエンドの構成」を参照。
 
 Laravel 8 から 13 へ、メジャーバージョンを 1 つずつ上げてきた（1 メジャー = 1 PR）。**現在 13 で、アップグレードは完了している。**
 
@@ -268,6 +268,7 @@ app/
 │   ├── Shared/           Money、ドメイン例外
 │   ├── Order/            Entity/Order・OrderLine、ValueObject、Repository インターフェース
 │   └── Customer/ Project/ User/ Travel/ Academy/ Setting/
+│       Contract/ Report/
 ├── Application/      ユースケース。「何をするか」の手順
 │   ├── <文脈>/UseCase/   1 クラス 1 ユースケース (execute() だけを持つ)
 │   ├── <文脈>/Input/     ユースケースへの入力 DTO
@@ -373,6 +374,65 @@ Vite はビルド時に `import.meta.env.VITE_*` を値へ埋め込む。**`proc
 - ごみ箱の「ごみ箱を空にする」ボタン — リンク先が一覧自身で、何もしないダミーだった
 - 出張申請一覧の「ごみ箱に入れる」 — リンク先が発注書の削除ルート (`orders.delete`) を指していた
 
+## in-house-timecard-app からの移植
+
+`novalumo/in-house-timecard-app`（Laravel 10 + Bootstrap 4 の勤怠ツール）から、**docs-manager に無かった 2 機能だけ**を移植した。
+
+| timecard の機能 | docs-manager | 扱い |
+| --- | --- | --- |
+| Client（クライアント） | Customer（顧客） | かぶり。移植しない |
+| Project（プロジェクト） | Project（案件） | かぶり。移植しない |
+| Company（会社情報） | Setting / CompanyProfile | かぶり。移植しない |
+| User | User | かぶり。移植しない |
+| **Contract（契約管理）** | — | **移植した** |
+| **Report（勤務報告）** | — | **移植した** |
+
+移植は 2 コミットに分けてある。1 つ目が移植元のファイルを無加工でコピーしたもの、2 つ目がこのリポジトリの構成へ寄せたもの。**移植元との差分を読みたいときは 2 つ目のコミットの diff を見ること。**
+
+### スキーマの変更
+
+移植元のテーブルはそのままでは使えなかったので作り直している。**どちらの表も docs-manager では新規テーブルなので、移行用のマイグレーションは無い。**
+
+- **取引先は `customers` を参照する**。移植元の `client_id` は参照先の無い整数だった。カラム名も `customer_id` に揃えている（`order_headers` と同じ）
+- **`reports.project_id` を足した**。移植元の登録フォームには案件のセレクトがあったが `name` 属性が空で送信されず、テーブルにも列が無かった
+- **`reports.work_time`（float の時間）を `work_minutes`（整数の分）にした**。`Money` が円を整数で持つのと同じ理由
+- **`contracts.contract_id` を `contract_no` に改名**。主キーと紛らわしく、実体は「契約番号」だった。移植元のフォームが送っていた `pid` はテーブルに無いカラムで、値は静かに捨てられていた
+
+### ドメインルール
+
+- **勤務時間は始業・終業が揃っていればそこから計算する**（`Domain\Report\Entity\Report`）。フォームの申告値を使うのは時刻が片方でも欠けているときだけ。発注書の金額をサーバー側で計算し直しているのと同じ考え方
+- **日跨ぎの勤務は 24 時間を足して扱う**（`TimeOfDay::minutesUntil()`）。22:00 出社 - 02:00 退社で負の勤務時間にならないようにするため
+- **契約の状態はカラムとして持たない**。`ContractTerm::statusOn()` が契約期間と基準日から「開始前 / 契約中 / 終了」を導く。境界は両端とも含む
+- **`Report::reconstitute()` は勤務時間を計算し直さない**。保存済みの値をそのまま採る（再計算すると、休憩控除のような規則を後から足したときに過去の記録まで遡って書き換わる）
+
+### 移植時に直した不具合
+
+移植元で壊れていた箇所。いずれも `tests/Feature/{ReportTest,ContractTest}.php` にリグレッションテストがある。
+
+| 症状 | 直した内容 |
+| --- | --- |
+| 契約の編集画面が必ず 500 | ビューがコントローラの渡さない変数（`$name` / `$pid` / `$start_date` / `$description`）を参照していた。さらに form の action が id 抜きの `route('contracts.update')` で `Missing required parameter` になっていた |
+| 総勤務日数が常に 0 | `$reports->sum('work_days')` を呼んでいたが `work_days` というカラムは存在しない |
+| 総勤務時間がページ内の分しか出ない | ビューの中でページネーション後の行だけを足していた。集計は絞り込み結果の全件で行う |
+| 年月の絞り込みが効かない | 一覧のセレクトが GET で `year` / `month` を送るのに、コントローラはルートパラメータで受けていた（そのルートも登録されていなかった） |
+| 年の選択肢が 2020〜2024 の直書き | ビューに `for` ループで埋め込まれており、2025 年以降を選べなかった。`range(2020, 当年 + 1)` にした |
+| 担当者・取引先が保存されない | セレクトが名前の文字列を `user_id` / `client` という名前で送っていた。`client` はカラム名（`client_id`）と一致せず捨てられ、`user_id` には名前が入っていた。いずれも id で送る |
+| 勤務報告を削除すると 500 | ルートは `destroy` を指すのに、コントローラのメソッド名が `delete` だった |
+| 勤務報告の詳細が真っ白 | `reports/show.blade.php` が `@section('content')` の中身ごと空だった |
+| 契約を削除できない | 編集画面の削除ボタンが `type="button"` のままで、サーバー側の受け口も無かった |
+| 一覧の担当者欄が常に空 | ビューが `$report['who']` という存在しないキーを引いていた |
+| 契約一覧の「取引先」列に PID が出る | 存在しないカラム `$contract['pid']` で Jira のリンクを組んでいた |
+| 契約一覧の「契約期間」に開始日しか出ない | 終了日を表示していなかった |
+| 検証なしで保存される | `store()` / `update()` が `$request->all()` をそのまま `fill()` に渡していた。`SaveReportRequest` / `SaveContractRequest` を通す |
+
+### 移植していないもの
+
+- **Bootstrap 4 のビュー**。画面は Inertia + Svelte で書き直した
+- **`maatwebsite/excel` による Excel 出力**。移植元でも呼び出し箇所が無く、依存として宣言されているだけだった
+- **`app/Models/`**。Eloquent モデルは `app/Infrastructure/Persistence/Eloquent/Models/` に置く規約に合わせた
+- **`SimpleAuth` ミドルウェア**。中身が `// TODO: implement` でコメントアウトされており、実質何もしていなかった。認証は既存の `LoginMiddleware` に任せる
+- **ページネーション**。一覧は年月で絞り込むので、1 か月分が上限になる。集計と表示の対象がずれない利点のほうが大きい
+
 ## 残っている TODO
 
 コード中に `TODO:` / `FIXME:` コメントで置いてある。特に重いもの:
@@ -464,7 +524,7 @@ Laravel の `SoftDeletes` は使わず、`order_headers.is_deleted` (integer) �
 
 ### フロントエンドの構成
 
-**全 23 画面が Inertia + Svelte 5。Blade のビューはもう画面を描かない。**
+**全 28 画面が Inertia + Svelte 5。Blade のビューはもう画面を描かない。**
 
 SvelteKit は使っていない。ルーティングは Laravel が持ち、Inertia がページを差し替える。
 
@@ -509,6 +569,8 @@ resources/ts/
 │   ├── Users/       Index / Form / TwoFactor
 │   ├── Trips/       Index / Form / Show
 │   ├── Expenses/    Index / Form / Show
+│   ├── Reports/     Index / Form / Show   (勤務報告)
+│   ├── Contracts/   Index / Form           (契約管理)
 │   ├── Files/       Index
 │   ├── Academy/     Index
 │   ├── Auth/        Login (Layouts/Auth を指定)
@@ -523,8 +585,8 @@ resources/ts/
 │   ├── CsvImportModal.svelte  CSV 取り込み (出張申請と旅費精算が使う)
 │   ├── NfcSignIn.svelte       NFC でのサインイン (旧 lib/nfc-auth.ts)
 │   └── MetamaskSignIn.svelte  MetaMask でのサインイン (旧 lib/metamask-auth.ts)
-└── lib/             order-types.ts / master-types.ts / travel-types.ts
-                     (サーバーが渡す JSON の型) など
+└── lib/             order-types.ts / master-types.ts / travel-types.ts /
+                     report-types.ts (サーバーが渡す JSON の型) など
 ```
 
 ### 書くときの約束
@@ -532,7 +594,7 @@ resources/ts/
 - **Svelte 5 は runes で書く**（`$state` / `$derived` / `$effect`）。DOM の更新はマイクロタスクにまとめられるため、**状態を変えた直後に同期で DOM を読むと更新前の値が返る**
 - **内部の画面へのリンクは Inertia 遷移にする**。`Button` / `DropdownItem` は `href` を渡すと `use:inertia` が付く。素のリンクにしたいときは `external` を渡す。**PDF / CSV のダウンロードは必ず `external`**（Inertia の遷移は XHR になり、ファイルを受け取れない）
 - **画面から参照する URL はサーバー側で組む**。Ziggy のようなルートヘルパは入れていない。一覧の各行のリンクは ViewModel の `urls` に、ナビやユーザーメニューは共有データに入っている
-- **ViewModel は `JsonSerializable` を実装する**。Inertia は props を JSON にして渡すので、メソッド (`displayName()`) の結果もプロパティとして出す必要がある。PHP 側の `jsonSerialize()` と `resources/ts/lib/{order,master,travel}-types.ts` は対になっているので、片方を変えたらもう片方も直すこと
+- **ViewModel は `JsonSerializable` を実装する**。Inertia は props を JSON にして渡すので、メソッド (`displayName()`) の結果もプロパティとして出す必要がある。PHP 側の `jsonSerialize()` と `resources/ts/lib/{order,master,travel,report}-types.ts` は対になっているので、片方を変えたらもう片方も直すこと
 - **`urls` は id が null なら null にする**。未保存のエンティティに `route(..., ['id' => null])` は組めない（移行前のユーザー新規登録画面が 500 になっていた原因）。画面側は `urls` の有無でボタンを出し分ける
 - **一覧に要らない項目まで props に載せない**。`CustomerView::collection()` は顧客画面用に全項目を出すが、発注書フォームの取引先セレクトは `CustomerView::options()`（id と名前だけ）を使う
 - **検証エラーは `FormErrors` に渡す**。`useForm` の `errors` をそのまま渡せばよい

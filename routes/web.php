@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AcademyController;
+use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\FreeeController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SpreadSheetController;
 use App\Http\Controllers\TravelController;
@@ -138,6 +140,35 @@ Route::middleware('login')->group(function (): void {
             Route::post('/create', 'store');
             Route::get('/edit/{id}', 'edit')->name('projects.edit')->whereNumber('id');
             Route::post('/edit/{id}', 'update')->whereNumber('id');
+        });
+
+    /**
+     * 勤務報告 (in-house-timecard-app から移植)
+     */
+    Route::prefix('reports')
+        ->controller(ReportController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->name('reports.index');
+            Route::get('/create', 'create')->name('reports.create');
+            Route::post('/create', 'store');
+            Route::get('/view/{id}', 'show')->name('reports.view')->whereNumber('id');
+            Route::get('/edit/{id}', 'edit')->name('reports.edit')->whereNumber('id');
+            Route::post('/edit/{id}', 'update')->whereNumber('id');
+            Route::delete('/delete/{id}', 'destroy')->name('reports.delete')->whereNumber('id');
+        });
+
+    /**
+     * 契約 (in-house-timecard-app から移植)
+     */
+    Route::prefix('contracts')
+        ->controller(ContractController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->name('contracts.index');
+            Route::get('/create', 'create')->name('contracts.create');
+            Route::post('/create', 'store');
+            Route::get('/edit/{id}', 'edit')->name('contracts.edit')->whereNumber('id');
+            Route::post('/edit/{id}', 'update')->whereNumber('id');
+            Route::delete('/delete/{id}', 'destroy')->name('contracts.delete')->whereNumber('id');
         });
 
     /**
