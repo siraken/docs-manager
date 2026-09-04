@@ -131,10 +131,24 @@ timecard のナビには「会計」の項目があったが、リンク先は `
 - 試算表は残高試算表のみ。合計残高試算表や、貸借対照表・損益計算書への展開はしていない
 - 勘定科目の初期値は `AccountSeeder` にある。**マスタが空だと仕訳を 1 件も登録できない**ので、新しい環境では必ず流すこと
 
+## 引き継いだ画像アセット
+
+移植元のリポジトリを削除するにあたり、コードとは別に画像を退避したもの。**いずれも現時点ではどこからも参照していない。**
+
+| ファイル | 中身 | 移植元 |
+| --- | --- | --- |
+| `resources/img/logo.svg` | Novalumo のロゴタイプ（918×162 のワードマーク、黒） | `public/img/logo.svg` |
+| `resources/img/logo-white.svg` | 同じロゴの白版（`fill:#fff`） | `public/img/logo_white.svg` |
+| `resources/img/bg/{morning,evening,night}.jpg` | 時間帯別の背景写真（1280×720） | `public/img/bg/*.jpg` |
+
+- **ロゴ**は移植元のヘッダーで使われていた。docs-manager のヘッダーは "N" のバッジ（`Layouts/Default.svelte`）なので、差し替えたければこれが使える。既にある `Logo.png` は発注書 PDF の差出人欄用で、別物
+- **背景写真**は移植元でも**どのビューからも参照されていなかった**。CSS に `.bg-morning` / `.bg-evening` / `.bg-night` の定義だけがあり、時間帯で背景を変える作りかけが放置されていたとみられる。使う当てが無ければ消してよい
+
 ## 移植していないもの
 
 - **Bootstrap 4 のビュー**。画面は Inertia + Svelte で書き直した
 - **`maatwebsite/excel` による Excel 出力**。移植元でも呼び出し箇所が無く、依存として宣言されているだけだった
 - **`app/Models/`**。Eloquent モデルは `app/Infrastructure/Persistence/Eloquent/Models/` に置く規約に合わせた
+- **`public/img` 以外の静的ファイル**（`favicon.ico` / `robots.txt`）。docs-manager が自前で持っている
 - **`SimpleAuth` ミドルウェア**。中身が `// TODO: implement` でコメントアウトされており、実質何もしていなかった。認証は既存の `LoginMiddleware` に任せる
 - **ページネーション**。一覧は年月で絞り込むので、1 か月分が上限になる。集計と表示の対象がずれない利点のほうが大きい
