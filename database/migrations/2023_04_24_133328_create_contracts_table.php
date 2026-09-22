@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Schema;
  *  - description を string から text へ (備考欄は 255 文字に収まらない)
  *
  * 外部キー制約は張らない。このアプリは Eloquent のリレーションを定義せず、
- * 関連の組み立てをリポジトリの仕事にしているため (CLAUDE.md 参照)。
+ * 関連の組み立てをリポジトリの仕事にしているため (AGENTS.md 参照)。
  * 絞り込みに使うカラムには索引だけ張る。
  */
 return new class extends Migration
