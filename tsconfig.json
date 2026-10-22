@@ -12,7 +12,9 @@
 
         /* Language and Environment */
         "target": "es2020" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-        // "lib": [],                                        /* Specify a set of bundled library declaration files that describe the target runtime environment. */
+        /* Array.prototype.at などの ES2022 の型。@types/node 24 は ES2022 の補完型を
+           持たなくなったので明示する。出力 (target) は es2020 のまま */
+        "lib": ["es2022", "dom", "dom.iterable"] /* Specify a set of bundled library declaration files that describe the target runtime environment. */,
         /* JSX は使っていない (React を剥がして Svelte に移行済み)。
            .svelte の中身は tsc ではなく svelte-check が見る */
         // "jsx": "react",
