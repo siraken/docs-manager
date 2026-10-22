@@ -8,3 +8,6 @@
 #   @parcel/watcher: watch 用のオプショナル依存。無くても動くため拒否する
 allowBuilds:
   '@parcel/watcher': false
+
+# サプライチェーン攻撃対策: 公開から 7 日（10080 分）経っていないバージョンはインストールしない
+minimumReleaseAge: 10080
