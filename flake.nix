@@ -33,7 +33,7 @@
 
           # Vite 8 は Node 20.19+ / 22.12+ を、pnpm 11 は Node 22.13+ を要求する。
           # nodejs_18 / nodejs_20 は unstable では EOL 扱いで引けない。
-          nodejs = pkgs.nodejs_22;
+          nodejs = pkgs.nodejs_24;
         in
         {
           default = pkgs.mkShell {
